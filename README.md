@@ -12,7 +12,7 @@ That being said, the EasyPlot.jl module is generic and will likely help to simpl
 
 Extensive compatibility testing of EasyPlot.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.3.6
+ - Linux / Julia-0.4.0
 
 ## Disclaimer
 

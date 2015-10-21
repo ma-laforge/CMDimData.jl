@@ -19,7 +19,7 @@ typealias AttributeListFunctionMap Dict{DataType, Function}
 
 #Copy in only attributes that are not "nothing":
 function ApplyNewAttributes{T<:AttributeList}(dest::T, newlist::T)
-	for attrib in names(newlist)
+	for attrib in fieldnames(newlist)
 		v = eval(:($newlist.$attrib))
 
 		if v != nothing
@@ -61,20 +61,20 @@ end
 #==Plot-level functionality
 ===============================================================================#
 
-settitle(p::Plot, a::String) = (p.title = a)
+settitle(p::Plot, a::AbstractString) = (p.title = a)
 
 
 #==Subplot-level functionality
 ===============================================================================#
 
-settitle(s::Subplot, a::String) = (s.title = a)
+settitle(s::Subplot, a::AbstractString) = (s.title = a)
 setaxes(s::Subplot, a::AxesAttributes) = ApplyNewAttributes(s.axes, a)
 
 
 #==Waveform-level functionality
 ===============================================================================#
 
-setid(w::Waveform, a::String) = (w.id = a)
+setid(w::Waveform, a::AbstractString) = (w.id = a)
 setline(w::Waveform, a::LineAttributes) = ApplyNewAttributes(w.line, a)
 setglyph(w::Waveform, a::GlyphAttributes) = ApplyNewAttributes(w.glyph, a)
 

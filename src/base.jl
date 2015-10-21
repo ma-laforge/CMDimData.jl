@@ -8,19 +8,19 @@
 #colors: black, red, orange, yellow, green, blue, indigo, violet, rgb(x,y,z)
 #TODO: create preset colors as a map of RGB values
 
-const valid_axisscales = Set({:lin, :log, :reciprocal})
+const valid_axisscales = Set([:lin, :log, :reciprocal])
 #TODO: should we support :db20, :db10?
 
-const valid_linestyles = Set({:solid, :dash, :dot, :dashdot})
+const valid_linestyles = Set([:solid, :dash, :dot, :dashdot])
 
 #In case specified symbol not supported...
 #implementations should provide default (hopefully not none).
-const valid_symbols = Set({:none, 
+const valid_symbols = Set([:none, 
 	:square, :diamond,
 	:uarrow, :darrow, :larrow, :rarrow, #usually triangles
 	:cross, :+, :diagcross, :x,
 	:circle, :o, :star, :*,
-})
+])
 
 
 #==Plot/subplot/waveform attributes
@@ -62,7 +62,7 @@ eval(genexpr_attriblistbuilder(:axes, AxesAttributes, reqfieldcnt=0))
 #-------------------------------------------------------------------------------
 type Waveform
 	data::Data2D
-	id::String
+	id::AbstractString
 	line::LineAttributes
 	glyph::GlyphAttributes
 end
@@ -70,7 +70,7 @@ Waveform(data::Data2D) = Waveform(data, "", line(), glyph())
 
 #-------------------------------------------------------------------------------
 type Subplot
-	title::String
+	title::AbstractString
 	wfrmlist::Vector{Waveform}
 	axes::AxesAttributes
 end
@@ -79,7 +79,7 @@ Subplot() = Subplot("", Waveform[], axes(xscale=:lin, yscale=:lin))
 
 #-------------------------------------------------------------------------------
 type Plot
-	title::String
+	title::AbstractString
 	subplots::Vector{Subplot}
 end
 Plot() = Plot("", Subplot[])

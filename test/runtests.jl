@@ -6,28 +6,36 @@ using MDDatasets
 
 #No real test code yet... just run demos:
 
-const separator = "-----------------------------"
+function printsep()
+	const separator = "\n-----------------------------"
+	println(separator)
+end
 
-x=[1:10]
+x=collect(1:10)
 @show d1 = Data2D(x, x.^2)
 
-println("\n", separator)
-dfltline = line(style=:solid, color=:red)
-dfltglyph = glyph(shape=:square, size=3)
-axes_loglin = axes(xscale = :log, yscale = :lin)
-@show dfltline
-@show dfltglyph
+printsep()
+	dfltline = line(style=:solid, color=:red)
+	dfltglyph = glyph(shape=:square, size=3)
+	axes_loglin = axes(xscale = :log, yscale = :lin)
+	@show dfltline
+	@show dfltglyph
 
-plot = EasyPlot.new(title = "Sample Plot")
-subplot = add(plot, axes_loglin, title = "Subplot 1")
-wfrm = add(subplot, d1, id="Quadratic")
+	plot = EasyPlot.new(title = "Sample Plot")
+	subplot = add(plot, axes_loglin, title = "Subplot 1")
+	wfrm = add(subplot, d1, id="Quadratic")
 
-println("\n", separator)
-@show wfrm
-set(wfrm, dfltline, dfltglyph)
-println("\n", separator)
-@show plot
-println("\n", separator)
-@show wfrm
+printsep()
+	@show wfrm
+	set(wfrm, dfltline, dfltglyph)
+printsep()
+	@show plot
+printsep()
+	@show wfrm
+
+for i in 1:1
+	printsep()
+		@show evalfile(EasyPlot.sampleplotfile(1));
+end
 
 :Test_Complete

@@ -2,6 +2,10 @@
 #-------------------------------------------------------------------------------
 module EasyPlot
 
+const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
+sampleplotfile(id::Int) =
+	joinpath(rootpath, "sample/sampleplot$id.jl")
+
 using MDDatasets
 
 include("codegen.jl")
