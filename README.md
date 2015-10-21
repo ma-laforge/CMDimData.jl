@@ -2,13 +2,13 @@
 
 ## Description
 
-The EasyPlotMPL.jl implements the high-level EasyPlot.jl interface using Matplotlib (PyPlot.jl) as a backend.
+EasyPlotMPL.jl implements EasyPlot.Backend{:MPL} using Matplotlib (PyPlot.jl).
 
 ### Compatibility
 
 Extensive compatibility testing of EasyPlotMPL.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.3.6
+ - Linux / Julia-0.4.0
 
 ## Disclaimer
 

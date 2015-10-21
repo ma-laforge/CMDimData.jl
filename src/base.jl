@@ -8,7 +8,7 @@
 #==Constants
 ===============================================================================#
 
-const scalemap = Dict{Symbol, String} ([
+const scalemap = Dict{Symbol, AbstractString}([
 	(:lin, "linear"),
 	(:log, "log"),
 ])
@@ -24,7 +24,7 @@ const scalemap = Dict{Symbol, String} ([
 function addwfrm(ax, wfrm::EasyPlot.Waveform)
 	wfrm = ax[:plot](wfrm.data.x, wfrm.data.y)
 #TODO: support wfrm properties:
-#	id::String
+#	id::AbstractString
 #	line::LineAttributes
 #	glyph::GlyphAttributes
 	#wfrm = ax[:plot](x, y, color="red", linewidth=2.0, linestyle="--")
