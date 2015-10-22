@@ -1,12 +1,27 @@
-# EasyPlot.jl
+# EasyPlot.jl (+HDF5 Output)
 
 ## Description
 
-The EasyPlot.jl provides a high-level interface for describing plots.  The interface is optimized to write tiny extraction routines for investigative (circuit) design work.
+The EasyPlot.jl provides a high-level abstraction to describe plots.  The interface is optimized to write tiny extraction routines for investigative (circuit) design work.
 
 The goal of the EasyPlot interface is to let the user focus on analyzing simulation results (extracting relevant circuit performance) by *keeping the necessary plotting code to a strict minimum*.  Also, to keep things portable, EasyPlot plots can be rendered on different backends - provided by external modules.
 
 That being said, the EasyPlot.jl module is generic and will likely help to simplify plotting tasks in many scientific fields.
+
+Sample code to construct EasyPlot objects can be found [here](sample/)
+
+### Major Highlight: EasyPlotHDF5 Output
+
+Not only does EasyPlot.jl provide a simple inteface to build backend-independent plots, but said plots can be saved/loaded to HDF5.  With the help of the HDF5 file format, EasyPlotHDF5 files embed both the data, and a description of the plot sturcture in one convenient file.
+
+Sample code to save/load EasyPlotHDF5 can be found [here](test/runtests.jl).
+
+## Known Limitations
+
+ - EasyPlot mostly supports basic plot attributes at the moment.
+ - The EasyPlotHDF5 format is still in the experimental phase.  It is not yet stable, and prone to major re-structuring.
+ - There is currently no versionning of EasyPlotHDF5 files.
+  - Without versioning, EasyPlotHDF5 files cannot easily be re-loaded - and therefore not the best choice for archival purposes.  That being said, with an HDF5 viewer, the format can probably be figured out with relative ease.
 
 ### Compatibility
 
