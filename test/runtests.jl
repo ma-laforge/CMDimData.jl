@@ -3,6 +3,7 @@
 
 using EasyPlot 
 using MDDatasets
+using FileIO2
 
 #No real test code yet... just run demos:
 
@@ -33,9 +34,14 @@ printsep()
 printsep()
 	@show wfrm
 
+save(plot, "./test.hdf5")
+
 for i in 1:1
 	printsep()
-		@show evalfile(EasyPlot.sampleplotfile(1));
+		@show p=evalfile(EasyPlot.sampleplotfile(1));
+		save(p, "./test$i.hdf5")
+	println("\n\nReloading...")
+		@show p=load(File{EPH5Fmt}("./test$i.hdf5"));
 end
 
 :Test_Complete
