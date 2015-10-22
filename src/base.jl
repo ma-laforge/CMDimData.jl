@@ -49,7 +49,7 @@ function render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int=1)
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 
 	#Arrange basically allocates all subplots (GracePlot.Plot):
-	arrange(gplot, (nrows, ncols))
+	set(gplot, layout(rows=nrows, cols=ncols))
 	graphidx = 0
 
 	for s in eplot.subplots
