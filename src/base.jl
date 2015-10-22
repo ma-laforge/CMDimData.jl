@@ -83,7 +83,7 @@ end
 
 function EasyPlot.render(::Type{EasyPlot.Backend{:MPL}}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
 	title = plot.title
-	fig = plt.figure("Myplot", args...; kwargs...)
+	fig = plt.figure(title, args...; kwargs...)
 	return render(fig, plot, ncols=ncols)
 end
 
