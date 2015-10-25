@@ -29,7 +29,7 @@ function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
 	autofit(g)
 	srca = subplot.axes
 	set(g, GracePlot.axes(
-		xscale = gconst[srca.xscale], yscale = gconst[srca.yscale],
+		xscale = srca.xscale, yscale = srca.yscale,
 		xmin = srca.xmin, xmax = srca.xmax,
 		ymin = srca.ymin, ymax = srca.ymax,
 	))
