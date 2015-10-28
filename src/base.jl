@@ -66,9 +66,9 @@ function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot; ncols::Int=1)
 	subplotidx = 0
 
 	for s in eplot.subplots
-		row = div(subplotidx, ncols) + 1
-		col = mod(subplotidx, ncols) + 1
-		ax = fig[:add_subplot](row, col, 1)
+#		row = div(subplotidx, ncols) + 1
+#		col = mod(subplotidx, ncols) + 1
+		ax = fig[:add_subplot](nrows, ncols, subplotidx+1)
 		rendersubplot(ax, s)
 		subplotidx += 1
 	end
