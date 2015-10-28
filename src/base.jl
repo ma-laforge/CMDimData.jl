@@ -9,14 +9,18 @@
 #==Rendering functions
 ===============================================================================#
 
-#Internal
 function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
-	ds = add(g, wfrm.data.x, wfrm.data.y)
-#TODO: support wfrm properties:
-#	id::String
-#	line::LineAttributes
-#	glyph::GlyphAttributes
-	return ds
+	_line = line(style=wfrm.line.style,
+	         width=wfrm.line.width, #TODO: scale?
+	         color=wfrm.line.color, #TODO: remap?
+	)
+
+	_glyph = glyph(shape=wfrm.glyph.shape,
+	          size=wfrm.glyph.size, #TODO: scale?
+	          linewidth=wfrm.line.width, #TODO: scale?
+	          color=wfrm.glyph.color, #TODO: remap?
+	)
+	return add(g, wfrm.data.x, wfrm.data.y, _line, _glyph, id=wfrm.id)
 end
 
 function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
@@ -45,7 +49,7 @@ function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
 	return g
 end
 
-function render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int=1)
+function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int=1)
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 
 	#Arrange basically allocates all subplots (GracePlot.Plot):
