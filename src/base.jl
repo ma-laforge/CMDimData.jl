@@ -82,8 +82,8 @@ end
 ===============================================================================#
 
 function EasyPlot.render(::Type{EasyPlot.Backend{:MPL}}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	title = plot.title
-	fig = plt.figure(title, args...; kwargs...)
+	fig = plt.figure(args...; kwargs...)
+	fig[:suptitle](plot.title)
 	return render(fig, plot, ncols=ncols)
 end
 
