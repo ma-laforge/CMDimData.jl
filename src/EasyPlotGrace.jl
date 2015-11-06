@@ -2,9 +2,11 @@
 #-------------------------------------------------------------------------------
 module EasyPlotGrace
 
+using MDDatasets
 import EasyPlot #Import only - avoid collisions
 using GracePlot
-using MDDatasets
+
+import EasyPlot: render
 
 include("base.jl")
 

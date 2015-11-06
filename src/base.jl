@@ -5,20 +5,34 @@
 #==Base types
 ===============================================================================#
 
+#==Helper/mapping functions
+===============================================================================#
+
+#Does not yet support symbolic color values:
+#TODO: remap colors
+validcolor(color) = isa(color, Integer) ? color : nothing
+
+#Linewidth:
+maplinewidth(w) = w
+maplinewidth(w::Real) = w
+
+#Glyph size:
+mapglyphsize(w) = w
+mapglyphsize(sz::Real) = sz/2
 
 #==Rendering functions
 ===============================================================================#
 
 function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
 	_line = line(style=wfrm.line.style,
-	         width=wfrm.line.width, #TODO: scale?
-	         color=wfrm.line.color, #TODO: remap?
+	         width=maplinewidth(wfrm.line.width),
+	         color=validcolor(wfrm.line.color),
 	)
 
 	_glyph = glyph(shape=wfrm.glyph.shape,
-	          size=wfrm.glyph.size, #TODO: scale?
-	          linewidth=wfrm.line.width, #TODO: scale?
-	          color=wfrm.glyph.color, #TODO: remap?
+	          size=mapglyphsize(wfrm.glyph.size),
+	          linewidth=maplinewidth(wfrm.line.width),
+	          color=validcolor(wfrm.glyph.color),
 	)
 	return add(g, wfrm.data.x, wfrm.data.y, _line, _glyph, id=wfrm.id)
 end
