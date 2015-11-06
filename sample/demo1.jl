@@ -4,7 +4,7 @@
 using FileIO2
 using EasyPlot
 using EasyPlotMPL
-using EasySave
+using EasyData
 
 #==Constants
 ===============================================================================#
@@ -12,7 +12,7 @@ using EasySave
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-file(i::Int) = File{EPH5Fmt}("./sampleplotfile1.hdf5")
+file(i::Int) = File{EDH5Fmt}("./sampleplotfile1.hdf5")
 
 plot = evalfile(EasyPlot.sampleplotfile(1));
 	display(Backend{:MPL}, plot)
