@@ -34,14 +34,9 @@ printsep()
 printsep()
 	@show wfrm
 
-save(plot, "./test.hdf5")
-
 for i in 1:1
 	printsep()
-		@show p=evalfile(EasyPlot.sampleplotfile(1));
-		save(p, "./test$i.hdf5")
-	println("\n\nReloading...")
-		@show p=load(File{EPH5Fmt}("./test$i.hdf5"));
+	@show p=evalfile(EasyPlot.sampleplotfile(1));
 end
 
 :Test_Complete
