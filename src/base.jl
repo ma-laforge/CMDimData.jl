@@ -1,4 +1,4 @@
-#EasySave base types & core functions
+#EasyData base types & core functions
 #-------------------------------------------------------------------------------
 
 
@@ -8,14 +8,14 @@
 #==Main data structures
 ===============================================================================#
 
-immutable EasyPlotHDF5 <: FileIO2.DataFormat; end
-typealias EPH5Fmt EasyPlotHDF5 #More succinct
+immutable EasyDataHDF5 <: FileIO2.DataFormat; end
+typealias EDH5Fmt EasyDataHDF5 #More succinct
 
-type EasyPlotReader <: AbstractReader{EasyPlotHDF5}
+type EasyDataReader <: AbstractReader{EasyDataHDF5}
 	reader::HDF5.HDF5File
 end
 
-type EasyPlotWriter <: AbstractWriter{EasyPlotHDF5}
+type EasyDataWriter <: AbstractWriter{EasyDataHDF5}
 	writer::HDF5.HDF5File
 end
 

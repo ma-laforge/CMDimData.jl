@@ -28,17 +28,17 @@ elempath(subpath::AbstractString) = ElementPath(subpath)
 datapath(subpath::AbstractString) = DataPath(subpath)
 
 #Create/open HDF5 groups:
-creategrp(w::EasyPlotWriter, path::ElementPath) =
+creategrp(w::EasyDataWriter, path::ElementPath) =
 	g_create(w.writer, "$hdf5plotroot/$(string(path))")
-opengrp(w::EasyPlotWriter, path::ElementPath) =
+opengrp(w::EasyDataWriter, path::ElementPath) =
 	g_open(w.writer, "$hdf5plotroot/$(string(path))")
-opengrp(r::EasyPlotReader, path::ElementPath) =
+opengrp(r::EasyDataReader, path::ElementPath) =
 	g_open(r.reader, "$hdf5plotroot/$(string(path))")
-creategrp(w::EasyPlotWriter, path::DataPath) =
+creategrp(w::EasyDataWriter, path::DataPath) =
 	g_create(w.writer, "$hdf5dataroot/$(string(path))")
-opengrp(w::EasyPlotWriter, path::DataPath) =
+opengrp(w::EasyDataWriter, path::DataPath) =
 	g_open(w.writer, "$hdf5dataroot/$(string(path))")
-opengrp(r::EasyPlotReader, path::DataPath) =
+opengrp(r::EasyDataReader, path::DataPath) =
 	g_open(r.reader, "$hdf5dataroot/$(string(path))")
 
 #Write out attribute to HDF5 file:
@@ -47,7 +47,7 @@ writeattr(grp::HDF5.HDF5Group, k::AbstractString, v::Symbol) =
 	a_write(grp, k, ["CONST", string(v)])
 
 #Write AttributeList to their own HDF5 group:
-function writeattr{T<:AttributeList}(w::EasyPlotWriter, alist::T, elem::AbstractString)
+function writeattr{T<:AttributeList}(w::EasyDataWriter, alist::T, elem::AbstractString)
 	grp = creategrp(w, elempath(elem))
 
 	for attrib in fieldnames(alist)
@@ -60,9 +60,9 @@ function writeattr{T<:AttributeList}(w::EasyPlotWriter, alist::T, elem::Abstract
 	end
 end
 
-#EasyPlotHDF5 - read/write Waveform:
+#EasyDataHDF5 - read/write Waveform:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyPlotWriter, wfrm::Waveform, elem::AbstractString)
+function Base.write(w::EasyDataWriter, wfrm::Waveform, elem::AbstractString)
 	grp = creategrp(w, datapath(elem))
 
 	grp["x"] = wfrm.data.x
@@ -74,7 +74,7 @@ function Base.write(w::EasyPlotWriter, wfrm::Waveform, elem::AbstractString)
 	a_write(grp, "id", wfrm.id)
 end
 
-function EasyPlot.add(s::Subplot, r::EasyPlotReader, elem::AbstractString)
+function EasyPlot.add(s::Subplot, r::EasyDataReader, elem::AbstractString)
 	grp = opengrp(r, datapath(elem))
 	data = Data2D(d_read(grp, "x"), d_read(grp, "y"))
 #	line::LineAttributes
@@ -82,9 +82,9 @@ function EasyPlot.add(s::Subplot, r::EasyPlotReader, elem::AbstractString)
 	return add(s, data, id = a_read(grp, "id"))
 end
 
-#EasyPlotHDF5 - read/write Subplot:
+#EasyDataHDF5 - read/write Subplot:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyPlotWriter, s::Subplot, elem::AbstractString)
+function Base.write(w::EasyDataWriter, s::Subplot, elem::AbstractString)
 	grp = creategrp(w, elempath(elem))
 	a_write(grp, "title", s.title)
 	wfrmidx = 1
@@ -99,7 +99,7 @@ function Base.write(w::EasyPlotWriter, s::Subplot, elem::AbstractString)
 
 end
 
-function EasyPlot.add(p::Plot, r::EasyPlotReader, elem::AbstractString)
+function EasyPlot.add(p::Plot, r::EasyDataReader, elem::AbstractString)
 	grp = opengrp(r, elempath(elem))
 	wfrmcount = a_read(grp, "wfrmcount")
 	result = add(p, title = a_read(grp, "title"))
@@ -112,9 +112,9 @@ function EasyPlot.add(p::Plot, r::EasyPlotReader, elem::AbstractString)
 	return result
 end
 
-#EasyPlotHDF5 - read/write Plot:
+#EasyDataHDF5 - read/write Plot:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyPlotWriter, p::Plot, elem::AbstractString)
+function Base.write(w::EasyDataWriter, p::Plot, elem::AbstractString)
 	grp = creategrp(w, elempath(elem))
 	subplotidx = 1
 
@@ -127,7 +127,7 @@ function Base.write(w::EasyPlotWriter, p::Plot, elem::AbstractString)
 	a_write(grp, "subplotcount", length(p.subplots))
 end
 
-function Base.read(r::EasyPlotReader, ::Type{Plot}, elem::AbstractString)
+function Base.read(r::EasyDataReader, ::Type{Plot}, elem::AbstractString)
 	grp = opengrp(r, elempath(elem))
 	subplotcount = a_read(grp, "subplotcount")
 	result = EasyPlot.new(title = a_read(grp, "title"))
@@ -139,28 +139,28 @@ function Base.read(r::EasyPlotReader, ::Type{Plot}, elem::AbstractString)
 	return result
 end
 
-#Open/close EasyPlotHDF5 files:
+#Open/close EasyDataHDF5 files:
 #-------------------------------------------------------------------------------
-function Base.open(::Type{EasyPlotWriter}, file::File{EasyPlotHDF5})
+function Base.open(::Type{EasyDataWriter}, file::File{EasyDataHDF5})
 	writer = h5open(file.path, "w")
-	return EasyPlotWriter(writer)
+	return EasyDataWriter(writer)
 end
-Base.close(w::EasyPlotWriter) = close(w.writer)
+Base.close(w::EasyDataWriter) = close(w.writer)
 
-function Base.open(::Type{EasyPlotReader}, file::File{EasyPlotHDF5})
+function Base.open(::Type{EasyDataReader}, file::File{EasyDataHDF5})
 	reader = h5open(file.path, "r")
-	return EasyPlotReader(reader)
+	return EasyDataReader(reader)
 end
-Base.close(r::EasyPlotReader) = close(r.reader)
+Base.close(r::EasyDataReader) = close(r.reader)
 
 
 #==Exported (user-level) functions:
 ===============================================================================#
 
-#Save/load EasyPlotHDF5 files:
+#Save/load EasyDataHDF5 files:
 #-------------------------------------------------------------------------------
-function FileIO2.save(plotlist::Vector{Plot}, file::File{EasyPlotHDF5})
-	open(EasyPlotWriter, file) do writer
+function FileIO2.save(plotlist::Vector{Plot}, file::File{EasyDataHDF5})
+	open(EasyDataWriter, file) do writer
 		grp = creategrp(writer, elempath(hdf5plotroot))
 		plotidx = 1
 
@@ -173,15 +173,15 @@ function FileIO2.save(plotlist::Vector{Plot}, file::File{EasyPlotHDF5})
 	end
 end
 FileIO2.save(plotlist::Vector{Plot}, file::AbstractString) =
-	save(plotlist, File{EasyPlotHDF5}(file))
+	save(plotlist, File{EasyDataHDF5}(file))
 
 #Save individual plots:
-FileIO2.save(plot::Plot, path::File{EasyPlotHDF5}) = save([plot], path)
+FileIO2.save(plot::Plot, path::File{EasyDataHDF5}) = save([plot], path)
 FileIO2.save(plot::Plot, path::AbstractString) = save([plot], path)
 
-function FileIO2.load(file::File{EasyPlotHDF5})
+function FileIO2.load(file::File{EasyDataHDF5})
 	result = Plot[]
-	open(EasyPlotReader, file) do reader
+	open(EasyDataReader, file) do reader
 		grp = opengrp(reader, elempath(hdf5plotroot))
 		plotcount = a_read(grp, "plotcount")
 

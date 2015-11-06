@@ -1,6 +1,6 @@
-#EasySave: A quick/easy way to save datasets and plot objects.
+#EasyData: A quick/easy way to save datasets/plots to file.
 #-------------------------------------------------------------------------------
-module EasySave
+module EasyData
 
 const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
 
@@ -16,12 +16,12 @@ import EasyPlot: Plot, Subplot, Waveform
 include("base.jl")
 include("hdf5plots.jl")
 
-#For loading/saving EasyPlotHDF5 files:
-export EPH5Fmt
+#For loading/saving EasyDataHDF5 files:
+export EDH5Fmt
 
 #==Already exported functions:
 ==#
 
-end #EasySave
+end #EasyData
 
 #Last line
