@@ -1,9 +1,10 @@
 #EasyPlotMPL demonstration 1: Render sample EasyPlot plots
 #-------------------------------------------------------------------------------
 
-using EasyPlotMPL
-using EasyPlot
 using FileIO2
+using EasyPlot
+using EasyPlotMPL
+using EasySave
 
 #==Constants
 ===============================================================================#
