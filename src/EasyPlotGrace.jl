@@ -7,6 +7,7 @@ import EasyPlot #Import only - avoid collisions
 using GracePlot
 
 import EasyPlot: render
+import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")
 

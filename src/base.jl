@@ -23,6 +23,25 @@ mapglyphsize(sz::Real) = sz/2
 #==Rendering functions
 ===============================================================================#
 
+function _add{T<:DataMD}(g::GracePlot.GraphRef, d::T, args...; kwargs...)
+	throw("$T datasets not supported.")
+end
+
+function _add(g::GracePlot.GraphRef, d::Data2D, args...; kwargs...)
+	add(g, d.x, d.y, args...; kwargs...)
+end
+
+function _add(g::GracePlot.GraphRef, d::DataHR{Data2D}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+	sweepnames = names(sweeps(d))
+	for coords in subscripts(d)
+		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
+		values = parameter(d, coords)
+		di = d.subsets[coords...]
+		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
+		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $crnid")
+	end
+end
+
 function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
 	_line = line(style=wfrm.line.style,
 	         width=maplinewidth(wfrm.line.width),
@@ -34,7 +53,7 @@ function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
 	          linewidth=maplinewidth(wfrm.line.width),
 	          color=validcolor(wfrm.glyph.color),
 	)
-	return add(g, wfrm.data.x, wfrm.data.y, _line, _glyph, id=wfrm.id)
+	return _add(g, wfrm.data, _line, _glyph, id=wfrm.id)
 end
 
 function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
