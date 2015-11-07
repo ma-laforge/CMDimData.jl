@@ -61,12 +61,12 @@ eval(genexpr_attriblistbuilder(:axes, AxesAttributes, reqfieldcnt=0))
 
 #-------------------------------------------------------------------------------
 type Waveform
-	data::Data2D
+	data::DataMD
 	id::AbstractString
 	line::LineAttributes
 	glyph::GlyphAttributes
 end
-Waveform(data::Data2D) = Waveform(data, "", line(), glyph())
+Waveform(data::DataMD) = Waveform(data, "", line(), glyph())
 
 #-------------------------------------------------------------------------------
 type Subplot
@@ -106,7 +106,7 @@ function add(s::Subplot, wfrm::Waveform, args...; kwargs...)
 	return wfrm
 end
 
-function add(s::Subplot, data::Data2D, args...; kwargs...)
+function add(s::Subplot, data::DataMD, args...; kwargs...)
 	return add(s, Waveform(data), args...; kwargs...)
 end
 
