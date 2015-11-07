@@ -1,9 +1,6 @@
 #EasyPlotMPL base types & core functions
 #-------------------------------------------------------------------------------
 
-#Find
-#GracePlot, 
-
 
 #==Constants
 ===============================================================================#
@@ -20,9 +17,28 @@ const scalemap = Dict{Symbol, AbstractString}([
 #==Rendering functions
 ===============================================================================#
 
+function _add{T<:DataMD}(ax, d::T, args...; kwargs...)
+	throw("$T datasets not supported.")
+end
+
+function _add(ax, d::Data2D; id::AbstractString="")
+	wfrm = ax[:plot](d.x, d.y)
+end
+
+function _add(ax, d::DataHR{Data2D}; id::AbstractString="")
+	sweepnames = names(sweeps(d))
+	for coords in subscripts(d)
+#		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
+		values = parameter(d, coords)
+		di = d.subsets[coords...]
+		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
+		wfrm = ax[:plot](di.x, di.y)
+	end
+end
+
 #Internal
-function addwfrm(ax, wfrm::EasyPlot.Waveform)
-	wfrm = ax[:plot](wfrm.data.x, wfrm.data.y)
+function _add(ax, wfrm::EasyPlot.Waveform)
+	wfrm =_add(ax, wfrm.data, id=wfrm.id)
 #TODO: support wfrm properties:
 #	id::AbstractString
 #	line::LineAttributes
@@ -35,7 +51,7 @@ function rendersubplot(ax, subplot::EasyPlot.Subplot)
 	ax[:set_title](subplot.title)
 
 	for wfrm in subplot.wfrmlist
-		addwfrm(ax, wfrm)
+		_add(ax, wfrm)
 	end
 
 	srca = subplot.axes
