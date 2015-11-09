@@ -20,10 +20,10 @@ typealias AttributeListFunctionMap Dict{DataType, Function}
 #Copy in only attributes that are not "nothing":
 function ApplyNewAttributes{T<:AttributeList}(dest::T, newlist::T)
 	for attrib in fieldnames(newlist)
-		v = eval(:($newlist.$attrib))
+		v = @accessfield(newlist,$attrib)
 
 		if v != nothing
-			eval(:($dest.$attrib=$newlist.$attrib))
+			@accessfield(dest,$attrib) = v
 		end
 	end
 end
