@@ -19,17 +19,31 @@ opengrp(r::EasyDataReader, path::PlotElemPath) =
 
 
 #Write AttributeList to their own HDF5 group:
-function writeattr{T<:AttributeList}(w::EasyDataWriter, alist::T, elem::AbstractString)
+function writeattr(w::EasyDataWriter, alist::AttributeList, elem::AbstractString)
 	grp = creategrp(w, PlotElemPath(elem))
 
 	for attrib in fieldnames(alist)
-		v = eval(:($alist.$attrib))
+		v = @accessfield(alist,$attrib)
 
 		#Write out only AttributeList attributes that are not "nothing":
 		if v != nothing
 			writeattr(grp, string(attrib), v)
 		end
 	end
+end
+
+#Read AttributeList from an HDF5 group (using initialized AttributeList):
+function readattr(r::EasyDataReader, alist::AttributeList, elem::AbstractString)
+	grp = opengrp(r, PlotElemPath(elem))
+
+	for attrib in names(attrs(grp))
+		asymb = symbol(attrib)
+		v = readattr(grp, attrib)
+
+		@accessfield(alist,$asymb) = v
+	end
+
+	return alist
 end
 
 
@@ -74,14 +88,14 @@ end
 function EasyPlot.add(p::Plot, r::EasyDataReader, elem::AbstractString)
 	grp = opengrp(r, PlotElemPath(elem))
 	wfrmcount = a_read(grp, "wfrmcount")
-	result = add(p, title = a_read(grp, "title"))
+	subplot = add(p, title = a_read(grp, "title"))
 
 	for wfrmidx in 1:wfrmcount
-		add(result, r, "$elem/wfrm$wfrmidx")
+		add(subplot, r, "$elem/wfrm$wfrmidx")
 	end
 
-#	writeattr(w, s.axes, "$elem/axes")
-	return result
+	set(subplot, readattr(r, EasyPlot.axes(), "$elem/axes"))
+	return subplot
 end
 
 #EasyDataHDF5 - read/write Plot:

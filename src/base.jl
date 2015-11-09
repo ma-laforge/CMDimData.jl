@@ -39,10 +39,23 @@ Base.print(io::IO, p::HDF5Path) = print(io, p.subpath)
 #==Helper functions
 ===============================================================================#
 
+macro accessfield(_type,_field)
+	return esc(:($_type.$_field))
+end
+
 #Write out attribute to HDF5 file (use wrapper instead of extending HDF5.a_write):
 writeattr(grp::HDF5.HDF5Group, k::AbstractString, v::Any) = a_write(grp, k, v)
 writeattr(grp::HDF5.HDF5Group, k::AbstractString, v::Symbol) =
 	a_write(grp, k, ["CONST", string(v)])
+
+function readattr(grp::HDF5.HDF5Group, k::AbstractString)
+	v = a_read(grp, k)
+	if isa(v,Vector) && eltype(v)<:AbstractString && 2==length(v) && "CONST" == v[1]
+		return symbol(v[2])
+	else
+		return v
+	end
+end
 
 
 #==Open/close functions

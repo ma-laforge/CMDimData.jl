@@ -11,6 +11,7 @@ using HDF5
 
 import EasyPlot: AttributeList
 import EasyPlot: Plot, Subplot, Waveform
+import HDF5: HDF5Group
 
 
 include("base.jl")
