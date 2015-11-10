@@ -22,7 +22,7 @@ for i in 1:1
 		@show p=load(File{EDH5Fmt}(filepath));
 end
 
-for i in 1:1
+for i in 1:2
 	printsep()
 	include("../sample/demo$i.jl")
 end
