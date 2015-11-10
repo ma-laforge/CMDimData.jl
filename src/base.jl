@@ -42,6 +42,11 @@ function _add(g::GracePlot.GraphRef, d::DataHR{Data2D}, _line::LineAttributes, _
 	end
 end
 
+#Convert DataHR{Number} to DataHR{Data2D}:
+function _add{T<:Number}(g::GracePlot.GraphRef, d::DataHR{T}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+	return _add(g, DataHR{Data2D}(d), _line, _glyph; id=id)
+end
+
 function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
 	_line = line(style=wfrm.line.style,
 	         width=maplinewidth(wfrm.line.width),
@@ -96,8 +101,11 @@ function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int
 	end
 
 	if length(eplot.subplots) > 1
-		#TODO: Add floating text instead of title/subtitle hack???
-		info("EasyPlotGrace: Plot.title not supported for more than 1 subplot")
+		w = get(gplot, :wview); h = get(gplot, :hview)
+		vgap = 0.15 #Pick a reasonable value (cannot querry state)
+		title = GracePlot.text(eplot.title, loctype=:view, size=1.5, loc=(w/2,h-vgap/2.5), just=:centercenter)
+		GracePlot.addannotation(gplot, title)
+#		info("EasyPlotGrace: Plot.title not supported for more than 1 subplot")
 	else
 		set(graph(gplot, 0), title = eplot.title)
 	end
