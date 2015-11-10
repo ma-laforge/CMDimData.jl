@@ -49,8 +49,9 @@ end
 plot=EasyPlot.new(title="Mulit-Dataset Tests")
 s = add(plot, vvst, title="Lines")
 	add(s, lines, id="")
-#s = add(plot, vvst, title="maximum(Lines)")
-#	add(s, maximum(lines), id="")
+#Plot reduced dataset:
+s = add(plot, vvst, title="maximum(Lines)")
+	add(s, maximum(lines), glyph(shape=:o), id="")
 s = add(plot, vvst, title="Tones")
 	add(s, tones, id="")
 s = add(plot, vvst, title="Sum")
