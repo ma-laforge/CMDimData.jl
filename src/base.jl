@@ -36,6 +36,11 @@ function _add(ax, d::DataHR{Data2D}; id::AbstractString="")
 	end
 end
 
+#Convert DataHR{Number} to DataHR{Data2D}:
+function _add{T<:Number}(ax, d::DataHR{T}; id::AbstractString="")
+	return _add(ax, DataHR{Data2D}(d); id=id)
+end
+
 #Internal
 function _add(ax, wfrm::EasyPlot.Waveform)
 	wfrm =_add(ax, wfrm.data, id=wfrm.id)
