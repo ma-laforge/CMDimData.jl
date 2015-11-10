@@ -1,4 +1,4 @@
-#Demo 4: Multi-dimensional datasets
+#Demo 1: Saving/loading multi-dimensional datasets
 #-------------------------------------------------------------------------------
 
 using FileIO2
@@ -49,6 +49,8 @@ end
 plot=EasyPlot.new(title="Mulit-Dataset Tests")
 s = add(plot, vvst, title="Lines")
 	add(s, lines, id="")
+#s = add(plot, vvst, title="maximum(Lines)")
+#	add(s, maximum(lines), id="")
 s = add(plot, vvst, title="Tones")
 	add(s, tones, id="")
 s = add(plot, vvst, title="Sum")
