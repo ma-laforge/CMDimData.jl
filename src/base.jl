@@ -61,7 +61,7 @@ function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
 	return _add(g, wfrm.data, _line, _glyph, id=wfrm.id)
 end
 
-function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
+function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot, displaylegend::Bool)
 	set(g, subtitle = subplot.title)
 
 	for wfrm in subplot.wfrmlist
@@ -75,6 +75,7 @@ function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot)
 		xmin = srca.xmin, xmax = srca.xmax,
 		ymin = srca.ymin, ymax = srca.ymax,
 	))
+	set(g, legend(display=displaylegend))
 
 	#Apply x/y labels
 	if srca.xlabel != nothing
@@ -96,7 +97,7 @@ function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int
 
 	for s in eplot.subplots
 		g = graph(gplot, graphidx)
-		_render(g, s)
+		_render(g, s, eplot.displaylegend)
 		graphidx += 1
 	end
 
