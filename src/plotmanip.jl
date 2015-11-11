@@ -62,6 +62,7 @@ end
 ===============================================================================#
 
 settitle(p::Plot, a::AbstractString) = (p.title = a)
+setdisplaylegend(p::Plot, a::Bool) = (p.displaylegend = a)
 
 
 #==Subplot-level functionality
@@ -88,6 +89,7 @@ const empty_fnmap = AttributeFunctionMap()
 #-------------------------------------------------------------------------------
 const setplot_fnmap = AttributeFunctionMap([
 	(:title, settitle)
+	(:displaylegend, setdisplaylegend)
 ])
 set(p::Plot, args...; kwargs...) =
 	set(p, empty_listfnmap, setplot_fnmap, args...; kwargs...)

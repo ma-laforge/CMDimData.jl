@@ -81,8 +81,9 @@ Subplot() = Subplot("", Waveform[], axes(xscale=:lin, yscale=:lin))
 type Plot
 	title::AbstractString
 	subplots::Vector{Subplot}
+	displaylegend::Bool
 end
-Plot() = Plot("", Subplot[])
+Plot() = Plot("", Subplot[], true)
 
 
 #==Main data constructors
