@@ -47,6 +47,7 @@ end
 #==Generate plot
 ===============================================================================#
 plot=EasyPlot.new(title="Mulit-Dataset Tests")
+	plot.displaylegend=false #Too busy with GracePlot
 s = add(plot, vvst, title="Lines")
 	add(s, lines, id="")
 #Plot reduced dataset:
@@ -73,9 +74,9 @@ if in(:grace, plotlist)
 	gplot = GracePlot.new()
 		GracePlot.set(gplot, plotdefaults)
 	render(gplot, plot, ncols=ncols); display(gplot)
-	gplot2 = GracePlot.new()
-		GracePlot.set(gplot2, plotdefaults)
-	render(gplot2, plot, ncols=ncols); display(gplot2)
+	gplot = GracePlot.new()
+		GracePlot.set(gplot, plotdefaults)
+	render(gplot, plot2, ncols=ncols); display(gplot)
 end
 if in(:MPL, plotlist)
 	import EasyPlotMPL

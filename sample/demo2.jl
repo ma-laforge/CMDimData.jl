@@ -47,13 +47,16 @@ tones += lines #Create shifted dataset
 
 #==Generate plot
 ===============================================================================#
-strghz(f) = @sprintf("%.1f GHz", f/1e9)
+strns(T) = @sprintf("%.1f ns", T/1e-9)
 plot=EasyPlot.new(title="Mulit-Dataset Tests")
+	plot.displaylegend=false #Too busy with GracePlot
 s = add(plot, vvst, title="Tones")
 	add(s, tones, id="")
 #Filter 2nd harmonic:
-s = add(plot, vvst, title="Tones ($(strghz(2tfund)))")
+s = add(plot, vvst, title="Tones ($(strns(2tfund)))")
 	add(s, sub(tones, period=2tfund), id="")
+s = add(plot, vvst, title="Tones ($(strns(3tfund)))")
+	add(s, sub(tones, period=3tfund), id="")
 #Filter slope:
 s = add(plot, vvst, title="Tones (increasing slope)")
 	add(s, sub(tones, :,3,:), id="")
