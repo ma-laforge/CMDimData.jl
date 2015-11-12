@@ -27,11 +27,11 @@ function _add{T<:DataMD}(g::GracePlot.GraphRef, d::T, args...; kwargs...)
 	throw("$T datasets not supported.")
 end
 
-function _add(g::GracePlot.GraphRef, d::Data2D, args...; kwargs...)
+function _add(g::GracePlot.GraphRef, d::DataF1, args...; kwargs...)
 	add(g, d.x, d.y, args...; kwargs...)
 end
 
-function _add(g::GracePlot.GraphRef, d::DataHR{Data2D}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+function _add(g::GracePlot.GraphRef, d::DataHR{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	sweepnames = names(sweeps(d))
 	for coords in subscripts(d)
 		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
@@ -42,9 +42,9 @@ function _add(g::GracePlot.GraphRef, d::DataHR{Data2D}, _line::LineAttributes, _
 	end
 end
 
-#Convert DataHR{Number} to DataHR{Data2D}:
+#Convert DataHR{Number} to DataHR{DataF1}:
 function _add{T<:Number}(g::GracePlot.GraphRef, d::DataHR{T}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
-	return _add(g, DataHR{Data2D}(d), _line, _glyph; id=id)
+	return _add(g, DataHR{DataF1}(d), _line, _glyph; id=id)
 end
 
 function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
