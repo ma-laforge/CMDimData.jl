@@ -21,11 +21,11 @@ function _add{T<:DataMD}(ax, d::T, args...; kwargs...)
 	throw("$T datasets not supported.")
 end
 
-function _add(ax, d::Data2D; id::AbstractString="")
+function _add(ax, d::DataF1; id::AbstractString="")
 	wfrm = ax[:plot](d.x, d.y)
 end
 
-function _add(ax, d::DataHR{Data2D}; id::AbstractString="")
+function _add(ax, d::DataHR{DataF1}; id::AbstractString="")
 	sweepnames = names(sweeps(d))
 	for coords in subscripts(d)
 #		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
@@ -36,9 +36,9 @@ function _add(ax, d::DataHR{Data2D}; id::AbstractString="")
 	end
 end
 
-#Convert DataHR{Number} to DataHR{Data2D}:
+#Convert DataHR{Number} to DataHR{DataF1}:
 function _add{T<:Number}(ax, d::DataHR{T}; id::AbstractString="")
-	return _add(ax, DataHR{Data2D}(d); id=id)
+	return _add(ax, DataHR{DataF1}(d); id=id)
 end
 
 #Internal
