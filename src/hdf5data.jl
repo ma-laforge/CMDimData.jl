@@ -6,12 +6,12 @@
 const hdf5dataroot = "data"
 
 const MAP_STR2TDATAMD = Dict{AbstractString, DataType}(
-	"Data2D" => Data2D,
+	"DataF1" => DataF1,
 	"DataHR" => DataHR,
 )
 const MAP_TDATAMD2STR = Dict{DataType, AbstractString}([v=>k for (k,v) in MAP_STR2TDATAMD])
 const MAP_STR2TLEAF = Dict{AbstractString, DataType}(
-	"Data2D" => Data2D,
+	"DataF1" => DataF1,
 	"INT64" => Int64,
 	"INT32" => Int32,
 	"FLOAT64" => Float64,
@@ -34,7 +34,7 @@ opengrp(r::EasyDataReader, path::DataPath) =
 #Read/write dataset subtype:
 #-------------------------------------------------------------------------------
 writesubtype{T<:Number}(grp::HDF5Group, ::Type{DataHR{T}}) = a_write(grp, "subtype", MAP_TLEAF2STR[T])
-writesubtype{T<:Data2D}(grp::HDF5Group, ::Type{DataHR{T}}) = a_write(grp, "subtype", MAP_TDATAMD2STR[Data2D])
+writesubtype{T<:DataF1}(grp::HDF5Group, ::Type{DataHR{T}}) = a_write(grp, "subtype", MAP_TDATAMD2STR[DataF1])
 
 readsubtype{T}(grp::HDF5Group, ::Type{T}) = T
 readsubtype(grp::HDF5Group, ::Type{DataHR}) = DataHR{MAP_STR2TLEAF[a_read(grp, "subtype")]}
@@ -61,18 +61,18 @@ end
 #==Main EasyDataHDF5 dataset read/write functions
 ===============================================================================#
 
-#Read/write Data2D:
+#Read/write DataF1:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, d::Data2D, elem::AbstractString)
+function Base.write(w::EasyDataWriter, d::DataF1, elem::AbstractString)
 	grp = creategrp(w, DataPath(elem))
-	a_write(grp, "type", MAP_TDATAMD2STR[Data2D])
+	a_write(grp, "type", MAP_TDATAMD2STR[DataF1])
 	grp["x"] = d.x
 	grp["y"] = d.y
 end
 
-function Base.read(::Type{Data2D}, r::EasyDataReader, elem::AbstractString)
+function Base.read(::Type{DataF1}, r::EasyDataReader, elem::AbstractString)
 	grp = opengrp(r, DataPath(elem))
-	return Data2D(d_read(grp, "x"), d_read(grp, "y"))
+	return DataF1(d_read(grp, "x"), d_read(grp, "y"))
 end
 
 #Read/write DataHR{T<:Number}:
@@ -92,9 +92,9 @@ function Base.read{T<:Number}(::Type{DataHR{T}}, r::EasyDataReader, elem::Abstra
 	return DataHR{T}(sweeps, data)
 end
 
-#Read/write DataHR{Data2D}:
+#Read/write DataHR{DataF1}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, d::DataHR{Data2D}, elem::AbstractString)
+function Base.write(w::EasyDataWriter, d::DataHR{DataF1}, elem::AbstractString)
 	grp = creategrp(w, DataPath(elem))
 	a_write(grp, "type", MAP_TDATAMD2STR[DataHR])
 	writesubtype(grp, typeof(d))
@@ -106,14 +106,14 @@ function Base.write(w::EasyDataWriter, d::DataHR{Data2D}, elem::AbstractString)
 	end
 end
 
-function Base.read(::Type{DataHR{Data2D}}, r::EasyDataReader, elem::AbstractString)
+function Base.read(::Type{DataHR{DataF1}}, r::EasyDataReader, elem::AbstractString)
 	grp = opengrp(r, DataPath(elem))
 	sweeps = readpsweep(grp)
-	data = DataHR{Data2D}(sweeps)
+	data = DataHR{DataF1}(sweeps)
 
 	for coord in subscripts(data)
 		subpath = join(coord, "/")
-		data.subsets[coord...] = read(Data2D, r, "$elem/$subpath")
+		data.subsets[coord...] = read(DataF1, r, "$elem/$subpath")
 	end
 
 	return data

@@ -24,7 +24,7 @@ nfund = 20 #cycles of the fundamenal
 
 #==Computations
 ===============================================================================#
-t = Data2D(0:(tfund/osr):(nfund*tfund))
+t = DataF1(0:(tfund/osr):(nfund*tfund))
 tmax = maximum(t)
 
 #Generate parameter sweeps:
@@ -35,11 +35,11 @@ sweeplist = PSweep[
 ]
 
 #Generate data:
-lines = DataHR{Data2D}(sweeplist) #Create empty dataset
-tones = DataHR{Data2D}(sweeplist) #Create empty dataset
+lines = DataHR{DataF1}(sweeplist) #Create empty dataset
+tones = DataHR{DataF1}(sweeplist) #Create empty dataset
 for coord in subscripts(lines)
 	(T, m, b) = parameter(lines, coord)
-	lines.subsets[coord...] = Data2D(t.x, (x)->m*x+b)
+	lines.subsets[coord...] = DataF1(t.x, (x)->m*x+b)
 	tones.subsets[coord...] = sin(t*(2pi/T))
 end
 
