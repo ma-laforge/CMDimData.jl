@@ -13,7 +13,7 @@ function printsep()
 end
 
 x=collect(1:10)
-@show d1 = Data2D(x, x.^2)
+@show d1 = DataF1(x, x.^2)
 
 printsep()
 	dfltline = line(style=:solid, color=:red)

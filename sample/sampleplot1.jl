@@ -18,9 +18,9 @@ dfltglyph = glyph(shape=:square, size=3)
 #==Input data
 ===============================================================================#
 x = collect(-2:0.01:2)
-graph = Data2D[]
+graph = DataF1[]
 for _exp in 0:3
-	push!(graph, Data2D(x, x.^_exp))
+	push!(graph, DataF1(x, x.^_exp))
 end
 
 
