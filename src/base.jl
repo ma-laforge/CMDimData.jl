@@ -41,7 +41,16 @@ function _add{T<:Number}(ax, d::DataHR{T}; id::AbstractString="")
 	return _add(ax, DataHR{DataF1}(d); id=id)
 end
 
-#Internal
+#Add EyeData data to an eye diagram:
+function _add(ax, d::EasyPlot.EyeData; id::AbstractString="")
+	if length(d.data) < 1; return; end
+	_add(ax, d.data[1], id=id) #Id first element
+	for i in 1:length(d.data)
+		_add(ax, d.data[i]) #no id
+	end
+end
+
+#Add waveform to an x/y plot:
 function _add(ax, wfrm::EasyPlot.Waveform)
 	wfrm =_add(ax, wfrm.data, id=wfrm.id)
 #TODO: support wfrm properties:
@@ -52,11 +61,25 @@ function _add(ax, wfrm::EasyPlot.Waveform)
 	return wfrm
 end
 
+#Add a waveform to an eye diagram:
+function _add(ax, wfrm::EasyPlot.Waveform, param::EasyPlot.EyeAttributes)
+	eye = EasyPlot.BuildEye(wfrm.data, param.tbit, param.teye, tstart=param.tstart)
+	return _add(ax, eye, id=wfrm.id)
+end
+
 function rendersubplot(ax, subplot::EasyPlot.Subplot)
 	ax[:set_title](subplot.title)
 
-	for wfrm in subplot.wfrmlist
-		_add(ax, wfrm)
+	if :eye == subplot.style
+		ep = subplot.eye
+		if nothing == ep.teye; ep.teye = ep.tbit; end
+		for wfrm in subplot.wfrmlist
+			_add(ax, wfrm, ep)
+		end
+	else
+		for wfrm in subplot.wfrmlist
+			_add(ax, wfrm)
+		end
 	end
 
 	srca = subplot.axes
