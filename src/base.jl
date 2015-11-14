@@ -23,14 +23,31 @@ mapglyphsize(sz::Real) = sz/2
 #==Rendering functions
 ===============================================================================#
 
+function _graceline(wfrm::EasyPlot.Waveform)
+	return line(style=wfrm.line.style,
+	            width=maplinewidth(wfrm.line.width),
+	            color=validcolor(wfrm.line.color),
+	           )
+end
+
+function _graceglyph(wfrm::EasyPlot.Waveform)
+	return glyph(shape=wfrm.glyph.shape,
+	             size=mapglyphsize(wfrm.glyph.size),
+	             linewidth=maplinewidth(wfrm.line.width),
+	             color=validcolor(wfrm.glyph.color),
+	            )
+end
+
 function _add{T<:DataMD}(g::GracePlot.GraphRef, d::T, args...; kwargs...)
 	throw("$T datasets not supported.")
 end
 
+#Add DataF1 results:
 function _add(g::GracePlot.GraphRef, d::DataF1, args...; kwargs...)
 	add(g, d.x, d.y, args...; kwargs...)
 end
 
+#Add collection of DataHR{DataF1} results:
 function _add(g::GracePlot.GraphRef, d::DataHR{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	sweepnames = names(sweeps(d))
 	for coords in subscripts(d)
@@ -47,25 +64,40 @@ function _add{T<:Number}(g::GracePlot.GraphRef, d::DataHR{T}, _line::LineAttribu
 	return _add(g, DataHR{DataF1}(d), _line, _glyph; id=id)
 end
 
-function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
-	_line = line(style=wfrm.line.style,
-	         width=maplinewidth(wfrm.line.width),
-	         color=validcolor(wfrm.line.color),
-	)
-
-	_glyph = glyph(shape=wfrm.glyph.shape,
-	          size=mapglyphsize(wfrm.glyph.size),
-	          linewidth=maplinewidth(wfrm.line.width),
-	          color=validcolor(wfrm.glyph.color),
-	)
-	return _add(g, wfrm.data, _line, _glyph, id=wfrm.id)
+#Add EyeData data to an eye diagram:
+function _add(g::GracePlot.GraphRef, d::EasyPlot.EyeData, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+	if length(d.data) < 1; return; end
+	_add(g, d.data[1], _line, _glyph; id=id) #Id first element
+	for i in 1:length(d.data)
+		_add(g, d.data[i], _line, _glyph) #no id
+	end
 end
 
+#Add a waveform to an x/y plot:
+function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
+	return _add(g, wfrm.data, _graceline(wfrm), _graceglyph(wfrm), id=wfrm.id)
+end
+
+#Add a waveform to an eye diagram:
+function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform, param::EasyPlot.EyeAttributes)
+	eye = EasyPlot.BuildEye(wfrm.data, param.tbit, param.teye, tstart=param.tstart)
+	return _add(g, eye, _graceline(wfrm), _graceglyph(wfrm), id=wfrm.id)
+end
+
+#Render a paraticular subplot:
 function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot, displaylegend::Bool)
 	set(g, subtitle = subplot.title)
 
-	for wfrm in subplot.wfrmlist
-		_add(g, wfrm)
+	if :eye == subplot.style
+		ep = subplot.eye
+		if nothing == ep.teye; ep.teye = ep.tbit; end
+		for wfrm in subplot.wfrmlist
+			_add(g, wfrm, ep)
+		end
+	else
+		for wfrm in subplot.wfrmlist
+			_add(g, wfrm)
+		end
 	end
 
 	autofit(g)
