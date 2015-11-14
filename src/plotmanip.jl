@@ -70,6 +70,10 @@ setdisplaylegend(p::Plot, a::Bool) = (p.displaylegend = a)
 
 settitle(s::Subplot, a::AbstractString) = (s.title = a)
 setaxes(s::Subplot, a::AxesAttributes) = ApplyNewAttributes(s.axes, a)
+function seteyeparam(s::Subplot, a::EyeAttributes)
+	ApplyNewAttributes(s.eye, a)
+	s.style = :eye
+end
 
 
 #==Waveform-level functionality
@@ -97,6 +101,7 @@ set(p::Plot, args...; kwargs...) =
 #-------------------------------------------------------------------------------
 const setsubplot_listfnmap = AttributeListFunctionMap([
 	(AxesAttributes, setaxes)
+	(EyeAttributes, seteyeparam)
 ])
 const setsubplot_fnmap = AttributeFunctionMap([
 	(:title, settitle)

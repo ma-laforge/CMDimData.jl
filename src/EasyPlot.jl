@@ -13,9 +13,11 @@ using FileIO2
 include("codegen.jl")
 include("base.jl")
 include("plotmanip.jl")
+include("eyediag.jl")
 
 export line, glyph #Waveform attributes
 export axes #Plot axes attributes
+export eyeparam #Eye diagram parameters
 export add #Add new plot/subplot/waveform/...
 export set #Set Plot/Subplot/Waveform/... attributes
 

@@ -22,6 +22,7 @@ const valid_symbols = Set([:none,
 	:circle, :o, :star, :*,
 ])
 
+const valid_subplotstyles = Set([:xy, :strip, :eye, :stripeye])
 
 #==Plot/subplot/waveform attributes
 ===============================================================================#
@@ -55,6 +56,14 @@ end
 #"axes" constructor:
 eval(genexpr_attriblistbuilder(:axes, AxesAttributes, reqfieldcnt=0))
 
+type EyeAttributes <: AttributeList
+	tbit
+	teye
+	tstart
+end
+
+#"eyeparam" constructor:
+eval(genexpr_attriblistbuilder(:eyeparam, EyeAttributes, reqfieldcnt=1))
 
 #==Main data structures
 ===============================================================================#
@@ -71,10 +80,12 @@ Waveform(data::DataMD) = Waveform(data, "", line(), glyph())
 #-------------------------------------------------------------------------------
 type Subplot
 	title::AbstractString
+	style::Symbol
 	wfrmlist::Vector{Waveform}
 	axes::AxesAttributes
+	eye::EyeAttributes
 end
-Subplot() = Subplot("", Waveform[], axes(xscale=:lin, yscale=:lin))
+Subplot() = Subplot("", :xy, Waveform[], axes(xscale=:lin, yscale=:lin), eyeparam(1, tstart=0))
 
 
 #-------------------------------------------------------------------------------
