@@ -64,12 +64,26 @@ function _add{T<:Number}(g::GracePlot.GraphRef, d::DataHR{T}, _line::LineAttribu
 	return _add(g, DataHR{DataF1}(d), _line, _glyph; id=id)
 end
 
-#Add EyeData data to an eye diagram:
-function _add(g::GracePlot.GraphRef, d::EasyPlot.EyeData, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+#Add DataEye data to an eye diagram:
+function _add(g::GracePlot.GraphRef, d::EasyPlot.DataEye, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	if length(d.data) < 1; return; end
 	_add(g, d.data[1], _line, _glyph; id=id) #Id first element
 	for i in 1:length(d.data)
 		_add(g, d.data[i], _line, _glyph) #no id
+	end
+end
+
+#Add collection of DataEye{DataEye} data to an eye diagram:
+function _add(g::GracePlot.GraphRef, d::DataHR{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
+	sweepnames = names(sweeps(d))
+	for coords in subscripts(d)
+		#Adapt default attributes for multi-dimensional data:
+		mdline = line(color=coords[end]) #will be used unless _line overwites it...
+		GracePlot.copynew!(mdline, _line)
+		values = parameter(d, coords)
+		di = d.subsets[coords...]
+		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
+		_add(g, di, mdline, _glyph, id="$id; $crnid")
 	end
 end
 
