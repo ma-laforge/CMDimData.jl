@@ -11,11 +11,11 @@
 const valid_axisscales = Set([:lin, :log, :reciprocal])
 #TODO: should we support :db20, :db10?
 
-const valid_linestyles = Set([:solid, :dash, :dot, :dashdot])
+const valid_linestyles = Set([:none, :solid, :dash, :dot, :dashdot])
 
-#In case specified symbol not supported...
+#In case specified glyph (symbol/marker) not supported...
 #implementations should provide default (hopefully not none).
-const valid_symbols = Set([:none, 
+const valid_glyphs = Set([:none, 
 	:square, :diamond,
 	:uarrow, :darrow, :larrow, :rarrow, #usually triangles
 	:cross, :+, :diagcross, :x,
@@ -127,25 +127,29 @@ end
 ===============================================================================#
 
 #For user to specify which backend to use for rendering:
-type Backend{Symbol}; end
+immutable Backend{T}; end
+Backend(t::Symbol) = Backend{t}()
 
 #Catch-all:
-function render{T<:Backend}(::Type{T}, plot::Plot, args...; kwargs...)
-	throw("\"render\" not supported for $(string(T))")
-end
+render{T<:Symbol}(::Backend{T}, plot::Plot, args...; kwargs...) =
+	throw("\"render\" not supported for backend: $T")
 
-function Base.display{T<:Backend}(::Type{T}, plot::Plot, args...; kwargs...)
-	result = render(T, plot, args...; kwargs...)
+render(t::Symbol, plot::Plot, args...; kwargs...) =
+	render(Backend(t), plot::Plot, args...; kwargs...)
+
+function Base.display(backend::Backend, plot::Plot, args...; kwargs...)
+	result = render(backend, plot, args...; kwargs...)
 	return display(result)
 end
 
+Base.display(t::Symbol, plot::Plot, args...; kwargs...) =
+	Base.display(Backend(t), plot::Plot, args...; kwargs...)
+
 #Just in case...
-function render(plot::Plot, args...; kwargs...)
-	throw("Must specify backend: render(Backend{:<BKND>}, ...)")
-end
-function Base.display(plot::Plot, args...; kwargs...)
-	throw("Must specify backend: display(Backend{:<BKND>}, ...)")
-end
+render(plot::Plot, args...; kwargs...) =
+	throw("Must specify backend: render(:<BackendId>, ...)")
+Base.display(plot::Plot, args...; kwargs...) =
+	throw("Must specify backend: display(:<BackendId>, ...)")
 
 
 #==Generate friendly show functions
