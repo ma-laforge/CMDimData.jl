@@ -23,7 +23,7 @@ function writeattr(w::EasyDataWriter, alist::AttributeList, elem::AbstractString
 	grp = creategrp(w, PlotElemPath(elem))
 
 	for attrib in fieldnames(alist)
-		v = @accessfield(alist,$attrib)
+		v = getfield(alist, attrib)
 
 		#Write out only AttributeList attributes that are not "nothing":
 		if v != nothing
@@ -39,8 +39,7 @@ function readattr(r::EasyDataReader, alist::AttributeList, elem::AbstractString)
 	for attrib in names(attrs(grp))
 		asymb = symbol(attrib)
 		v = readattr(grp, attrib)
-
-		@accessfield(alist,$asymb) = v
+		setfield!(alist, asymb, v)
 	end
 
 	return alist
