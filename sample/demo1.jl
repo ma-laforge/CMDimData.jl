@@ -12,7 +12,7 @@ const template=GracePlot.template("smallplot_mono")
 #==Render sample EasyPlot plots
 ===============================================================================#
 plot = evalfile(EasyPlot.sampleplotfile(1));
-	display(Backend{:Grace}, plot)
-#	display(Backend{:Grace}, plot, template=template)
+	display(:Grace, plot)
+#	display(:Grace, plot, template=template)
 
 #Last line

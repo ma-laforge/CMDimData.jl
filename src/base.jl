@@ -165,7 +165,7 @@ end
 #==EasyPlot-level rendering functions
 ===============================================================================#
 
-function EasyPlot.render(::Type{EasyPlot.Backend{:Grace}}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
+function EasyPlot.render(::EasyPlot.Backend{:Grace}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
 	return render(GracePlot.new(args...; kwargs...), plot, ncols=ncols)
 end
 
