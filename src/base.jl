@@ -21,10 +21,12 @@ function _add{T<:DataMD}(ax, d::T, args...; kwargs...)
 	throw("$T datasets not supported.")
 end
 
+#Add DataF1 results:
 function _add(ax, d::DataF1; id::AbstractString="")
 	wfrm = ax[:plot](d.x, d.y)
 end
 
+#Add collection of DataHR{DataF1} results:
 function _add(ax, d::DataHR{DataF1}; id::AbstractString="")
 	sweepnames = names(sweeps(d))
 	for coords in subscripts(d)
@@ -41,12 +43,24 @@ function _add{T<:Number}(ax, d::DataHR{T}; id::AbstractString="")
 	return _add(ax, DataHR{DataF1}(d); id=id)
 end
 
-#Add EyeData data to an eye diagram:
-function _add(ax, d::EasyPlot.EyeData; id::AbstractString="")
+#Add DataEye data to an eye diagram:
+function _add(ax, d::EasyPlot.DataEye; id::AbstractString="")
 	if length(d.data) < 1; return; end
 	_add(ax, d.data[1], id=id) #Id first element
 	for i in 1:length(d.data)
 		_add(ax, d.data[i]) #no id
+	end
+end
+
+#Add collection of DataEye{DataEye} data to an eye diagram:
+function _add(ax, d::DataHR{EasyPlot.DataEye}; id::AbstractString="")
+	sweepnames = names(sweeps(d))
+	for coords in subscripts(d)
+#		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
+		values = parameter(d, coords)
+		di = d.subsets[coords...]
+		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
+		_add(ax, di, id="$id; $crnid")
 	end
 end
 
