@@ -15,10 +15,10 @@ using EasyData
 file(i::Int) = File{EDH5Fmt}("./sampleplotfile1.hdf5")
 
 plot = evalfile(EasyPlot.sampleplotfile(1));
-	display(Backend{:MPL}, plot)
+	display(:MPL, plot)
 	save(plot, file(1))
 plot2=load(file(1))[1]; #Returns array of plots
 	plot2.title = "Compare Loaded File"
-	display(Backend{:MPL}, plot2)
+	display(:MPL, plot2)
 
 #Last line
