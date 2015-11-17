@@ -8,14 +8,16 @@ not support eye-diagrams directly.==#
 
 #==Types
 ===============================================================================#
-type EyeData <: MDDatasets.LeafDS
+type DataEye <: MDDatasets.LeafDS
 	data::Vector{DataF1}
 end
-EyeData() = EyeData(DataF1[])
+DataEye() = DataEye(DataF1[])
+#"Unofficially" register DataEye (not really recognized by MDDatasets):
+MDDatasets.elemallowed(::Type{DataMD}, ::Type{DataEye}) = true
 
 #TODO: kwargs tbit, teye
 function BuildEye{TX<:Number, TY<:Number}(d::DataF1{TX,TY}, tbit::Number, teye::Number; tstart::Number=0)
-	eye = EyeData()
+	eye = DataEye()
 	x = d.x; y = d.y
 
 	i = 1
@@ -45,6 +47,15 @@ function BuildEye{TX<:Number, TY<:Number}(d::DataF1{TX,TY}, tbit::Number, teye::
 		push!(eye.data, DataF1(x[istart:i].-wndstart,y[istart:i]))
 		if inext > length(x); break; end #Nothing else
 		wndnum += 1
+	end
+	return eye
+end
+
+#TODO: kwargs tbit, teye
+function BuildEye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
+	eye = DataHR{DataEye}(d.sweeps)
+	for coord in subscripts(eye)
+		eye.subsets[coord...] = BuildEye(d.subsets[coord...], tbit, teye, tstart=tstart)
 	end
 	return eye
 end
