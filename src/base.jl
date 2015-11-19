@@ -8,17 +8,22 @@
 #==Helper/mapping functions
 ===============================================================================#
 
-#Does not yet support symbolic color values:
-#TODO: remap colors
-validcolor(color) = isa(color, Integer) ? color : nothing
+mapcolor(v) = v
+mapcolor(v::Symbol) = string(v)
+#mapcolor(v::Integer) = integercolormap[1+(v-1)&0x7]
+#no default... use auto-color
+#mapcolor(::Void) = mapcolor("black") #default
+mapfacecolor(v) = mapcolor(v) #In case we want to diverge
+
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(w::Real) = w
+maplinewidth(::Void) = maplinewidth(1) #default
 
 #Glyph size:
-mapglyphsize(w) = w
-mapglyphsize(sz::Real) = sz/2
+mapglyphsize(sz) = sz/2
+mapglyphsize(::Void) = mapglyphsize(1) #default
+
 
 #==Rendering functions
 ===============================================================================#
@@ -26,15 +31,19 @@ mapglyphsize(sz::Real) = sz/2
 function _graceline(wfrm::EasyPlot.Waveform)
 	return line(style=wfrm.line.style,
 	            width=maplinewidth(wfrm.line.width),
-	            color=validcolor(wfrm.line.color),
+	            color=mapcolor(wfrm.line.color),
 	           )
 end
 
 function _graceglyph(wfrm::EasyPlot.Waveform)
+	color = wfrm.line.color
+	if nothing == color; color = wfrm.glyph.color; end
 	return glyph(shape=wfrm.glyph.shape,
 	             size=mapglyphsize(wfrm.glyph.size),
 	             linewidth=maplinewidth(wfrm.line.width),
-	             color=validcolor(wfrm.glyph.color),
+	             color=mapcolor(color),
+	             fillcolor=mapfacecolor(wfrm.glyph.color),
+	             fillpattern=(nothing==wfrm.glyph.color?0:1)
 	            )
 end
 
