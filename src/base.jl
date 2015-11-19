@@ -45,15 +45,16 @@ type WfrmAttributes
 	marker
 	markersize
 	markerfacecolor
-#	markeredgecolor
+	markeredgecolor
 	markeredgewidth
-	#fillstyle
+	fillstyle
 end
 WfrmAttributes(;label=nothing,
 	color=nothing, linewidth=nothing, linestyle=nothing,
 	marker=nothing, markersize=nothing, markerfacecolor=nothing) =
 	WfrmAttributes(label, color, linewidth, linestyle,
-		marker, markersize, markerfacecolor, 0
+		marker, markersize, markerfacecolor, color, linewidth,
+		nothing == markerfacecolor?"none":"full"
 	)
 
 
@@ -62,26 +63,53 @@ WfrmAttributes(;label=nothing,
 mapcolor(v) = v
 #mapcolor(v::Symbol) = string(v)
 mapcolor(v::Integer) = integercolormap[1+(v-1)&0x7]
+#no default... use auto-color
+#mapcolor(::Void) = mapcolor("black") #default
+mapfacecolor(v) = mapcolor(v) #In case we want to diverge
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(w::Real) = 2*w
-maplinewidth(::Void) = maplinewidth(1)
+maplinewidth(::Void) = maplinewidth(1) #default
 
 #Marker size:
-mapmarkersize(w) = w
-mapmarkersize(sz::Real) = 3*sz
+mapmarkersize(sz) = 5*sz
 mapmarkersize(::Void) = mapmarkersize(1)
 
+function maplinestyle(v::Symbol)
+	const NOTSUPPORTED = "nosup"
+	result = get(linestylemap, v, NOTSUPPORTED)
+	if NOTSUPPORTED == result
+		info("Line style not supported")
+		result = maplinestyle(nothing)
+	end
+	return result
+end
+maplinestyle(::Void) = "-" #default
 
-WfrmAttributes(wfrm::EasyPlot.Waveform) =
-	WfrmAttributes(label=wfrm.id, color=mapcolor(wfrm.line.color),
+function mapmarkershape(v::Symbol)
+	const NOTSUPPORTED = "nosup"
+	result = get(markermap, v, NOTSUPPORTED)
+	if NOTSUPPORTED == result
+		info("Marker shape not supported")
+		result = "o" #Use some supported marker
+	end
+	return result
+end
+mapmarkershape(::Void) = "" #default (no marker)
+
+
+function WfrmAttributes(wfrm::EasyPlot.Waveform)
+	color = wfrm.line.color
+	if nothing == color; color = wfrm.glyph.color; end
+	return WfrmAttributes(label=wfrm.id,
+		color=mapcolor(color),
 		linewidth=maplinewidth(wfrm.line.width),
-		linestyle=get(linestylemap, wfrm.line.style, "-"),
-		marker=get(markermap, wfrm.glyph.shape, ""),
+		linestyle=maplinestyle(wfrm.line.style),
+		marker=mapmarkershape(wfrm.glyph.shape),
 		markersize=mapmarkersize(wfrm.glyph.size),
-		markerfacecolor=mapcolor(wfrm.line.color),
+		markerfacecolor=mapfacecolor(wfrm.glyph.color),
 	)
+end
 
 
 #==Rendering functions
