@@ -39,9 +39,12 @@ eval(genexpr_attriblistbuilder(:line, LineAttributes, reqfieldcnt=0))
 
 #-------------------------------------------------------------------------------
 type GlyphAttributes <: AttributeList #Don't use "Symbol" - name used by Julia
+#==IMPORTANT:
+Edge width & color taken from LineAttributes
+==#
 	shape #because "type" is reserved
-	size
-	color
+	size #of glyph.  edge width taken from LineAttributes
+	color #Fill color.  Do not set to leave unfilled.
 end
 
 #"glyph" constructor:
