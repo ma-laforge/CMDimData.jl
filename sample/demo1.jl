@@ -59,9 +59,9 @@ s = add(plot, vvst, title="Sum")
 	add(s, lines+tones, id="")
 
 #throw("STOP")
-file = File{EDH5Fmt}("./sampleplot1.hdf5")
-save(plot, file)
-plot2=load(file)[1]; #Returns array of plots
+file = File(:edh5, "./sampleplot1.hdf5")
+write(file, plot)
+plot2=read(file)[1]; #Returns array of plots
 set(plot2, title="Compare results")
 
 #==Show results

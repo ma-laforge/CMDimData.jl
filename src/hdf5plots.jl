@@ -130,7 +130,7 @@ end
 
 #Save/load EasyDataHDF5 files:
 #-------------------------------------------------------------------------------
-function FileIO2.save(plotlist::Vector{Plot}, file::File{EasyDataHDF5})
+function Base.write(file::File{EasyDataHDF5}, plotlist::Vector{Plot})
 	open(EasyDataWriter, file) do writer
 		grp = creategrp(writer, PlotElemPath(hdf5plotroot))
 		plotidx = 1
@@ -143,14 +143,14 @@ function FileIO2.save(plotlist::Vector{Plot}, file::File{EasyDataHDF5})
 		a_write(grp, "plotcount", length(plotlist))
 	end
 end
-FileIO2.save(plotlist::Vector{Plot}, file::AbstractString) =
-	save(plotlist, File{EasyDataHDF5}(file))
+Base.write(path::AbstractString, plotlist::Vector{Plot}) =
+	write(File{EasyDataHDF5}(file), plotlist)
 
 #Save individual plots:
-FileIO2.save(plot::Plot, path::File{EasyDataHDF5}) = save([plot], path)
-FileIO2.save(plot::Plot, path::AbstractString) = save([plot], path)
+Base.write(file::File{EasyDataHDF5}, plot::Plot) = write(file, [plot])
+Base.write(path::AbstractString, plot::Plot) = write(File{EasyDataHDF5}(path), [plot])
 
-function FileIO2.load(file::File{EasyDataHDF5})
+function Base.read(file::File{EasyDataHDF5})
 	result = Plot[]
 	open(EasyDataReader, file) do reader
 		grp = opengrp(reader, PlotElemPath(hdf5plotroot))

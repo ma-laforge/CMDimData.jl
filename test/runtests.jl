@@ -16,10 +16,10 @@ end
 for i in 1:1
 	filepath = "./sampleplot$i.hdf5"
 	printsep()
-		@show p=evalfile(EasyPlot.sampleplotfile(1));
-		save(p, filepath)
+		@show p=evalfile(EasyPlot.sampleplotfile(i));
+		write(filepath, p)
 	println("\n\nReloading...")
-		@show p=load(File{EDH5Fmt}(filepath));
+		@show p=read(File(:edh5, filepath));
 end
 
 for i in 1:2

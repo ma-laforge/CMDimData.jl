@@ -137,7 +137,7 @@ end
 #TODO: Implement here
 
 #Save individual datasets:
-#FileIO2.save(d::DataMD, path::File{EasyDataHDF5}) = save([d], path)
-#FileIO2.save(d::DataMD, path::AbstractString) = save([d], path)
+#Base.write(file::File{EasyDataHDF5}, d::DataMD) = write([d], path)
+#Base.write(path::AbstractString, d::DataMD) = write([d], path)
 
 #Last Line

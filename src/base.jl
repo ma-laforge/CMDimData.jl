@@ -9,7 +9,7 @@
 ===============================================================================#
 
 immutable EasyDataHDF5 <: FileIO2.DataFormat; end
-typealias EDH5Fmt EasyDataHDF5 #More succinct
+FileIO2.File(::FileIO2.Format{:edh5}, path::AbstractString) = File{EasyDataHDF5}(path)
 
 type EasyDataReader <: AbstractReader{EasyDataHDF5}
 	reader::HDF5.HDF5File

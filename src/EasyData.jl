@@ -18,9 +18,6 @@ include("base.jl")
 include("hdf5data.jl")
 include("hdf5plots.jl")
 
-#For loading/saving EasyDataHDF5 files:
-export EDH5Fmt
-
 #==Already exported functions:
 ==#
 
