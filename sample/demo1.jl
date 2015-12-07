@@ -12,12 +12,12 @@ using EasyData
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-file(i::Int) = File{EDH5Fmt}("./sampleplotfile1.hdf5")
+file(i::Int) = File(:edh5, "./sampleplotfile1.hdf5")
 
 plot = evalfile(EasyPlot.sampleplotfile(1));
 	display(:MPL, plot)
-	save(plot, file(1))
-plot2=load(file(1))[1]; #Returns array of plots
+	write(file(1), plot)
+plot2=read(file(1))[1]; #Returns array of plots
 	plot2.title = "Compare Loaded File"
 	display(:MPL, plot2)
 
