@@ -2,55 +2,52 @@
 
 ## Description
 
-EasyPlotQwt.jl implements EasyPlot.Backend{:Qwt} using Matplotlib (PyPlot.jl).
+EasyPlotQwt.jl implements EasyPlot.Backend{:Qwt} using Qwt plot widgets (guiqwt.jl).
 
-## Installing Dependencies
+### Points of Consideration
 
-Install sip & Qwt5 packages (make sure to have proper version of Python in your path):
+EasyPlotQwt.jl uses Python wrappers developped by Pierre Raybaut.  The principal dependency list is included below:
 
-		conda install sip
-		conda install -c pkgw Qwt5
+ - **guidata**: <https://github.com/PierreRaybaut/guidata>
+ - **PythonQwt**: <https://github.com/PierreRaybaut/PythonQwt>
+ - **guiqwt**: <https://github.com/PierreRaybaut/guiqwt>
+ - **PyQwt**?: <http://pyqwt.sourceforge.net/home.html> (Authors?)
+ - **Qwt**: <http://qwt.sourceforge.net/> (Uwe Rathmann - C++)
 
-Download/install Pierre's Python libraries:
+Would it be better to make use of the julia libraries from Tom Breloff instead? The principal dependency list is included below:
 
-		git clone https://github.com/PierreRaybaut/guidata.git
-		cd guidata; python setup.py install
-		git clone https://github.com/PierreRaybaut/PythonQwt.git
-		cd PythonQwt; python setup.py install
-		git clone https://github.com/PierreRaybaut/guiqwt.git
-		cd guiqwt; python setup.py build install
+ - **Plots.jl**: <https://github.com/tbreloff/Plots.jl>
+ - **Qwt.jl**: <https://github.com/tbreloff/Qwt.jl>
+ - **PyQwt**?: <http://pyqwt.sourceforge.net/home.html> (Authors?)
+ - **Qwt**: <http://qwt.sourceforge.net/> (Uwe Rathmann - C++)
 
-### Install issues
 
-This installation appears to be able to break the Matplotlib/Pyplot Anaconda/Julia installation for some reason.  The fix was to re-install everything.
+That being said, it would be preferable to create native Julia version of the Qwt backend.  Loading the Python environment requires a noticeable overhead in time.
 
- 1. Blow way the `~/.julia` subdirectory
+## Installing guiqwt
 
- 1. Remove Matplotlib:
+Instructions on how to install guiqwt and its dependencies can be found here:
 
-		conda uninstall matplotlib
+ 1. [Install guiqwt](https://github.com/ma-laforge/HowTo/tree/master/guiqwt/guiqwt_install.md#Py27Installation)
 
- 1. Re-install Matplotlib:
-
-		conda install matplotlib
-
- 1. Re-install Julia libraries
-
-		julia> Pkg.add("PyPlot")
-		julia> Pkg.add("HDF5")
-		...
-
-## TODO
-
-Create native Julia version.  Loading the Python environment is relatively slow.
 
 ## Known Limitations
+
+Qwt plots are currently displayed with blocking commands (modal window plots).  TODO: Find a way to display windows as non-modal.
 
 ### Compatibility
 
 Extensive compatibility testing of EasyPlotQwt.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.4.0
+ - Linux / Julia-0.4.0 (64-bit)
+
+#### Repository versions:
+
+This code might not be using the most recent API of its dependencies.  The repository versions are included below:
+
+ - **guidata**: Sat Dec 5 09:30:56 2015 +0100
+ - **PythonQwt**: Tue Dec 8 16:55:50 2015 +0100
+ - **guiqwt**: Thu Dec 3 15:52:16 2015 +0100
 
 ## Disclaimer
 
