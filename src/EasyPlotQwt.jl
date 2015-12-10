@@ -10,10 +10,6 @@ using MDDatasets
 immutable DS{Symbol}; end; #Dispatchable symbol
 DS(v::Symbol) = DS{v}()
 
-#TODO: remove when done:
-using PyPlot
-const plt = PyPlot
-
 include("pybase.jl")
 include("base.jl")
 
