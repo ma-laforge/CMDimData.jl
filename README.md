@@ -22,6 +22,10 @@ Sample code to save/load EasyPlotHDF5 can be found [here](test/runtests.jl).
  - The EasyPlotHDF5 format is still in the experimental phase.  It is not yet stable, and prone to major re-structuring.
  - There is currently no versionning of EasyPlotHDF5 files.
   - Without versioning, EasyPlotHDF5 files cannot easily be re-loaded - and therefore not the best choice for archival purposes.  That being said, with an HDF5 viewer, the format can probably be figured out with relative ease.
+ - Too much common functionnality is currently located in the rendering modules (EasyPlotGrace, EasyPlotMPL, EasyPlotQwt, ...).
+  - Resultant color/glyph/linestyle/... are therefore not uniform across different backends.
+  - Each rendering module requires custom support for different `T<:DataMD` types (`DataHR{Number}`, `DataHR{DataF1}`, `DataF1`, `DataTime`, `DataFreq`, ...).
+  - Should consolidate more functionnality into EasyPlot.jl.
 
 ### Compatibility
 
