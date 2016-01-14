@@ -1,4 +1,2 @@
 julia 0.4
 MDDatasets
-FileIO2
-HDF5

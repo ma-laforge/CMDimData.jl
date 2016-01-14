@@ -7,7 +7,6 @@ sampleplotfile(id::Int) =
 	joinpath(rootpath, "sample/sampleplot$id.jl")
 
 using MDDatasets
-using FileIO2
 
 
 include("codegen.jl")

@@ -3,7 +3,6 @@
 
 using EasyPlot 
 using MDDatasets
-using FileIO2
 
 #No real test code yet... just run demos:
 
