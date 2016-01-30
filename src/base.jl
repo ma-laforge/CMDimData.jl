@@ -136,12 +136,12 @@ end
 function _add(ax, d::DataHR{DataF1}, a::WfrmAttributes)
 	curattrib = deepcopy(a)
 	sweepnames = names(sweeps(d))
-	for coords in subscripts(d)
+	for inds in subscripts(d)
 		if nothing == a.color
-			curattrib.color = mapcolor(coords[end])
+			curattrib.color = mapcolor(inds[end])
 		end
-		values = parameter(d, coords)
-		di = d.subsets[coords...]
+		values = coordinates(d, inds)
+		di = d.elem[inds...]
 		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
 		curattrib.label = "$(a.label); $crnid"
 		wfrm = _add(ax, di, curattrib)
@@ -168,12 +168,12 @@ end
 function _add(ax, d::DataHR{EasyPlot.DataEye}, a::WfrmAttributes)
 	curattrib = deepcopy(a)
 	sweepnames = names(sweeps(d))
-	for coords in subscripts(d)
+	for inds in subscripts(d)
 		if nothing == a.color
-			curattrib.color = mapcolor(coords[end])
+			curattrib.color = mapcolor(inds[end])
 		end
-		values = parameter(d, coords)
-		di = d.subsets[coords...]
+		values = coordinates(d, inds)
+		di = d.elem[inds...]
 		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
 		curattrib.label = "$(a.label); $crnid"
 		wfrm = _add(ax, di, curattrib)
