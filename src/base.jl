@@ -59,10 +59,10 @@ end
 #Add collection of DataHR{DataF1} results:
 function _add(g::GracePlot.GraphRef, d::DataHR{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	sweepnames = names(sweeps(d))
-	for coords in subscripts(d)
-		dfltline = line(color=coords[end]) #will be used unless _line overwites it...
-		values = parameter(d, coords)
-		di = d.subsets[coords...]
+	for inds in subscripts(d)
+		dfltline = line(color=inds[end]) #will be used unless _line overwites it...
+		values = coordinates(d, inds)
+		di = d.elem[inds...]
 		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
 		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $crnid")
 	end
@@ -85,12 +85,12 @@ end
 #Add collection of DataEye{DataEye} data to an eye diagram:
 function _add(g::GracePlot.GraphRef, d::DataHR{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	sweepnames = names(sweeps(d))
-	for coords in subscripts(d)
+	for inds in subscripts(d)
 		#Adapt default attributes for multi-dimensional data:
-		mdline = line(color=coords[end]) #will be used unless _line overwites it...
+		mdline = line(color=inds[end]) #will be used unless _line overwites it...
 		GracePlot.copynew!(mdline, _line)
-		values = parameter(d, coords)
-		di = d.subsets[coords...]
+		values = coordinates(d, inds)
+		di = d.elem[inds...]
 		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
 		_add(g, di, mdline, _glyph, id="$id; $crnid")
 	end
