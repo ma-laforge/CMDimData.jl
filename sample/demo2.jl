@@ -37,10 +37,10 @@ sweeplist = PSweep[
 #Generate data:
 lines = DataHR{DataF1}(sweeplist) #Create empty dataset
 tones = DataHR{DataF1}(sweeplist) #Create empty dataset
-for coord in subscripts(lines)
-	(T, m, b) = parameter(lines, coord)
-	lines.subsets[coord...] = DataF1(t.x, (x)->m*x+b)
-	tones.subsets[coord...] = sin(t*(2pi/T))
+for inds in subscripts(lines)
+	(T, m, b) = coordinates(lines, inds)
+	lines.elem[inds...] = DataF1(t.x, (x)->m*x+b)
+	tones.elem[inds...] = sin(t*(2pi/T))
 end
 
 tones += lines #Create shifted dataset

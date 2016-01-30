@@ -82,7 +82,7 @@ function Base.write{T<:Number}(w::EasyDataWriter, d::DataHR{T}, elem::AbstractSt
 	a_write(grp, "type", MAP_TDATAMD2STR[DataHR])
 	writesubtype(grp, typeof(d))
 	writepsweep(grp, d.sweeps)
-	grp["data"] = d.subsets
+	grp["data"] = d.elem
 end
 
 function Base.read{T<:Number}(::Type{DataHR{T}}, r::EasyDataReader, elem::AbstractString)
@@ -100,9 +100,9 @@ function Base.write(w::EasyDataWriter, d::DataHR{DataF1}, elem::AbstractString)
 	writesubtype(grp, typeof(d))
 	writepsweep(grp, d.sweeps)
 
-	for coord in subscripts(d)
-		subpath = join(coord, "/")
-		write(w, d.subsets[coord...], "$elem/$subpath")
+	for inds in subscripts(d)
+		subpath = join(inds, "/")
+		write(w, d.elem[inds...], "$elem/$subpath")
 	end
 end
 
@@ -111,9 +111,9 @@ function Base.read(::Type{DataHR{DataF1}}, r::EasyDataReader, elem::AbstractStri
 	sweeps = readpsweep(grp)
 	data = DataHR{DataF1}(sweeps)
 
-	for coord in subscripts(data)
-		subpath = join(coord, "/")
-		data.subsets[coord...] = read(DataF1, r, "$elem/$subpath")
+	for inds in subscripts(data)
+		subpath = join(inds, "/")
+		data.elem[inds...] = read(DataF1, r, "$elem/$subpath")
 	end
 
 	return data
