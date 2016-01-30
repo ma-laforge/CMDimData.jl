@@ -54,8 +54,8 @@ end
 #TODO: kwargs tbit, teye
 function BuildEye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataHR{DataEye}(d.sweeps)
-	for coord in subscripts(eye)
-		eye.subsets[coord...] = BuildEye(d.subsets[coord...], tbit, teye, tstart=tstart)
+	for inds in subscripts(eye)
+		eye.elem[inds...] = BuildEye(d.elem[inds...], tbit, teye, tstart=tstart)
 	end
 	return eye
 end
