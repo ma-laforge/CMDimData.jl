@@ -56,6 +56,33 @@ function _add(g::GracePlot.GraphRef, d::DataF1, args...; kwargs...)
 	add(g, d.x, d.y, args...; kwargs...)
 end
 
+#Add collection of DataRS{DataF1} results:
+function _add(g::GracePlot.GraphRef, d::DataRS{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		dfltline = line(color=i) #will be used unless _line overwites it...
+		v = d.sweep.v[i]
+		di = d.elem[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $crnid")
+	end
+end
+
+#Add collection of DataRS{DataF1} results:
+function _add{T<:Number}(g::GracePlot.GraphRef, d::DataRS{T}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	add(g, d.sweep.v, d.elem, _line, _glyph, id="$id; $crnid")
+end
+
+#Add collection of DataRS{DataRS} results:
+function _add(g::GracePlot.GraphRef, d::DataRS{DataRS}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		v = d.sweep.v[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		_add(g, d.elem[i], _line, _glyph, id=id, crnid=crnid)
+	end
+end
+
 #Add collection of DataHR{DataF1} results:
 function _add(g::GracePlot.GraphRef, d::DataHR{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
 	sweepnames = names(sweeps(d))
@@ -79,6 +106,20 @@ function _add(g::GracePlot.GraphRef, d::EasyPlot.DataEye, _line::LineAttributes,
 	_add(g, d.data[1], _line, _glyph; id=id) #Id first element
 	for i in 1:length(d.data)
 		_add(g, d.data[i], _line, _glyph) #no id
+	end
+end
+
+#Add collection of DataEye{DataEye} data to an eye diagram:
+function _add(g::GracePlot.GraphRef, d::DataRS{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		#Adapt default attributes for multi-dimensional data:
+		mdline = line(color=i) #will be used unless _line overwites it...
+		GracePlot.copynew!(mdline, _line)
+		v = d.sweep.v[i]
+		di = d.elem[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		_add(g, d.elem[i], mdline, _glyph, id="$id; $crnid")
 	end
 end
 
