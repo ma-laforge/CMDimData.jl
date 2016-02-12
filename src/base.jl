@@ -132,6 +132,38 @@ function _add(ax, d::DataF1, a::WfrmAttributes)
 	wfrm = ax[:plot](d.x, d.y; kwargs...)
 end
 
+#Add collection of DataRS{DataF1} results:
+function _add(ax, d::DataRS{DataF1}, a::WfrmAttributes, crnid::ASCIIString="")
+	curattrib = deepcopy(a)
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		if nothing == a.color
+			curattrib.color = mapcolor(i)
+		end
+		v = d.sweep.v[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		curattrib.label = "$(a.label); $crnid"
+		wfrm = _add(ax, d.elem[i], curattrib)
+	end
+end
+
+#Add collection of DataRS{Number} results:
+function _add{T<:Number}(ax, d::DataRS{T}, a::WfrmAttributes, crnid::ASCIIString="")
+	curattrib = deepcopy(a)
+	curattrib.label = "$(a.label); $crnid"
+	return _add(ax, DataF1(d.sweep.v, d.elem), curattrib)
+end
+
+#Add collection of DataRS{DataRS} results:
+function _add(ax, d::DataRS{DataRS}, a::WfrmAttributes, crnid::ASCIIString="")
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		v = d.sweep.v[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		wfrm = _add(ax, d.elem[i], a)
+	end
+end
+
 #Add collection of DataHR{DataF1} results:
 function _add(ax, d::DataHR{DataF1}, a::WfrmAttributes)
 	curattrib = deepcopy(a)
@@ -164,7 +196,22 @@ function _add(ax, d::EasyPlot.DataEye, a::WfrmAttributes)
 	end
 end
 
-#Add collection of DataEye{DataEye} data to an eye diagram:
+#Add collection of DataRS{DataEye} data to an eye diagram:
+function _add(ax, d::DataRS{EasyPlot.DataEye}, a::WfrmAttributes, crnid::ASCIIString="")
+	curattrib = deepcopy(a)
+	sweepname = d.sweep.id
+	for i in 1:length(d.elem)
+		if nothing == a.color
+			curattrib.color = mapcolor(i)
+		end
+		v = d.sweep.v[i]
+		crnid=join([crnid, "$sweepname=$v"], " / ")
+		curattrib.label = "$(a.label); $crnid"
+		wfrm = _add(ax, d.elem[i], curattrib)
+	end
+end
+
+#Add collection of DataHR{DataEye} data to an eye diagram:
 function _add(ax, d::DataHR{EasyPlot.DataEye}, a::WfrmAttributes)
 	curattrib = deepcopy(a)
 	sweepnames = names(sweeps(d))
