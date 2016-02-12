@@ -51,6 +51,25 @@ function BuildEye{TX<:Number, TY<:Number}(d::DataF1{TX,TY}, tbit::Number, teye::
 	return eye
 end
 
+#Build DataRS{DataEye} from a DataRS{DataF1} dataset.
+function BuildEye(d::DataRS{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
+	eye = DataRS{DataEye}(d.sweep)
+	for i in 1:length(eye.elem)
+		eye.elem[i] = BuildEye(d.elem[i], tbit, teye, tstart=tstart)
+	end
+	return eye
+end
+
+#Build eyes from the leaf elements of DataRS{DataRS} dataset.
+function BuildEye(d::DataRS{DataRS}, tbit::Number, teye::Number; tstart::Number=0)
+	eye = DataRS{DataRS}(d.sweep)
+	for i in 1:length(eye.elem)
+		eye.elem[i] = BuildEye(d.elem[i], tbit, teye, tstart=tstart)
+	end
+	return eye
+end
+
+#Build DataHR{DataEye} from a DataHR{DataF1} dataset.
 #TODO: kwargs tbit, teye
 function BuildEye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataHR{DataEye}(d.sweeps)
@@ -59,5 +78,6 @@ function BuildEye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=
 	end
 	return eye
 end
+
 
 #Last line
