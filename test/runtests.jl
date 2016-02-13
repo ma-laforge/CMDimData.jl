@@ -22,9 +22,11 @@ for i in 1:1
 		@show p=read(File(:edh5, filepath));
 end
 
-for i in 1:2
+for i in 1:3
+	file = "../sample/demo$i.jl"
+	println("\nExecuting $file...")
 	printsep()
-	include("../sample/demo$i.jl")
+	include(file)
 end
 
 
