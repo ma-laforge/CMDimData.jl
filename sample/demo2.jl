@@ -65,8 +65,8 @@ s = add(plot, vvst, title="Tones (increasing slope)")
 #==Show results
 ===============================================================================#
 ncols = 1
-if !isdefined(:plotlist); plotlist = Set([:grace]); end
-if in(:grace, plotlist)
+if !isdefined(:plotlist); plotlist = Set([:Grace]); end
+if in(:Grace, plotlist)
 	import EasyPlotGrace
 	plotdefaults = GracePlot.defaults(linewidth=2.5)
 	gplot = GracePlot.new()
