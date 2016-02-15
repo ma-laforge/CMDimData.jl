@@ -134,6 +134,7 @@ end
 
 #Add collection of DataRS{DataF1} results:
 function _add(ax, d::DataRS{DataF1}, a::WfrmAttributes, crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	curattrib = deepcopy(a)
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
@@ -141,8 +142,8 @@ function _add(ax, d::DataRS{DataF1}, a::WfrmAttributes, crnid::ASCIIString="")
 			curattrib.color = mapcolor(i)
 		end
 		v = d.sweep.v[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		curattrib.label = "$(a.label); $crnid"
+		curcrnid = "$crnid$sweepname=$v"
+		curattrib.label = "$(a.label); $curcrnid"
 		wfrm = _add(ax, d.elem[i], curattrib)
 	end
 end
@@ -156,11 +157,12 @@ end
 
 #Add collection of DataRS{DataRS} results:
 function _add(ax, d::DataRS{DataRS}, a::WfrmAttributes, crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		wfrm = _add(ax, d.elem[i], a)
+		curcrnid = "$crnid$sweepname=$v"
+		wfrm = _add(ax, d.elem[i], a, curcrnid)
 	end
 end
 
@@ -198,6 +200,7 @@ end
 
 #Add collection of DataRS{DataEye} data to an eye diagram:
 function _add(ax, d::DataRS{EasyPlot.DataEye}, a::WfrmAttributes, crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	curattrib = deepcopy(a)
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
@@ -205,8 +208,8 @@ function _add(ax, d::DataRS{EasyPlot.DataEye}, a::WfrmAttributes, crnid::ASCIISt
 			curattrib.color = mapcolor(i)
 		end
 		v = d.sweep.v[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		curattrib.label = "$(a.label); $crnid"
+		curcrnid = "$crnid$sweepname=$v"
+		curattrib.label = "$(a.label); $curcrnid"
 		wfrm = _add(ax, d.elem[i], curattrib)
 	end
 end
