@@ -58,13 +58,14 @@ end
 
 #Add collection of DataRS{DataF1} results:
 function _add(g::GracePlot.GraphRef, d::DataRS{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		dfltline = line(color=i) #will be used unless _line overwites it...
 		v = d.sweep.v[i]
 		di = d.elem[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $crnid")
+		curcrnid = "$crnid$sweepname=$v"
+		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $curcrnid")
 	end
 end
 
@@ -75,11 +76,12 @@ end
 
 #Add collection of DataRS{DataRS} results:
 function _add(g::GracePlot.GraphRef, d::DataRS{DataRS}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		_add(g, d.elem[i], _line, _glyph, id=id, crnid=crnid)
+		curcrnid = "$crnid$sweepname=$v"
+		_add(g, d.elem[i], _line, _glyph, id=id, crnid=curcrnid)
 	end
 end
 
@@ -111,15 +113,15 @@ end
 
 #Add collection of DataEye{DataEye} data to an eye diagram:
 function _add(g::GracePlot.GraphRef, d::DataRS{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
+	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		#Adapt default attributes for multi-dimensional data:
 		mdline = line(color=i) #will be used unless _line overwites it...
 		GracePlot.copynew!(mdline, _line)
 		v = d.sweep.v[i]
-		di = d.elem[i]
-		crnid=join([crnid, "$sweepname=$v"], " / ")
-		_add(g, d.elem[i], mdline, _glyph, id="$id; $crnid")
+		curcrnid = "$crnid$sweepname=$v"
+		_add(g, d.elem[i], mdline, _glyph, id="$id; $curcrnid")
 	end
 end
 
