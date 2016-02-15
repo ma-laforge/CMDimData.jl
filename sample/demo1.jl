@@ -59,9 +59,9 @@ s = add(plot, vvst, title="Sum")
 	add(s, lines+tones, id="")
 
 #throw("STOP")
-file = File(:edh5, "./sampleplot1.hdf5")
-write(file, plot)
-plot2=read(file)[1]; #Returns array of plots
+filepath ="./sampleplot1.hdf5"
+EasyData._write(filepath, plot)
+plot2 = EasyData._read(filepath, EasyPlot.Plot);
 set(plot2, title="Compare results")
 
 #==Show results

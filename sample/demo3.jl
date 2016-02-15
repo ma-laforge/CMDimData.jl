@@ -50,10 +50,11 @@ s = add(plot, vvst, title="DataRS")
 	add(s, tonesRS, id="tones")
 
 #throw("STOP")
-file = File(:edh5, "./sampleplot3.hdf5")
-write(file, plot)
-plot2=read(file)[1]; #Returns array of plots
+filepath ="./sampleplot3.hdf5"
+EasyData._write(filepath, plot)
+plot2 = EasyData._read(filepath, EasyPlot.Plot);
 set(plot2, title="Compare results")
+
 
 #==Show results
 ===============================================================================#
@@ -73,6 +74,11 @@ if in(:MPL, plotlist)
 	import EasyPlotMPL
 	display(:MPL, plot, ncols=ncols);
 	display(:MPL, plot2, ncols=ncols);
+end
+if in(:Qwt, plotlist)
+	import EasyPlotQwt
+	display(:Qwt, plot, ncols=ncols);
+	display(:Qwt, plot2, ncols=ncols);
 end
 
 
