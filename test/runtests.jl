@@ -13,14 +13,26 @@ function printsep()
 	println(separator)
 end
 
+x = DataF1(1:100)
+data = sin(x)
+filepath = "./sampledata.hdf5"
+h5path = "my/sub/path"
+EasyData._write(filepath, h5path, data)
+dread = EasyData._read(filepath, h5path, DataMD)
+@show data - dread
+
+#throw(:ERR)
 for i in 1:1
+	#Test high-level "File()" read/write interface:
 	filepath = "./sampleplot$i.hdf5"
+	file = File(:edh5, filepath)
 	printsep()
 		@show p=evalfile(EasyPlot.sampleplotfile(i));
-		write(filepath, p)
+		write(file, p)
 	println("\n\nReloading...")
-		@show p=read(File(:edh5, filepath));
+		@show p=read(file, EasyPlot.Plot);
 end
+#throw(:ERR)
 
 for i in 1:3
 	file = "../sample/demo$i.jl"

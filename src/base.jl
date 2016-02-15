@@ -20,22 +20,6 @@ type EasyDataWriter <: AbstractWriter{EasyDataHDF5}
 end
 
 
-#==Helper data structures
-===============================================================================#
-
-#Dispatchable type identifying paths within HDF5 files:
-#-------------------------------------------------------------------------------
-type HDF5Path{Symbol}
-	subpath::AbstractString
-end
-#typealias ElementPath HDF5Path{:plotelement}
-typealias PlotElemPath HDF5Path{:plotelement}
-typealias DataPath HDF5Path{:data}
-
-#Also changes string():
-Base.print(io::IO, p::HDF5Path) = print(io, p.subpath)
-
-
 #==Helper functions
 ===============================================================================#
 
@@ -53,22 +37,40 @@ function readattr(grp::HDF5.HDF5Group, k::AbstractString)
 	end
 end
 
+#Create/open HDF5 groups:
+creategrp(w::EasyDataWriter, path::AbstractString) = g_create(w.writer, path)
+opengrp(w::EasyDataWriter, path::AbstractString) = g_open(w.writer, path)
+opengrp(r::EasyDataReader, path::AbstractString) = g_open(r.reader, path)
+
 
 #==Open/close functions
 ===============================================================================#
-
 #Open/close EasyDataHDF5 files:
 #-------------------------------------------------------------------------------
-function Base.open(::Type{EasyDataWriter}, file::File{EasyDataHDF5})
-	writer = h5open(file.path, "w")
+function Base.open(::Type{EasyDataWriter}, path::AbstractString;
+	opt::IOOptionsWrite=IOOptions(write=true))
+	#NOTE: opt ignored for now.
+	writer = h5open(path, "w")
 	return EasyDataWriter(writer)
 end
 Base.close(w::EasyDataWriter) = close(w.writer)
 
-function Base.open(::Type{EasyDataReader}, file::File{EasyDataHDF5})
-	reader = h5open(file.path, "r")
+function Base.open(::Type{EasyDataReader}, path::AbstractString)
+	reader = h5open(path, "r")
 	return EasyDataReader(reader)
 end
 Base.close(r::EasyDataReader) = close(r.reader)
+
+#==Un-"Exported", user-level functions:
+===============================================================================#
+
+#Explicit module-level read/write functions:
+#-------------------------------------------------------------------------------
+_read(filepath::AbstractString, h5path::AbstractString, args...; kwargs...) =
+	read(EasyDataReader, filepath, h5path, args...; kwargs...)
+
+_write(filepath::AbstractString, h5path::AbstractString, args...; kwargs...) =
+	write(EasyDataWriter, filepath, h5path, args...; kwargs...)
+
 
 #Last line
