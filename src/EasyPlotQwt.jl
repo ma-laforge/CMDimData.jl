@@ -4,6 +4,7 @@ module EasyPlotQwt
 
 import EasyPlot #Import only - avoid collisions
 using MDDatasets
+using Colors
 
 #Type used to dispatch on a symbol & minimize namespace pollution:
 #-------------------------------------------------------------------------------
