@@ -4,9 +4,9 @@ module EasyPlotMPL
 
 import EasyPlot #Import only - avoid collisions
 using PyPlot
+import PyCall #Need to access some types
 using MDDatasets
-
-const plt = PyPlot
+using Colors
 
 include("base.jl")
 

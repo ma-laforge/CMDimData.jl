@@ -30,13 +30,22 @@ const markermap = Dict{Symbol, AbstractString}(
 	:star      => "*", :* => "*",
 )
 
-const integercolormap = ASCIIString[
-	"black", "blue", "green", "red", "cyan", "magenta", "yellow", "#7F7F7F"
-]
+immutable FlagType{T}; end
+const NOTFOUND = FlagType{:NOTFOUND}()
 
 
 #==Base types
 ===============================================================================#
+typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+
+type Axes{T} <: EasyPlot.AbstractAxes{T}
+	ref::PyCall.PyObject #Axes reference
+	theme::EasyPlot.Theme
+	eye::NullOr{EasyPlot.EyeAttributes}
+end
+Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
+	Axes{style}(ref, theme, eye)
+
 type WfrmAttributes
 	label
 	color #linecolor
@@ -51,20 +60,33 @@ type WfrmAttributes
 end
 WfrmAttributes(;label=nothing,
 	color=nothing, linewidth=nothing, linestyle=nothing,
-	marker=nothing, markersize=nothing, markerfacecolor=nothing) =
+	marker=nothing, markersize=nothing, markerfacecolor=nothing,
+	markeredgecolor=nothing) =
 	WfrmAttributes(label, color, linewidth, linestyle,
-		marker, markersize, markerfacecolor, color, linewidth,
+		marker, markersize, markerfacecolor, markeredgecolor, linewidth,
 		nothing == markerfacecolor?"none":"full"
 	)
 
 
 #==Helper functions
 ===============================================================================#
-mapcolor(v) = v
-#mapcolor(v::Symbol) = string(v)
-mapcolor(v::Integer) = integercolormap[1+(v-1)&0x7]
-#no default... use auto-color
-#mapcolor(::Void) = mapcolor("black") #default
+const HEX_CODES = UInt8[
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+]
+function int2mplcolorstr(v::UInt)
+	result = Array(UInt8, 7)
+	result[1] = '#'
+	for i in length(result):-1:2
+		result[i] = HEX_CODES[(v & 0xF)+1]
+		v >>= 4
+	end
+	return bytestring(result)
+end
+
+function mapcolor(v::Colorant)
+	v = convert(RGB24, v)
+	return int2mplcolorstr(UInt(v.color))
+end
 mapfacecolor(v) = mapcolor(v) #In case we want to diverge
 
 #Linewidth:
@@ -76,9 +98,8 @@ mapmarkersize(sz) = 5*sz
 mapmarkersize(::Void) = mapmarkersize(1)
 
 function maplinestyle(v::Symbol)
-	const NOTSUPPORTED = "nosup"
-	result = get(linestylemap, v, NOTSUPPORTED)
-	if NOTSUPPORTED == result
+	result = get(linestylemap, v, NOTFOUND)
+	if NOTFOUND == result
 		info("Line style not supported")
 		result = maplinestyle(nothing)
 	end
@@ -87,9 +108,8 @@ end
 maplinestyle(::Void) = "-" #default
 
 function mapmarkershape(v::Symbol)
-	const NOTSUPPORTED = "nosup"
-	result = get(markermap, v, NOTSUPPORTED)
-	if NOTSUPPORTED == result
+	result = get(markermap, v, NOTFOUND)
+	if NOTFOUND == result
 		info("Marker shape not supported")
 		result = "o" #Use some supported marker
 	end
@@ -97,17 +117,18 @@ function mapmarkershape(v::Symbol)
 end
 mapmarkershape(::Void) = "" #default (no marker)
 
+function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
+	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT?
+		nothing: mapfacecolor(attr.glyphfillcolor)
 
-function WfrmAttributes(wfrm::EasyPlot.Waveform)
-	color = wfrm.line.color
-	if nothing == color; color = wfrm.glyph.color; end
-	return WfrmAttributes(label=wfrm.id,
-		color=mapcolor(color),
-		linewidth=maplinewidth(wfrm.line.width),
-		linestyle=maplinestyle(wfrm.line.style),
-		marker=mapmarkershape(wfrm.glyph.shape),
-		markersize=mapmarkersize(wfrm.glyph.size),
-		markerfacecolor=mapfacecolor(wfrm.glyph.color),
+	return WfrmAttributes(label=id,
+		color=mapcolor(attr.linecolor),
+		linewidth=maplinewidth(attr.linewidth),
+		linestyle=maplinestyle(attr.linestyle),
+		marker=mapmarkershape(attr.glyphshape),
+		markersize=mapmarkersize(attr.glyphsize),
+		markerfacecolor=markerfacecolor,
+		markeredgecolor = mapcolor(attr.glyphlinecolor),
 	)
 end
 
@@ -115,12 +136,8 @@ end
 #==Rendering functions
 ===============================================================================#
 
-function _add{T<:DataMD}(ax, d::T, args...; kwargs...)
-	throw("$T datasets not supported.")
-end
-
 #Add DataF1 results:
-function _add(ax, d::DataF1, a::WfrmAttributes)
+function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 	kwargs = Any[]
 	for attrib in fieldnames(a)
 		v = getfield(a,attrib)
@@ -129,131 +146,32 @@ function _add(ax, d::DataF1, a::WfrmAttributes)
 			push!(kwargs, tuple(attrib, v))
 		end
 	end
+
 	wfrm = ax[:plot](d.x, d.y; kwargs...)
 end
 
-#Add collection of DataRS{DataF1} results:
-function _add(ax, d::DataRS{DataF1}, a::WfrmAttributes, crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	curattrib = deepcopy(a)
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		if nothing == a.color
-			curattrib.color = mapcolor(i)
-		end
-		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		curattrib.label = "$(a.label); $curcrnid"
-		wfrm = _add(ax, d.elem[i], curattrib)
-	end
+#Called by EasyPlot, for each individual DataF1 ∈ DataMD.
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
+	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
+	mplattr = WfrmAttributes(id, attr) #Attributes understood by MPL
+	_addwfrm(ax.ref, d, mplattr)
 end
 
-#Add collection of DataRS{Number} results:
-function _add{T<:Number}(ax, d::DataRS{T}, a::WfrmAttributes, crnid::ASCIIString="")
-	curattrib = deepcopy(a)
-	curattrib.label = "$(a.label); $crnid"
-	return _add(ax, DataF1(d.sweep.v, d.elem), curattrib)
-end
-
-#Add collection of DataRS{DataRS} results:
-function _add(ax, d::DataRS{DataRS}, a::WfrmAttributes, crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		wfrm = _add(ax, d.elem[i], a, curcrnid)
-	end
-end
-
-#Add collection of DataHR{DataF1} results:
-function _add(ax, d::DataHR{DataF1}, a::WfrmAttributes)
-	curattrib = deepcopy(a)
-	sweepnames = names(sweeps(d))
-	for inds in subscripts(d)
-		if nothing == a.color
-			curattrib.color = mapcolor(inds[end])
-		end
-		values = coordinates(d, inds)
-		di = d.elem[inds...]
-		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
-		curattrib.label = "$(a.label); $crnid"
-		wfrm = _add(ax, di, curattrib)
-	end
-end
-
-#Convert DataHR{Number} to DataHR{DataF1}:
-function _add{T<:Number}(ax, d::DataHR{T}, a::WfrmAttributes)
-	return _add(ax, DataHR{DataF1}(d), a)
-end
-
-#Add DataEye data to an eye diagram:
-function _add(ax, d::EasyPlot.DataEye, a::WfrmAttributes)
-	curattrib = deepcopy(a)
-	if length(d.data) < 1; return; end
-	_add(ax, d.data[1], a) #Id first element
-	curattrib.label = nothing
-	for i in 1:length(d.data)
-		_add(ax, d.data[i], curattrib) #no id
-	end
-end
-
-#Add collection of DataRS{DataEye} data to an eye diagram:
-function _add(ax, d::DataRS{EasyPlot.DataEye}, a::WfrmAttributes, crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	curattrib = deepcopy(a)
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		if nothing == a.color
-			curattrib.color = mapcolor(i)
-		end
-		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		curattrib.label = "$(a.label); $curcrnid"
-		wfrm = _add(ax, d.elem[i], curattrib)
-	end
-end
-
-#Add collection of DataHR{DataEye} data to an eye diagram:
-function _add(ax, d::DataHR{EasyPlot.DataEye}, a::WfrmAttributes)
-	curattrib = deepcopy(a)
-	sweepnames = names(sweeps(d))
-	for inds in subscripts(d)
-		if nothing == a.color
-			curattrib.color = mapcolor(inds[end])
-		end
-		values = coordinates(d, inds)
-		di = d.elem[inds...]
-		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
-		curattrib.label = "$(a.label); $crnid"
-		wfrm = _add(ax, di, curattrib)
-	end
-end
-
-#Add waveform to an x/y plot:
-function _add(ax, wfrm::EasyPlot.Waveform)
-	return _add(ax, wfrm.data, WfrmAttributes(wfrm))
-end
-
-#Add a waveform to an eye diagram:
-function _add(ax, wfrm::EasyPlot.Waveform, param::EasyPlot.EyeAttributes)
-	eye = EasyPlot.BuildEye(wfrm.data, param.tbit, param.teye, tstart=param.tstart)
-	return _add(ax, eye, WfrmAttributes(wfrm))
-end
-
-function rendersubplot(ax, subplot::EasyPlot.Subplot)
+function rendersubplot(ax, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	ax[:set_title](subplot.title)
 
+	#TODO Ugly: setting defaults like this should be done in EasyPlot
+	ep = nothing
 	if :eye == subplot.style
 		ep = subplot.eye
 		if nothing == ep.teye; ep.teye = ep.tbit; end
-		for wfrm in subplot.wfrmlist
-			_add(ax, wfrm, ep)
-		end
-	else
-		for wfrm in subplot.wfrmlist
-			_add(ax, wfrm)
-		end
+	end
+
+	axes = Axes(subplot.style, ax, theme, ep)
+
+	for (i, wfrm) in enumerate(subplot.wfrmlist)
+		EasyPlot.addwfrm(axes, wfrm, i)
 	end
 
 	srca = subplot.axes
@@ -287,7 +205,7 @@ function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot; ncols::Int=1)
 #		row = div(subplotidx, ncols) + 1
 #		col = mod(subplotidx, ncols) + 1
 		ax = fig[:add_subplot](nrows, ncols, subplotidx+1)
-		rendersubplot(ax, s)
+		rendersubplot(ax, s, eplot.theme)
 		if eplot.displaylegend; ax[:legend](); end
 		subplotidx += 1
 	end
@@ -301,7 +219,7 @@ end
 ===============================================================================#
 
 function EasyPlot.render(::EasyPlot.Backend{:MPL}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	fig = plt.figure(args...; kwargs...)
+	fig = PyPlot.figure(args...; kwargs...)
 	fig[:suptitle](plot.title)
 	return render(fig, plot, ncols=ncols)
 end
