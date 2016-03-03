@@ -2,19 +2,46 @@
 #-------------------------------------------------------------------------------
 
 
+#==Constants
+===============================================================================#
+const NCOLORS_GRACE = 15 #Number of colors expected to be defined by Grace.
+#NOTE: Assuming color 0 is white/background color (not to be used)
+
+
 #==Base types
 ===============================================================================#
+typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+
+type Axes{T} <: EasyPlot.AbstractAxes{T}
+	ref::GracePlot.GraphRef #Axes reference
+	theme::EasyPlot.Theme
+	eye::NullOr{EasyPlot.EyeAttributes}
+end
+Axes(style::Symbol, ref::GracePlot.GraphRef, theme::EasyPlot.Theme, eye=nothing) =
+	Axes{style}(ref, theme, eye)
+
 
 #==Helper/mapping functions
 ===============================================================================#
+warned_nocolorant = false
+function warn_nocolorant()
+	global warned_nocolorant
+	if !warned_nocolorant
+		info("Colorant values not yet supported.")
+		warned_nocolorant = true
+	end
+end
 
-mapcolor(v) = v
-mapcolor(v::Symbol) = string(v)
-#mapcolor(v::Integer) = integercolormap[1+(v-1)&0x7]
 #no default... use auto-color
 #mapcolor(::Void) = mapcolor("black") #default
+mapcolor(v) = v #::Void uses built-in auto color
+mapcolor(v::Integer) = mod(v-1, NCOLORS_GRACE)+1 #use built-in Grace color map
+mapcolor(v::Symbol) = string(v) #Use built-in Grace color names
+function mapcolor(v::Colorant)
+	warn_nocolorant()
+	return nothing #Use built-in auto-color
+end
 mapfacecolor(v) = mapcolor(v) #In case we want to diverge
-
 
 #Linewidth:
 maplinewidth(w) = w
@@ -24,9 +51,6 @@ maplinewidth(::Void) = maplinewidth(1) #default
 mapglyphsize(sz) = sz/2
 mapglyphsize(::Void) = mapglyphsize(1) #default
 
-
-#==Rendering functions
-===============================================================================#
 
 function _graceline(wfrm::EasyPlot.Waveform)
 	return line(style=wfrm.line.style,
@@ -47,123 +71,52 @@ function _graceglyph(wfrm::EasyPlot.Waveform)
 	            )
 end
 
-function _add{T<:DataMD}(g::GracePlot.GraphRef, d::T, args...; kwargs...)
-	throw("$T datasets not supported.")
+#TODO: Support ColorScheme:
+function _graceline(attr::EasyPlot.WfrmAttributes)
+	return line(style=attr.linestyle,
+	            width=maplinewidth(attr.linewidth),
+	            color=mapcolor(attr.linecolor),
+	           )
+end
+function _graceglyph(attr::EasyPlot.WfrmAttributes)
+	nofill = (:transparent == attr.glyphfillcolor)
+	glyphfillcolor = nofill? (:white): attr.glyphfillcolor
+	return glyph(shape=attr.glyphshape,
+	             size=mapglyphsize(attr.glyphsize),
+	             linewidth=maplinewidth(attr.linewidth),
+	             color=mapcolor(attr.glyphlinecolor),
+	             fillcolor=mapfacecolor(glyphfillcolor),
+	             fillpattern=(nofill?0:1)
+	            )
 end
 
-#Add DataF1 results:
-function _add(g::GracePlot.GraphRef, d::DataF1, args...; kwargs...)
-	add(g, d.x, d.y, args...; kwargs...)
-end
+#==Rendering functions
+===============================================================================#
 
-#Add collection of DataRS{DataF1} results:
-function _add(g::GracePlot.GraphRef, d::DataRS{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		dfltline = line(color=i) #will be used unless _line overwites it...
-		v = d.sweep.v[i]
-		di = d.elem[i]
-		curcrnid = "$crnid$sweepname=$v"
-		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $curcrnid")
-	end
-end
-
-#Add collection of DataRS{DataF1} results:
-function _add{T<:Number}(g::GracePlot.GraphRef, d::DataRS{T}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
-	add(g, d.sweep.v, d.elem, _line, _glyph, id="$id; $crnid")
-end
-
-#Add collection of DataRS{DataRS} results:
-function _add(g::GracePlot.GraphRef, d::DataRS{DataRS}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		_add(g, d.elem[i], _line, _glyph, id=id, crnid=curcrnid)
-	end
-end
-
-#Add collection of DataHR{DataF1} results:
-function _add(g::GracePlot.GraphRef, d::DataHR{DataF1}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
-	sweepnames = names(sweeps(d))
-	for inds in subscripts(d)
-		dfltline = line(color=inds[end]) #will be used unless _line overwites it...
-		values = coordinates(d, inds)
-		di = d.elem[inds...]
-		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
-		add(g, di.x, di.y, dfltline, _line, _glyph, id="$id; $crnid")
-	end
-end
-
-#Convert DataHR{Number} to DataHR{DataF1}:
-function _add{T<:Number}(g::GracePlot.GraphRef, d::DataHR{T}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
-	return _add(g, DataHR{DataF1}(d), _line, _glyph; id=id)
-end
-
-#Add DataEye data to an eye diagram:
-function _add(g::GracePlot.GraphRef, d::EasyPlot.DataEye, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
-	if length(d.data) < 1; return; end
-	_add(g, d.data[1], _line, _glyph; id=id) #Id first element
-	for i in 1:length(d.data)
-		_add(g, d.data[i], _line, _glyph) #no id
-	end
-end
-
-#Add collection of DataEye{DataEye} data to an eye diagram:
-function _add(g::GracePlot.GraphRef, d::DataRS{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="", crnid::ASCIIString="")
-	crnid = ""==crnid? crnid: "$crnid / "
-	sweepname = d.sweep.id
-	for i in 1:length(d.elem)
-		#Adapt default attributes for multi-dimensional data:
-		mdline = line(color=i) #will be used unless _line overwites it...
-		GracePlot.copynew!(mdline, _line)
-		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		_add(g, d.elem[i], mdline, _glyph, id="$id; $curcrnid")
-	end
-end
-
-#Add collection of DataEye{DataEye} data to an eye diagram:
-function _add(g::GracePlot.GraphRef, d::DataHR{EasyPlot.DataEye}, _line::LineAttributes, _glyph::GlyphAttributes; id::AbstractString="")
-	sweepnames = names(sweeps(d))
-	for inds in subscripts(d)
-		#Adapt default attributes for multi-dimensional data:
-		mdline = line(color=inds[end]) #will be used unless _line overwites it...
-		GracePlot.copynew!(mdline, _line)
-		values = coordinates(d, inds)
-		di = d.elem[inds...]
-		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
-		_add(g, di, mdline, _glyph, id="$id; $crnid")
-	end
-end
-
-#Add a waveform to an x/y plot:
-function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform)
-	return _add(g, wfrm.data, _graceline(wfrm), _graceglyph(wfrm), id=wfrm.id)
-end
-
-#Add a waveform to an eye diagram:
-function _add(g::GracePlot.GraphRef, wfrm::EasyPlot.Waveform, param::EasyPlot.EyeAttributes)
-	eye = EasyPlot.BuildEye(wfrm.data, param.tbit, param.teye, tstart=param.tstart)
-	return _add(g, eye, _graceline(wfrm), _graceglyph(wfrm), id=wfrm.id)
+#Called by EasyPlot, for each individual DataF1 ∈ DataMD.
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
+	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga, resolvecolors=false) #Apply theme to attributes
+	_line = _graceline(attr)
+	_glyph = _graceglyph(attr)
+	add(ax.ref, d.x, d.y, _line, _glyph, id=id)
 end
 
 #Render a paraticular subplot:
-function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot, displaylegend::Bool)
+function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme, displaylegend::Bool)
 	set(g, subtitle = subplot.title)
 
+	#TODO Ugly: setting defaults like this should be done in EasyPlot
+	ep = nothing
 	if :eye == subplot.style
 		ep = subplot.eye
 		if nothing == ep.teye; ep.teye = ep.tbit; end
-		for wfrm in subplot.wfrmlist
-			_add(g, wfrm, ep)
-		end
-	else
-		for wfrm in subplot.wfrmlist
-			_add(g, wfrm)
-		end
+	end
+
+	axes = Axes(subplot.style, g, theme, ep)
+
+	for (i, wfrm) in enumerate(subplot.wfrmlist)
+		EasyPlot.addwfrm(axes, wfrm, i)
 	end
 
 	autofit(g)
@@ -195,7 +148,7 @@ function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int
 
 	for s in eplot.subplots
 		g = graph(gplot, graphidx)
-		_render(g, s, eplot.displaylegend)
+		_render(g, s, eplot.theme, eplot.displaylegend)
 		graphidx += 1
 	end
 

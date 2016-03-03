@@ -5,6 +5,7 @@ module EasyPlotGrace
 using MDDatasets
 import EasyPlot #Import only - avoid collisions
 using GracePlot
+using Colors
 
 import EasyPlot: render
 import GracePlot: LineAttributes, GlyphAttributes
