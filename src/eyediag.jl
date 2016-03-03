@@ -15,8 +15,11 @@ DataEye() = DataEye(DataF1[])
 #"Unofficially" register DataEye (not really recognized by MDDatasets):
 MDDatasets.elemallowed(::Type{DataMD}, ::Type{DataEye}) = true
 
+
+#==
+===============================================================================#
 #TODO: kwargs tbit, teye
-function BuildEye{TX<:Number, TY<:Number}(d::DataF1{TX,TY}, tbit::Number, teye::Number; tstart::Number=0)
+function buildeye(d::DataF1, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataEye()
 	x = d.x; y = d.y
 
@@ -52,29 +55,29 @@ function BuildEye{TX<:Number, TY<:Number}(d::DataF1{TX,TY}, tbit::Number, teye::
 end
 
 #Build DataRS{DataEye} from a DataRS{DataF1} dataset.
-function BuildEye(d::DataRS{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
+function buildeye(d::DataRS{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataRS{DataEye}(d.sweep)
 	for i in 1:length(eye.elem)
-		eye.elem[i] = BuildEye(d.elem[i], tbit, teye, tstart=tstart)
+		eye.elem[i] = buildeye(d.elem[i], tbit, teye, tstart=tstart)
 	end
 	return eye
 end
 
-#Build eyes from the leaf elements of DataRS{DataRS} dataset.
-function BuildEye(d::DataRS{DataRS}, tbit::Number, teye::Number; tstart::Number=0)
+#Recursively build eyes from the leaf elements of DataRS{DataRS} dataset.
+function buildeye(d::DataRS{DataRS}, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataRS{DataRS}(d.sweep)
 	for i in 1:length(eye.elem)
-		eye.elem[i] = BuildEye(d.elem[i], tbit, teye, tstart=tstart)
+		eye.elem[i] = buildeye(d.elem[i], tbit, teye, tstart=tstart)
 	end
 	return eye
 end
 
 #Build DataHR{DataEye} from a DataHR{DataF1} dataset.
 #TODO: kwargs tbit, teye
-function BuildEye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
+function buildeye(d::DataHR{DataF1}, tbit::Number, teye::Number; tstart::Number=0)
 	eye = DataHR{DataEye}(d.sweeps)
 	for inds in subscripts(eye)
-		eye.elem[inds...] = BuildEye(d.elem[inds...], tbit, teye, tstart=tstart)
+		eye.elem[inds...] = buildeye(d.elem[inds...], tbit, teye, tstart=tstart)
 	end
 	return eye
 end
