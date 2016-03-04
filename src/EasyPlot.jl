@@ -48,7 +48,6 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 		:yellow, :cyan, :magenta
 		:brown, :orange, :indigo, :violet, :maroon, :turquoise
 ==#
-	BuildEye = buildeye #TODO: Deprecate
 
 
 #==Rendering modules should implement:
