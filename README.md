@@ -8,21 +8,26 @@ The goal of the EasyPlot interface is to let the user focus on analyzing simulat
 
 That being said, the EasyPlot.jl module is generic and will likely help to simplify plotting tasks in many scientific fields.
 
-Sample code to construct EasyPlot objects can be found [here](sample/)
+### Features/Highlights
+
+ - Read/write plots to .hdf5 files using [EasyData.jl](https://github.com/ma-laforge/EasyData.jl).
+ - Generate eye diagrams (even for backends without native support).
+ - Plot multi-dimensional datasets (`T<:MDDatasets.DataMD`: `DataHR{Number}`, `DataHR{DataF1}`, `DataF1`).
+
+## Sample Usage
+
+Sample code to construct EasyPlot objects can be found [here](sample/).
 
 ## Known Limitations
 
- - EasyPlot mostly supports basic plot attributes at the moment.
- - Too much common functionnality is currently located in the rendering modules (EasyPlotGrace, EasyPlotMPL, EasyPlotQwt, ...).
-  - Resultant color/glyph/linestyle/... are therefore not uniform across different backends.
-  - Each rendering module requires custom support for different `T<:DataMD` types (`DataHR{Number}`, `DataHR{DataF1}`, `DataF1`, `DataTime`, `DataFreq`, ...).
-  - Should consolidate more functionnality into EasyPlot.jl.
+ - EasyPlot.jl mostly supports x/y graphs & basic plot attributes at the moment.
+ - Does not support `DataTime` or `DataFreq`.
 
 ### Compatibility
 
 Extensive compatibility testing of EasyPlot.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.4.0
+ - Linux / Julia-0.4.2
 
 ## Disclaimer
 
