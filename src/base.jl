@@ -239,10 +239,13 @@ end
 
 function Base.show(fig::Figure, args...; kwargs...)
 	fig[:show]()
+
+#=IMPORTANT:
+	#PyCall.pygui_start(:qt_pyqt4) seems to handle QT events in background thread.
+	#For blocking show(), the following can be used instead:
 	app = GUICore.qapplication()
-	#Blocking call:
-	app[:exec_]() #Process app events
-	#TODO: Find a version that is non-blocking
+	app[:exec_]() #Process app events (modal)
+=#
 end
 
 function EasyPlot.render(::EasyPlot.Backend{:Qwt}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
