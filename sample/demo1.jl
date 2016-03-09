@@ -14,7 +14,6 @@ using EasyData
 ===============================================================================#
 bknd = :Plots_MPL
 #bknd = :Plots_Gadfly
-#bknd = :Plots_Winston
 #bknd = :Plots_Bokeh
 #bknd = :Plots_Qwt
 #bknd = :Plots_GR

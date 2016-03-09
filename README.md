@@ -7,7 +7,6 @@ EasyPlotPlots.jl implements multiple [EasyPlot](https://github.com/ma-laforge/Ea
 ### Supported Backends
  - **:Plots\_MPL**: Through Plots.jl/[PyPlot.jl](https://github.com/stevengj/PyPlot.jl) (Matplotlib) libraries.
  - **:Plots\_Gadfly**: Through Plots.jl/[Gadfly.jl](https://github.com/dcjones/Gadfly.jl) libraries.
- - **:Plots\_Winston**: Through Plots.jl/[Winston.jl](https://github.com/nolta/Winston.jl) libraries.
  - **:Plots\_Bokeh**: Through Plots.jl/[Bokeh.jl](https://github.com/bokeh/Bokeh.jl) libraries.
  - **:Plots\_Qwt**: Through Plots.jl/[Qwt.jl](https://github.com/tbreloff/Qwt.jl) libraries.
  - **:Plots\_GR**: Through Plots.jl/[GR.jl](https://github.com/jheinen/GR.jl) libraries.

@@ -47,25 +47,38 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Backend-related stuff
 ===============================================================================#
-typealias BkndMPL     EasyPlot.Backend{:Plots_MPL}
-typealias BkndGadfly  EasyPlot.Backend{:Plots_Gadfly}
-typealias BkndWinston EasyPlot.Backend{:Plots_Winston}
-typealias BkndBokeh   EasyPlot.Backend{:Plots_Bokeh}
-typealias BkndQwt     EasyPlot.Backend{:Plots_Qwt}
-typealias BkndGR      EasyPlot.Backend{:Plots_GR}
+#TODO: add: Immerse/Gadfly, PlotlyJS
+typealias BkndMPL      EasyPlot.Backend{:Plots_MPL}
+typealias BkndQwt      EasyPlot.Backend{:Plots_Qwt}
+typealias BkndGadfly   EasyPlot.Backend{:Plots_Gadfly}
+typealias BkndGR       EasyPlot.Backend{:Plots_GR}
+typealias BkndPGF      EasyPlot.Backend{:Plots_PGF}
+typealias BkndBokeh    EasyPlot.Backend{:Plots_Bokeh}
+typealias BkndPlotly   EasyPlot.Backend{:Plots_Plotly}
+typealias BkndGLVis    EasyPlot.Backend{:Plots_GLVis}
+typealias BkndUnicode  EasyPlot.Backend{:Plots_Unicode}
 
-typealias SupportedBackends Union{BkndMPL, BkndQwt, BkndGadfly, BkndWinston, BkndBokeh, BkndQwt, BkndGR}
+typealias SupportedBackends Union{
+	BkndMPL, BkndQwt, #Python-based
+	BkndGadfly, BkndGR, BkndPGF,
+	BkndBokeh, BkndPlotly, #Browser based?
+	BkndGLVis, #3D-capable
+	BkndUnicode, #Text-based
+}
 
 #Backends that do *not* support subplots
-typealias NonMultiBackends Union{BkndWinston, BkndBokeh, BkndGR}
+typealias NonMultiBackends Union{BkndBokeh, BkndGR}
 
 #backend symbol recognized by Plots.backend()
 Plots_bkndsymbol(::BkndMPL) = :pyplot
-Plots_bkndsymbol(::BkndGadfly) = :gadfly
-Plots_bkndsymbol(::BkndWinston) = :winston
-Plots_bkndsymbol(::BkndBokeh) = :bokeh
 Plots_bkndsymbol(::BkndQwt) = :qwt
+Plots_bkndsymbol(::BkndGadfly) = :gadfly
 Plots_bkndsymbol(::BkndGR) = :gr
+Plots_bkndsymbol(::BkndPGF) = :pgfplots
+Plots_bkndsymbol(::BkndBokeh) = :bokeh
+Plots_bkndsymbol(::BkndPlotly) = :plotly
+Plots_bkndsymbol(::BkndGLVis) = :glvisualize
+Plots_bkndsymbol(::BkndUnicode) = :unicodeplots
 
 
 #==Base types
@@ -106,10 +119,10 @@ type WfrmAttributes
 	markershape::Symbol
 	markersize::Float64
 	markercolor::Colorant #Fill color
-	fillalpha::Float64 #Does nothing?
+#	fillalpha::Float64 #Does nothing?
+	markeralpha::Float64 #Apperently entire marker
 	markerstrokewidth::Float64
 	markerstrokecolor::Colorant
-#	markeralpha #Apperently entire marker
 end
 
 
@@ -164,10 +177,10 @@ mapmarkershape(::Void) = "" #default (no marker)
 function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
 	linewidth = maplinewidth(attr.linewidth)
 	markercolor = attr.glyphfillcolor
-	fillalpha = 1.0
+	markeralpha = 1.0
 	if	markercolor == EasyPlot.COLOR_TRANSPARENT
-		fillalpha = 0.0 #Does not work, as of yet
-		markercolor = EasyPlot.COLOR_WHITE  #Workaround... Background color?
+		markeralpha = 0.0
+		markercolor = EasyPlot.COLOR_WHITE  #Use a solid color, just in case
 	end
 
 	return WfrmAttributes(id,
@@ -177,7 +190,7 @@ function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
 
 		mapmarkershape(attr.glyphshape),
 		mapmarkersize(attr.glyphsize),
-		markercolor, fillalpha,
+		markercolor, markeralpha,
 		linewidth,
 		attr.glyphlinecolor,
 	)
