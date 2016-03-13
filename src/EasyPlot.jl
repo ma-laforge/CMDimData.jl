@@ -9,7 +9,6 @@ sampleplotfile(id::Int) =
 using Colors
 using MDDatasets
 
-
 include("codegen.jl")
 include("colors.jl")
 include("base.jl")
@@ -17,7 +16,11 @@ include("plotmanip.jl")
 include("eyediag.jl")
 include("datamd.jl")
 include("themes.jl")
+include("display.jl")
 
+
+#==Interface
+===============================================================================#
 export line, glyph #Waveform attributes
 export axes #Plot axes attributes
 export eyeparam #Eye diagram parameters
@@ -52,6 +55,12 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 
 #==Rendering modules should implement:
 ================================================================================
+Subtype EasyPlotDisplay, for example:
+	immutable NEWPLOTDisplay <: EasyPlotDisplay{:NEWPLOTID}
+
+	EasyPlot.getdisplay(::Type{EasyPlotDisplay{:NEWPLOTID}}) 
+		=> return NEWPLOTDisplay object
+
 EasyPlot.render{T<:Symbol}(::Backend{T}, plot::EasyPlot.Plot, args...; kwargs...)
 	=> returns YOUR_MODULE_PLOT object
 Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot

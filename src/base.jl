@@ -114,11 +114,12 @@ Subplot() = Subplot("", :xy, Waveform[], axes(xscale=:lin, yscale=:lin), eyepara
 #-------------------------------------------------------------------------------
 type Plot
 	title::AbstractString
+	ncolumns::Int #TODO: Create a more flexible
 	subplots::Vector{Subplot}
 	displaylegend::Bool
 	theme::Theme
 end
-Plot() = Plot("", Subplot[], true, Theme())
+Plot() = Plot("", 1, Subplot[], true, Theme())
 
 
 #==Main data constructors
@@ -145,35 +146,6 @@ end
 function add(s::Subplot, data::DataMD, args...; kwargs...)
 	return add(s, Waveform(data), args...; kwargs...)
 end
-
-
-#==Rendering interface (to be implemented externally):
-===============================================================================#
-
-#For user to specify which backend to use for rendering:
-immutable Backend{T}; end
-Backend(t::Symbol) = Backend{t}()
-
-#Catch-all:
-render{T<:Symbol}(::Backend{T}, plot::Plot, args...; kwargs...) =
-	throw("\"render\" not supported for backend: $T")
-
-render(t::Symbol, plot::Plot, args...; kwargs...) =
-	render(Backend(t), plot::Plot, args...; kwargs...)
-
-function Base.display(backend::Backend, plot::Plot, args...; kwargs...)
-	result = render(backend, plot, args...; kwargs...)
-	return display(result)
-end
-
-Base.display(t::Symbol, plot::Plot, args...; kwargs...) =
-	Base.display(Backend(t), plot::Plot, args...; kwargs...)
-
-#Just in case...
-render(plot::Plot, args...; kwargs...) =
-	throw("Must specify backend: render(:<BackendId>, ...)")
-Base.display(plot::Plot, args...; kwargs...) =
-	throw("Must specify backend: display(:<BackendId>, ...)")
 
 
 #==Generate friendly show functions
