@@ -197,7 +197,9 @@ function rendersubplot(ax, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	return ax
 end
 
-function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot; ncols::Int=1)
+function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot)
+	ncols = eplot.ncolumns
+	fig[:suptitle](eplot.title)
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 	subplotidx = 0
 
@@ -210,21 +212,6 @@ function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot; ncols::Int=1)
 		subplotidx += 1
 	end
 
-	fig[:canvas][:draw]()
-	return fig
-end
-
-
-#==EasyPlot-level rendering functions
-===============================================================================#
-
-function EasyPlot.render(::EasyPlot.Backend{:MPL}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	fig = PyPlot.figure(args...; kwargs...)
-	fig[:suptitle](plot.title)
-	return render(fig, plot, ncols=ncols)
-end
-
-function Base.display(fig::PyPlot.Figure)
 	fig[:canvas][:draw]()
 	return fig
 end

@@ -1,24 +1,28 @@
 #EasyPlotMPL demonstration 1: Render sample EasyPlot plots
 #-------------------------------------------------------------------------------
 
-using FileIO2
 using EasyPlot
 using EasyPlotMPL
-using EasyData
 
 #==Constants
 ===============================================================================#
+#pdisp = EasyPlotMPL.PlotDisplay()
+pdisp = EasyPlotMPL.PlotDisplay(:tk)
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-file(i::Int) = File(:edh5, "./sampleplotfile1.hdf5")
-
 plot = evalfile(EasyPlot.sampleplotfile(1));
-	display(:MPL, plot)
-	write(file(1), plot)
-plot2=read(file(1), EasyPlot.Plot);
-	plot2.title = "Compare Loaded File"
-	display(:MPL, plot2)
+	display(pdisp, plot)
+
+if false
+#	backendlist = [:tk, :gtk3, :gtk, :qt, :wx]
+	backendlist = [:tk, :gtk, :qt, :wx]
+	for backend in backendlist
+		pdisp = EasyPlotMPL.PlotDisplay(backend)
+		plot.title = "Backend: $backend"
+		display(pdisp, plot)
+	end
+end
 
 #Last line
