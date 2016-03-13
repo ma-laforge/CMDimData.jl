@@ -11,6 +11,7 @@ import EasyPlot: render
 import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")
+include("display.jl")
 
 end
 

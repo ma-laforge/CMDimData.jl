@@ -7,12 +7,16 @@ using EasyPlot
 
 #==Constants
 ===============================================================================#
-const template=GracePlot.template("smallplot_mono")
+template = GracePlot.template("smallplot_mono")
+plotdefaults = GracePlot.defaults(linewidth=2.5)
+pdisp = EasyPlotGrace.PlotDisplay()
+#pdisp = EasyPlotGrace.PlotDisplay(template=template)
+#pdisp = EasyPlotGrace.PlotDisplay(plotdefaults)
+
 
 #==Render sample EasyPlot plots
 ===============================================================================#
 plot = evalfile(EasyPlot.sampleplotfile(1));
-	display(:Grace, plot)
-#	display(:Grace, plot, template=template)
+	display(pdisp, plot)
 
 #Last line

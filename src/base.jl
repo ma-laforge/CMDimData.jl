@@ -159,7 +159,8 @@ function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot,
 	return g
 end
 
-function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int=1)
+function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot)
+	ncols = eplot.ncolumns
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 	colormgr = ColorMgr(gplot)
 
@@ -185,19 +186,6 @@ function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot; ncols::Int
 
 	redraw(gplot)
 	return gplot
-end
-
-
-#==EasyPlot-level rendering functions
-===============================================================================#
-
-function EasyPlot.render(::EasyPlot.Backend{:Grace}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	return render(GracePlot.new(args...; kwargs...), plot, ncols=ncols)
-end
-
-function Base.display(plot::GracePlot.Plot)
-	redraw(plot)
-	return plot
 end
 
 #Last line
