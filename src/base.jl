@@ -217,7 +217,8 @@ function rendersubplot(ax::Axes, subplot::EasyPlot.Subplot, theme::EasyPlot.Them
 	return ax
 end
 
-function render(fig::Figure, eplot::EasyPlot.Plot; ncols::Int=1)
+function render(fig::Figure, eplot::EasyPlot.Plot)
+	ncols = eplot.ncolumns
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 	subplotidx = 0
 
@@ -230,31 +231,6 @@ function render(fig::Figure, eplot::EasyPlot.Plot; ncols::Int=1)
 		subplotidx += 1
 	end
 
-	return fig
-end
-
-
-#==EasyPlot-level rendering functions
-===============================================================================#
-
-function Base.show(fig::Figure, args...; kwargs...)
-	fig[:show]()
-
-#=IMPORTANT:
-	#PyCall.pygui_start(:qt_pyqt4) seems to handle QT events in background thread.
-	#For blocking show(), the following can be used instead:
-	app = GUICore.qapplication()
-	app[:exec_]() #Process app events (modal)
-=#
-end
-
-function EasyPlot.render(::EasyPlot.Backend{:Qwt}, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	fig = Figure()
-	return render(fig, plot, ncols=ncols)
-end
-
-function Base.display(fig::Figure)
-	show(fig)
 	return fig
 end
 

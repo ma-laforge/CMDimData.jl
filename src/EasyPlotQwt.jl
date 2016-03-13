@@ -9,6 +9,8 @@ using Colors
 import PyCall
 PyCall.pygui_start(:qt_pyqt4) #Runs Qt application thread in background?
 
+import EasyPlot: render
+
 #Type used to dispatch on a symbol & minimize namespace pollution:
 #-------------------------------------------------------------------------------
 immutable DS{Symbol}; end; #Dispatchable symbol
@@ -16,6 +18,7 @@ DS(v::Symbol) = DS{v}()
 
 include("pybase.jl")
 include("base.jl")
+include("display.jl")
 
 end
 
