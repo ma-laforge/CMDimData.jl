@@ -12,8 +12,18 @@ const scalemap = Dict{Symbol, Symbol}(
 )
 #:identity, :ln, :log2, :log10, :asinh, :sqrt
 
+#="linetype" values
+:none, :line, :sticks, :bar, :hist,
+:scatter, :scatter3d,
+:path, :path3d,
+:contour, :density, :heatmap, :hexbin,
+:surface, :wireframe
+:steppost, :steppre,
+:hline, :vline
+=#
+
 const linestylemap = Dict{Symbol, Symbol}(
-	:none    => :none,
+	:none    => :auto, #Will modify linetype to cover "none".
 	:solid   => :solid,
 	:dash    => :dash,
 	:dot     => :dot,
@@ -34,51 +44,17 @@ const markermap = Dict{Symbol, Symbol}(
 )
 
 #=
-#:auto, :none, 
+:auto, :none, 
 :cross, :xcross
 :ellipse, :rect, :diamond, :dtriangle, :utriangle,
 :heptagon, :hexagon, :octagon, :pentagon,
 :star4, :star5, :star6, :star7, :star8
 =#
 
+const NOMULTISUPPORT = Set([:gr])
+
 immutable FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
-
-
-#==Backend-related stuff
-===============================================================================#
-#TODO: add: Immerse/Gadfly, PlotlyJS
-typealias BkndMPL      EasyPlot.Backend{:Plots_MPL}
-typealias BkndQwt      EasyPlot.Backend{:Plots_Qwt}
-typealias BkndGadfly   EasyPlot.Backend{:Plots_Gadfly}
-typealias BkndGR       EasyPlot.Backend{:Plots_GR}
-typealias BkndPGF      EasyPlot.Backend{:Plots_PGF}
-typealias BkndBokeh    EasyPlot.Backend{:Plots_Bokeh}
-typealias BkndPlotly   EasyPlot.Backend{:Plots_Plotly}
-typealias BkndGLVis    EasyPlot.Backend{:Plots_GLVis}
-typealias BkndUnicode  EasyPlot.Backend{:Plots_Unicode}
-
-typealias SupportedBackends Union{
-	BkndMPL, BkndQwt, #Python-based
-	BkndGadfly, BkndGR, BkndPGF,
-	BkndBokeh, BkndPlotly, #Browser based?
-	BkndGLVis, #3D-capable
-	BkndUnicode, #Text-based
-}
-
-#Backends that do *not* support subplots
-typealias NonMultiBackends Union{BkndBokeh, BkndGR}
-
-#backend symbol recognized by Plots.backend()
-Plots_bkndsymbol(::BkndMPL) = :pyplot
-Plots_bkndsymbol(::BkndQwt) = :qwt
-Plots_bkndsymbol(::BkndGadfly) = :gadfly
-Plots_bkndsymbol(::BkndGR) = :gr
-Plots_bkndsymbol(::BkndPGF) = :pgfplots
-Plots_bkndsymbol(::BkndBokeh) = :bokeh
-Plots_bkndsymbol(::BkndPlotly) = :plotly
-Plots_bkndsymbol(::BkndGLVis) = :glvisualize
-Plots_bkndsymbol(::BkndUnicode) = :unicodeplots
 
 
 #==Base types
@@ -95,22 +71,26 @@ Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
 
 
 #Top-level plot (which might contain subplots)
-abstract AbstractPlot
+abstract Figure
 
-type PlotSng #Supports single plots only (no subplots)
+type FigureSng <: Figure #For backends that support single plots only (no subplots)
 	subplots::Vector{Plots.Plot}
 end
+FigureSng() = FigureSng(Plots.Plot[])
 
-type PlotMulti #Supports subplots
-	subplots::Plots.Subplot #Actually contains all subplots
+type FigureMulti <: Figure #For backends that support subplots
+	subplots::NullOr{Plots.Subplot} #Actually contains all subplots
 end
+FigureMulti() = FigureMulti(nothing)
+
+Figure(toolid::Symbol) =
+	in(toolid, NOMULTISUPPORT)? FigureSng(): FigureMulti()
 
 #Immutable? would be on stack...
 type WfrmAttributes
-#	linetype #:bar, :contour, :density, :heatmap, :hexbin, :hist, :hline, :line, :none
-
 	label::NullOr{AbstractString}
 
+	linetype::Symbol
 	linestyle::Symbol
 	linewidth::Float64
 	linecolor::Colorant
@@ -128,23 +108,22 @@ end
 
 #==Constructor-like functions
 ===============================================================================#
-function buildplot(BT::NonMultiBackends, ncols::Int, nsubplots::Int)
-	subplots = Plots.Plot[]
+function addsubplots(fig::FigureSng, ncols::Int, nsubplots::Int)
 	for i in 1:nsubplots
-		push!(subplots, Plots.plot())
+		push!(fig.subplots, Plots.plot())
 	end
-	return PlotSng(subplots)
+	return fig
 end
-function buildplot(BT::EasyPlot.Backend, ncols::Int, nsubplots::Int)
-	subplots = Plots.subplot(nc=ncols, n=nsubplots)
-	return PlotMulti(subplots)
+function addsubplots(fig::FigureMulti, ncols::Int, nsubplots::Int)
+	fig.subplots = Plots.subplot(nc=ncols, n=nsubplots)
+	return fig
 end
 
 
 #==Helper functions
 ===============================================================================#
-getsubplot(p::PlotSng, idx::Int) = p.subplots[idx]
-getsubplot(p::PlotMulti, idx::Int) = p.subplots.plts[idx]
+getsubplot(p::FigureSng, idx::Int) = p.subplots[idx]
+getsubplot(p::FigureMulti, idx::Int) = p.subplots.plts[idx]
 
 #Linewidth:
 maplinewidth(w) = w
@@ -154,6 +133,15 @@ maplinewidth(::Void) = maplinewidth(1) #default
 mapmarkersize(sz) = 5*sz
 mapmarkersize(::Void) = mapmarkersize(1)
 
+function maplinetype(v::Symbol) #Only support small subset of linetype values
+	if :none == v
+		return :none
+	else
+		return :line
+	end
+end
+maplinetype(::Void) = :line #default
+
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
 	if NOTFOUND == result
@@ -162,7 +150,7 @@ function maplinestyle(v::Symbol)
 	end
 	return result
 end
-maplinestyle(::Void) = "-" #default
+maplinestyle(::Void) = :solid #default
 
 function mapmarkershape(v::Symbol)
 	result = get(markermap, v, NOTFOUND)
@@ -184,6 +172,7 @@ function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
 	end
 
 	return WfrmAttributes(id,
+		maplinetype(attr.linestyle),
 		maplinestyle(attr.linestyle),
 		linewidth,
 		attr.linecolor,
@@ -199,6 +188,8 @@ end
 
 #==Rendering functions
 ===============================================================================#
+displaylegend(fig::FigureSng, v::Bool) = nothing
+displaylegend(fig::FigureMulti, v::Bool) = Plots.subplot!(fig.subplots, legend=v)
 
 #Add DataF1 results:
 function _addwfrm(ax::Plots.Plot, d::DataF1, a::WfrmAttributes)
@@ -268,37 +259,18 @@ function rendersubplot(ax::Plots.Plot, subplot::EasyPlot.Subplot, theme::EasyPlo
 	return ax
 end
 
-
-#Would normally trap ::Figure, but Plots.jl does not have this
-function _render(BT::SupportedBackends, eplot::EasyPlot.Plot; ncols::Int=1)
+function render(fig::Figure, eplot::EasyPlot.Plot)
+	ncols = eplot.ncolumns
 	nsubplots = length(eplot.subplots)
-	bknd = Plots.backend(Plots_bkndsymbol(BT)) #Activate backend
-	plt = buildplot(BT, ncols, nsubplots)
+	plt = addsubplots(fig, ncols, nsubplots)
+	displaylegend(fig, eplot.displaylegend)
 
 	for (i, s) in enumerate(eplot.subplots)
-		ax = getsubplot(plt, i)
+		ax = getsubplot(fig, i)
 		rendersubplot(ax, s, eplot.theme)
-#		if eplot.displaylegend; ax[:legend](); end
 	end
 
-	return plt.subplots
-end
-
-
-#==EasyPlot-level rendering functions
-===============================================================================#
-
-function EasyPlot.render(BT::SupportedBackends, plot::EasyPlot.Plot, args...; ncols::Int=1, kwargs...)
-	#fig = PyPlot.figure(args...; kwargs...) #No figure, so ignore kwargs???
-	return _render(BT, plot, ncols=ncols)
-end
-
-#NOTE: Display already defined in Plots.jl
-#function Base.display{T<:Plots.Plot}(d::Display, v::Vector{T})
-function Base.display{T<:Plots.Plot}(v::Vector{T})
-	for p in v
-		display(p)
-	end
+	return fig
 end
 
 #Last line

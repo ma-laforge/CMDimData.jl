@@ -8,7 +8,10 @@ import PyCall #Need to access some types
 using MDDatasets
 using Colors
 
+import EasyPlot: render
+
 include("base.jl")
+include("display.jl")
 
 end
 

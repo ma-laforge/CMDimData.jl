@@ -3,25 +3,24 @@
 
 using EasyPlot
 using EasyPlotPlots
-using EasyData
 
 
 #==Constants
 ===============================================================================#
-
-
-#==Input Data
-===============================================================================#
-bknd = :Plots_MPL
-#bknd = :Plots_Gadfly
-#bknd = :Plots_Bokeh
-#bknd = :Plots_Qwt
-#bknd = :Plots_GR
+renderingtool = :pyplot #Python based
+#renderingtool = :gadfly
+#renderingtool = :gr
+#renderingtool = :pgfplots
+#renderingtool = :plotly #Browser based?
+#renderingtool = :glvisualize #3D-heavy
+#renderingtool = :unicodeplots #Text-based
+#pdisp = EasyPlotPlots.PlotDisplay()
+pdisp = EasyPlotPlots.PlotDisplay(renderingtool)
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
 plot = evalfile(EasyPlot.sampleplotfile(1));
-	display(bknd, plot)
+	display(pdisp, plot)
 
 #Last line
