@@ -1,0 +1,69 @@
+#Run sample code
+#-------------------------------------------------------------------------------
+
+using FileIO2
+using EasyPlot
+
+
+#==Obtain plot rendering display:
+===============================================================================#
+
+#NOTE: Modifies input display to improve appearance.
+function getdemodisplay(d::EasyPlot.EasyPlotDisplay)
+	getdisp(d::EasyPlot.EasyPlotDisplay) = d #Define symbol & default behaviour
+
+	if isdefined(:EasyPlotGrace) #Only access
+		function getdisp(d::EasyPlotGrace.PlotDisplay)
+			d = deepcopy(d)
+			plotdefaults = GracePlot.defaults(linewidth=2.5)
+			d.args = tuple(plotdefaults, d.args...) #Improve appearance a bit
+			return d
+		end
+	end
+
+	#TODO: Make sure EasyPlotPlots "renderingtool" is imported
+	return getdisp(d)
+end
+
+function getdemodisplay(d::EasyPlot.NullDisplay) #Use MPL as default
+	eval(:(import EasyPlotMPL))
+	return getdemodisplay(EasyPlotMPL.PlotDisplay())
+end
+
+function getdemodisplay(d::EasyPlot.UninitializedDisplay)
+	if :Grace == d.dtype
+		eval(:(import EasyPlotGrace))
+		return getdemodisplay(EasyPlotGrace.PlotDisplay())
+	elseif :MPL == d.dtype
+		eval(:(import EasyPlotMPL))
+		return getdemodisplay(EasyPlotMPL.PlotDisplay())
+	elseif :Qwt == d.dtype
+		eval(:(import EasyPlotQwt))
+		return getdemodisplay(EasyPlotQwt.PlotDisplay())
+	elseif :Plots == d.dtype
+		eval(:(import EasyPlotPlots))
+		return getdemodisplay(EasyPlotPlots.PlotDisplay())
+	else
+		return getdemodisplay(EasyPlot.NullDisplay())
+	end
+end
+
+
+#==Show results
+===============================================================================#
+pdisp = getdemodisplay(EasyPlot.defaults.maindisplay)
+
+#for i in 1
+for i in 1:3
+	file = "./demo$i.jl"
+	sepline = "---------------------------------------------------------------------"
+	outfile = File(:png, joinpath("./", splitext(basename(file))[1] * ".png"))
+	println("\nExecuting $file...")
+	println(sepline)
+	plotlist = evalfile(file)
+	for plot in plotlist
+		display(pdisp, plot)
+	end
+end
+
+:SampleCode_Executed
