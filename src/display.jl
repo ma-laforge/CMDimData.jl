@@ -2,6 +2,18 @@
 #-------------------------------------------------------------------------------
 
 
+#==Constants
+===============================================================================#
+
+const MIME2QWTFMT_MAP = Dict{ASCIIString,ASCIIString}(
+	"image/png" => "png",
+	"image/bmp" => "bmp",
+	"image/tiff" => "tif",
+	"image/jpeg" => "jpeg",
+	"application/pdf" => "pdf",
+)
+
+
 #==Types
 ===============================================================================#
 #TODO: support guimode=false
@@ -12,6 +24,20 @@ type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	kwargs::Vector{Any}
 	PlotDisplay(args...; guimode=true, kwargs...) = new(guimode, args, kwargs)
 end
+
+#TODO: Generate from MIME2QWTFMT_MAP?
+typealias SupportedMIME Union{
+	MIME"image/png",
+	MIME"image/bmp",
+	MIME"image/tiff",
+	MIME"image/jpeg",
+	MIME"application/pdf",
+}
+
+
+#==Helper functions
+===============================================================================#
+mimestr{T}(::MIME{T}) = string(T)
 
 
 #==Top-level rendering functions
@@ -34,17 +60,23 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return render(fig, eplot)
 end
 
+#Support _write function natively (use high-quality, by default):
+function EasyPlot._write(filepath::AbstractString, mime::SupportedMIME, fig::Figure; draft::Bool=false)
+	format = MIME2QWTFMT_MAP[mimestr(mime)]
+	_save(fig, filepath, format, draft=draft)
+end
+
+#_save(fig::Figure, path::AbstractString, format::ASCIIString, draft=false)
+function Base.writemime(io::IO, mime::SupportedMIME, fig::Figure)
+	tmpfile = "$(tempname())_export"
+	EasyPlot._write(tmpfile, mime, fig, draft=true)
+	data = readall(tmpfile)
+	write(io, data)
+	rm(tmpfile)
+end
+
 Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(writemime, (IO, typeof(mime), Figure))
-
-function Base.writemime(io::IO, mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay)
-	#Try to figure out if possible *before* rendering:
-	if !mimewritable(mime, eplot, d)
-		throw(MethodError(writemime, (io, mime, eplot)))
-	end
-	plot = render(d, eplot)
-	writemime(io, mime, plot)
-end
 
 
 #==Initialization

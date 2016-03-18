@@ -15,5 +15,5 @@ pdisp = EasyPlotQwt.PlotDisplay()
 ===============================================================================#
 plot = evalfile(EasyPlot.sampleplotfile(1));
 	display(pdisp, plot)
-
+#	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
 #Last line

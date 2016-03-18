@@ -54,6 +54,11 @@ function subplot(fig::Figure, m::Int, n::Int, pos::Int)
 	return Axes(fig, row, col)
 end
 
+function _save(fig::Figure, filepath::AbstractString, format::ASCIIString; draft::Bool=false)
+	format = lowercase(format)
+	fig[:save](filepath, format, draft)
+end
+
 #Add interface:
 #-------------------------------------------------------------------------------
 add(ax::Axes, s::Symbol, args...; kwargs...) = add(ax, DS(s), args...; kwargs...)
