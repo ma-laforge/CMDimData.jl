@@ -3,6 +3,7 @@
 
 using EasyPlotGrace
 using EasyPlot
+using FileIO2
 
 
 #==Constants
@@ -19,4 +20,7 @@ pdisp = EasyPlotGrace.PlotDisplay()
 plot = evalfile(EasyPlot.sampleplotfile(1));
 	display(pdisp, plot)
 
+pdisp = EasyPlotGrace.PlotDisplay(guimode=false)
+	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
+#	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp)
 #Last line

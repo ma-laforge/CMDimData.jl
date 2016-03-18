@@ -23,20 +23,11 @@ function EasyPlot._display(plot::GracePlot.Plot)
 end
 
 function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
-	return render(GracePlot.new(d.args...; d.kwargs...), eplot)
+	return render(GracePlot.new(d.args...; guimode=d.guimode, d.kwargs...), eplot)
 end
 
 Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(writemime, (IO, typeof(mime), GracePlot.Plot))
-
-function Base.writemime(io::IO, mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay)
-	#Try to figure out if possible *before* rendering:
-	if !mimewritable(mime, eplot, d)
-		throw(MethodError(writemime, (io, mime, eplot)))
-	end
-	plot = render(d, eplot)
-	writemime(io, mime, plot)
-end
 
 
 #==Initialization
