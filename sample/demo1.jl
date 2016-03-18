@@ -3,6 +3,7 @@
 
 using EasyPlot
 using EasyPlotMPL
+using FileIO2
 
 #==Constants
 ===============================================================================#
@@ -24,5 +25,8 @@ if false
 		display(pdisp, plot)
 	end
 end
+
+	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
+	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp)
 
 #Last line

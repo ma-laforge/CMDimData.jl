@@ -106,15 +106,6 @@ Base.mimewritable{T}(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	in(string(T), _supportedmimes)
 #method_exists(writemime, (IO, typeof(mime), PyPlot.Figure) #Apparently not enough
 
-function Base.writemime(io::IO, mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay)
-	#Try to figure out if possible *before* rendering:
-	if !mimewritable(mime, eplot, d)
-		throw(MethodError(writemime, (io, mime, eplot)))
-	end
-	plot = render(d, eplot)
-	writemime(io, mime, plot)
-end
-
 
 #==Initialization
 ===============================================================================#
