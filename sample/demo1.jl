@@ -3,6 +3,7 @@
 
 using EasyPlot
 using EasyPlotPlots
+using FileIO2
 
 
 #==Constants
@@ -22,5 +23,6 @@ pdisp = EasyPlotPlots.PlotDisplay(renderingtool)
 ===============================================================================#
 plot = evalfile(EasyPlot.sampleplotfile(1));
 	display(pdisp, plot)
-
+	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
+#	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp)
 #Last line

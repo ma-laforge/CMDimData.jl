@@ -64,8 +64,34 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return fig
 end
 
-#Module does not yet support 
-Base.mimewritable{T}(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) = false
+#Module does not yet support other inline formats (must figure out how)
+Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) = false
+#Assume PNG is supported by all backends:
+Base.mimewritable(mime::MIME"image/png", eplot::EasyPlot.Plot, d::PlotDisplay) = true
+
+#Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
+Base.writemime(io::IO, ::MIME"text/plain", fig::Figure) = Base.showlimited(io, fig)
+Base.writemime(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.showlimited(io, fig)
+
+#Currently no support for non-FigureMulti plots... but could generate a single image...:
+Base.writemime(io::IO, mime::MIME, fig::Figure) =
+	throw(MethodError(writemime, (io, mime, fig)))
+Base.writemime(io::IO, mime::MIME, fig::FigureMulti) =
+	writemime(io, mime, fig.subplots)
+
+
+#==Support saving
+===============================================================================#
+#Support for saving FigureSng to multiple files:
+function EasyPlot._write(filepath::AbstractString, mime::MIME, fig::FigureSng)
+	fsplit = splitext(filepath)
+	for (i, s) in enumerate(fig.subplots)
+		spath = join(fsplit, "_subplot$i")
+		open(spath, "w") do io
+			Base.writemime(io, mime, s)
+		end
+	end
+end
 
 
 #==Initialization
