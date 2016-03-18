@@ -8,6 +8,7 @@ sampleplotfile(id::Int) =
 
 using Colors
 using MDDatasets
+using FileIO2
 
 include("codegen.jl")
 include("colors.jl")

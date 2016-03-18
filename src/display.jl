@@ -13,6 +13,14 @@ Plot "Displays" should register their own EasyPlotDisplays objects to be used:
 =#
 
 
+#==Constants
+===============================================================================#
+const FILE2MIME_MAP = Dict{DataType,ASCIIString}(
+	FileIO2.PNGFmt => "image/png",
+	FileIO2.SVGFmt => "image/svg+xml",
+)
+
+
 #==Display types
 ===============================================================================#
 
@@ -110,45 +118,72 @@ function registerdefaults(displayid::Symbol;
 end
 
 
-#==Rendering functions
-===============================================================================#
-Base.mimewritable(mime::MIME, p::Plot, d::NullDisplay) = false
-Base.mimewritable(mime::MIME, p::Plot, d::UninitializedDisplay) = false
-
-Base.writemime(io::IO, mime::MIME, p::Plot, d::NullDisplay) =
-	throw(MethodError(writemime, (io, mime, p))) #Don't put d (not part of high-level call)
-function Base.writemime(io::IO, mime::MIME, p::Plot, d::UninitializedDisplay)
-	warn("Plot display not initialized: $(d.dtype)")
-	throw(MethodError(writemime, (io, mime, p))) #Don't put d (not part of high-level call)
-end
-
-Base.mimewritable(mime::MIME, p::Plot) =
-	Base.mimewritable(mime, p, defaults.renderdisplay)
-
-Base.mimewritable(mime::MIME"image/svg+xml", p::Plot) =
-	defaults.rendersvg && Base.mimewritable(mime, p, defaults.renderdisplay)
-
-
-#Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
-Base.writemime(io::IO, ::MIME"text/plain", p::Plot) = Base.showlimited(io, p)
-Base.writemime(io::IO, mime::MIME, p::Plot) =
-	writemime(io, mime, p, defaults.renderdisplay)
-
-
 #==Rendering interface (to be implemented externally):
 ===============================================================================#
 
 #Placeholder to define _display method:
 #NOTE: Do not overwrite Base.display... would circumvent display system.
-_display(plot) = throw("\"_display\" not defined for ::$(typeof(plot))")
+_display(plot) = throw(MethodError(_display, (plot,)))
 
 #Catch-alls function placeholder:
-render(d::EasyPlotDisplay, plot::Plot) =
-	throw("\"render\" not supported for backend: $(typeof(d))")
+render(d::EasyPlotDisplay, plot::Plot) = throw(MethodError(render, (d, plot)))
 
 function Base.display(d::EasyPlotDisplay, plot::Plot)
 	nativeplot = render(d, plot)
 	_display(nativeplot)
+	return nothing
 end
+
+
+#==Rendering functions
+===============================================================================#
+Base.mimewritable(mime::MIME, p::Plot, d::NullDisplay) = false
+Base.mimewritable(mime::MIME, p::Plot, d::UninitializedDisplay) = false
+
+function render(d::UninitializedDisplay, plot::Plot)
+	warn("Plot display not initialized: $(d.dtype)")
+	throw(MethodError(render, (d, plot)))
+end
+
+Base.mimewritable(mime::MIME, p::Plot) =
+	Base.mimewritable(mime, p, defaults.renderdisplay)
+Base.mimewritable(mime::MIME"text/plain", p::Plot) = true
+Base.mimewritable(mime::MIME"image/svg+xml", p::Plot) =
+	defaults.rendersvg && Base.mimewritable(mime, p, defaults.renderdisplay)
+
+#Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
+Base.writemime(io::IO, ::MIME"text/plain", p::Plot) = Base.showlimited(io, p)
+
+function Base.writemime(io::IO, mime::MIME, p::Plot)
+	d = defaults.renderdisplay
+	#Try to figure out if possible *before* rendering:
+	if !mimewritable(mime, p, d)
+		throw(MethodError(writemime, (io, mime, p)))
+	end
+	nativeplot = render(d, p)
+	writemime(io, mime, nativeplot)
+end
+
+
+#==Exporting to file:
+===============================================================================#
+#TODO: Should this be overloading "writemime" instead?
+function _write(filepath::AbstractString, mime::MIME, nativeplot)
+	open(filepath, "w") do io
+		writemime(io, mime, nativeplot)
+	end
+end
+
+function _write{T}(file::File{T}, plot::Plot, d::EasyPlotDisplay)
+	mimestr = get(FILE2MIME_MAP, T, nothing)
+	if nothing == mimestr
+		throw(methoderror(_write, (file, plot, d)))
+	end
+	nativeplot = render(d, plot)
+	_write(file.path, MIME{symbol(mimestr)}(), nativeplot)
+end
+
+_write(file::File, plot::Plot) =_write(file, plot, defaults.renderdisplay)
+
 
 #Last line
