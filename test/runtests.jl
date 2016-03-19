@@ -34,12 +34,7 @@ for i in 1:1
 end
 #throw(:ERR)
 
-for i in 1:3
-	file = "../sample/demo$i.jl"
-	println("\nExecuting $file...")
-	printsep()
-	include(file)
-end
+include("../sample/runsamples.jl")
 
 
 :Test_Complete
