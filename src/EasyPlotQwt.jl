@@ -6,9 +6,6 @@ import EasyPlot #Import only - avoid collisions
 using MDDatasets
 using Colors
 
-import PyCall
-PyCall.pygui_start(:qt_pyqt4) #Runs Qt application thread in background?
-
 import EasyPlot: render
 
 #Type used to dispatch on a symbol & minimize namespace pollution:

@@ -1,11 +1,13 @@
 #EasyPlotQwt: Python wrappers for base types & core functions
 #-------------------------------------------------------------------------------
 
-using PyCall
-@pyimport guidata as GUICore
-@pyimport guiqwt.plot as QwtPlot
-@pyimport guiqwt.builder as QwtBuilder
+import PyCall
+import PyCall: @pyimport, PyObject
+
 @pyimport guiqwt.pyplot as QwtPyPlot
+@pyimport guiqwt.builder as QwtBuilder
+
+PyCall.pygui_start(:qt_pyqt4) #Runs Qt application thread in background?
 
 
 #==Wrapper types
