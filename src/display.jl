@@ -84,8 +84,6 @@ function Defaults()
 
 	if renderonly
 		maindisplay = NullDisplay()
-	else
-		renderdisplay = NullDisplay()
 	end
 
 	Defaults(rendersvg, maindisplay, renderdisplay)
