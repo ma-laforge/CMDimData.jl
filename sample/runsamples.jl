@@ -54,7 +54,7 @@ end
 pdisp = getdemodisplay(EasyPlot.defaults.maindisplay)
 
 #for i in 1
-for i in 1:3
+for i in 1:4
 	file = "./demo$i.jl"
 	sepline = "---------------------------------------------------------------------"
 	outfile = File(:png, joinpath("./", splitext(basename(file))[1] * ".png"))
