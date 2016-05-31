@@ -1,4 +1,4 @@
-#EasyPlotGrace demonstration 1: Render sample EasyPlot plots
+#Run sample code
 #-------------------------------------------------------------------------------
 
 using EasyPlotGrace
@@ -13,14 +13,28 @@ plotdefaults = GracePlot.defaults(linewidth=2.5)
 pdisp = EasyPlotGrace.PlotDisplay()
 #pdisp = EasyPlotGrace.PlotDisplay(template=template)
 #pdisp = EasyPlotGrace.PlotDisplay(plotdefaults)
+demolist = EasyPlot.demofilelist()
+
+
+#==Write an EasyPlotGrace plot to file.
+===============================================================================#
+plot = evalfile(demolist[1])
+
+pdisp_nogui = EasyPlotGrace.PlotDisplay(guimode=false)
+	EasyPlot._write(File(:png, "image.png"), plot, pdisp_nogui)
+#	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp_nogui)
+#Last line
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-plot = evalfile(EasyPlot.sampleplotfile(1));
+for demofile in demolist
+	fileshort = basename(demofile)
+	sepline = "---------------------------------------------------------------------"
+	println("\nExecuting $fileshort...")
+	println(sepline)
+	plot = evalfile(demofile)
 	display(pdisp, plot)
+end
 
-pdisp = EasyPlotGrace.PlotDisplay(guimode=false)
-	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
-#	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp)
-#Last line
+:SampleCode_Executed
