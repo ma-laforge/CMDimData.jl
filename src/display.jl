@@ -15,7 +15,8 @@ Plot "Displays" should register their own EasyPlotDisplays objects to be used:
 
 #==Constants
 ===============================================================================#
-const FILE2MIME_MAP = Dict{DataType,ASCIIString}(
+#const FILE2MIME_MAP = Dict{DataType,ASCIIString}(
+const FILE2MIME_MAP = ObjectIdDict(
 	FileIO2.PNGFmt => "image/png",
 	FileIO2.SVGFmt => "image/svg+xml",
 )
@@ -91,7 +92,9 @@ end
 
 #Data
 #-------------------------------------------------------------------------------
-const defaults = Defaults()
+function __init__()
+global const defaults = Defaults()
+end
 
 
 #==Registration functions

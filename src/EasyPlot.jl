@@ -1,10 +1,16 @@
 #EasyPlot: A quick/easy way to generate, save, & display plots.
 #-------------------------------------------------------------------------------
+#__precompile__()
+
 module EasyPlot
 
 const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
+#TODO: deprecate:
 sampleplotfile(id::Int) =
-	joinpath(rootpath, "sample/sampleplot$id.jl")
+	joinpath(rootpath, "sample", "demo$id.jl")
+
+demofilelist() =
+	[joinpath(rootpath, "sample", "demo$i.jl") for i in 1:2]
 
 using Colors
 using MDDatasets
