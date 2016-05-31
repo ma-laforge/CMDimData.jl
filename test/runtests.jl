@@ -2,6 +2,6 @@
 #-------------------------------------------------------------------------------
 
 #No real test code yet... just run demos:
-include("../sample/demo1.jl")
+include("../sample/runsamples.jl")
 
 :Test_Complete
