@@ -1,21 +1,41 @@
-#EasyPlotMPL demonstration 1: Render sample EasyPlot plots
+#Run sample code
 #-------------------------------------------------------------------------------
 
 using EasyPlot
 using EasyPlotMPL
 using FileIO2
 
+
 #==Constants
 ===============================================================================#
-#pdisp = EasyPlotMPL.PlotDisplay()
-pdisp = EasyPlotMPL.PlotDisplay(:tk)
+pdisp = EasyPlotMPL.PlotDisplay()
+#pdisp = EasyPlotMPL.PlotDisplay(:tk)
+demolist = EasyPlot.demofilelist()
+
+
+#==Write an EasyPlotMPL plot to file.
+===============================================================================#
+plot = evalfile(demolist[1])
+
+pdisp_nogui = EasyPlotMPL.PlotDisplay(guimode=false)
+	EasyPlot._write(File(:png, "image.png"), plot, pdisp_nogui)
+	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp_nogui)
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-plot = evalfile(EasyPlot.sampleplotfile(1));
+for demofile in demolist
+	fileshort = basename(demofile)
+	sepline = "---------------------------------------------------------------------"
+	println("\nExecuting $fileshort...")
+	println(sepline)
+	plot = evalfile(demofile)
 	display(pdisp, plot)
+end
 
+
+#==Test different backends
+===============================================================================#
 if false
 #	backendlist = [:tk, :gtk3, :gtk, :qt, :wx]
 	backendlist = [:tk, :gtk, :qt, :wx]
@@ -26,7 +46,4 @@ if false
 	end
 end
 
-	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
-	EasyPlot._write(File(:svg, "image.svg"), plot, pdisp)
-
-#Last line
+:SampleCode_Executed
