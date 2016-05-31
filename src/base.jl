@@ -53,13 +53,15 @@ type WfrmAttributes
 	linestyle
 	glyphshape
 	glyphsize
-	glyphcolor #Fill color.  Do not set to leave unfilled.
+	glyphcolor
+	glyphfillcolor #Fill color.
 end
 WfrmAttributes(;label=nothing,
 	linecolor=nothing, linewidth=nothing, linestyle=nothing,
-	glyphshape=nothing, glyphsize=nothing, glyphcolor=nothing) =
+	glyphshape=nothing, glyphsize=nothing,
+	glyphcolor=nothing, glyphfillcolor=nothing) =
 	WfrmAttributes(label, linecolor, linewidth, linestyle,
-		glyphshape, glyphsize, glyphcolor
+		glyphshape, glyphsize, glyphcolor, glyphfillcolor
 )
 
 
@@ -73,8 +75,8 @@ maplinewidth(w) = w
 maplinewidth(::Void) = maplinewidth(1) #default
 
 #Glyph size:
-mapglyphsize(sz) = 5*sz
-mapglyphsize(::Void) = mapglyphsize(3)
+mapglyphsize(sz) = 6*sz
+mapglyphsize(::Void) = mapglyphsize(1) #default
 
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
@@ -103,7 +105,8 @@ function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
 		linestyle=maplinestyle(attr.linestyle),
 		glyphshape=mapglyphshape(attr.glyphshape),
 		glyphsize=mapglyphsize(attr.glyphsize),
-		glyphcolor=mapglyphcolor(attr.glyphfillcolor),
+		glyphcolor=mapglyphcolor(attr.glyphlinecolor),
+		glyphfillcolor=mapglyphcolor(attr.glyphfillcolor),
 	)
 end
 
@@ -113,9 +116,11 @@ end
 
 #Add DataF1 results:
 function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes)
-	wfrm = add(plot, d.x, d.y) #TODO: a.label
+	wfrm = add(plot, d.x, d.y, id=a.label)
 	wfrm.line = line(color=a.linecolor, width=a.linewidth, style=a.linestyle)
-	wfrm.glyph = glyph(shape=a.glyphshape, size=a.glyphsize, color=a.glyphcolor)
+	wfrm.glyph = glyph(shape=a.glyphshape, size=a.glyphsize,
+		color=a.glyphcolor, fillcolor=a.glyphfillcolor
+	)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
@@ -165,13 +170,13 @@ end
 
 function render(mplot::InspectDR.Multiplot, eplot::EasyPlot.Plot, lyt::InspectDR.Layout)
 	mplot.ncolumns = eplot.ncolumns
-	#Not supported: eplot.title
+	mplot.title = eplot.title
 
 	for s in eplot.subplots
 		plot = generatesubplot(s, eplot.theme)
 		plot.layout = lyt
 		add(mplot, plot)
-#		if eplot.displaylegend; ax[:legend](); end
+		plot.layout.legend.enabled = eplot.displaylegend
 	end
 
 	return mplot
