@@ -98,7 +98,7 @@ function mapglyphshape(v::Symbol)
 end
 mapglyphshape(::Void) = :none #default (no glyph)
 
-function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
+function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	return WfrmAttributes(label=id,
 		linecolor=mapcolor(attr.linecolor),
 		linewidth=maplinewidth(attr.linewidth),
@@ -124,7 +124,7 @@ function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
 	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
 	inspectattr = WfrmAttributes(id, attr) #Attributes understood by InspectDR
