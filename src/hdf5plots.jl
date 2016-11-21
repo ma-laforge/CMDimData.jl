@@ -10,11 +10,11 @@ const hdf5dataroot = "data"
 #==Helper functions
 ===============================================================================#
 
-plotelempath(subpath::AbstractString) = "$hdf5plotroot/$subpath"
-datapath(subpath::AbstractString) = "$hdf5dataroot/$subpath"
+plotelempath(subpath::String) = "$hdf5plotroot/$subpath"
+datapath(subpath::String) = "$hdf5dataroot/$subpath"
 
 #Write AttributeList to their own HDF5 group:
-function writeattr(w::EasyDataWriter, alist::AttributeList, elem::AbstractString)
+function writeattr(w::EasyDataWriter, alist::AttributeList, elem::String)
 	grp = creategrp(w, plotelempath(elem))
 
 	for attrib in fieldnames(alist)
@@ -28,11 +28,11 @@ function writeattr(w::EasyDataWriter, alist::AttributeList, elem::AbstractString
 end
 
 #Read AttributeList from an HDF5 group (using initialized AttributeList):
-function readattr(r::EasyDataReader, alist::AttributeList, elem::AbstractString)
+function readattr(r::EasyDataReader, alist::AttributeList, elem::String)
 	grp = opengrp(r, plotelempath(elem))
 
 	for attrib in names(attrs(grp))
-		asymb = symbol(attrib)
+		asymb = Symbol(attrib)
 		v = readattr(grp, attrib)
 		setfield!(alist, asymb, v)
 	end
@@ -46,7 +46,7 @@ end
 
 #EasyDataHDF5 - read/write Waveform:
 #-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, wfrm::Waveform, elem::AbstractString)
+function __write(w::EasyDataWriter, wfrm::Waveform, elem::String)
 	grp = creategrp(w, plotelempath(elem))
 	a_write(grp, "id", wfrm.id)
 #	line::LineAttributes
@@ -54,7 +54,7 @@ function __write(w::EasyDataWriter, wfrm::Waveform, elem::AbstractString)
 	write(w, datapath(elem), wfrm.data)
 end
 
-function __read(s::Subplot, r::EasyDataReader, elem::AbstractString)
+function __read(s::Subplot, r::EasyDataReader, elem::String)
 	grp = opengrp(r, plotelempath(elem))
 	data = read(r, datapath(elem), DataMD)
 #	line::LineAttributes
@@ -64,7 +64,7 @@ end
 
 #EasyDataHDF5 - read/write Subplot:
 #-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, s::Subplot, elem::AbstractString)
+function __write(w::EasyDataWriter, s::Subplot, elem::String)
 	grp = creategrp(w, plotelempath(elem))
 	a_write(grp, "title", s.title)
 	wfrmidx = 1
@@ -79,7 +79,7 @@ function __write(w::EasyDataWriter, s::Subplot, elem::AbstractString)
 
 end
 
-function __read(p::Plot, r::EasyDataReader, elem::AbstractString)
+function __read(p::Plot, r::EasyDataReader, elem::String)
 	grp = opengrp(r, plotelempath(elem))
 	wfrmcount = a_read(grp, "wfrmcount")
 	subplot = add(p, title = a_read(grp, "title"))
@@ -94,7 +94,7 @@ end
 
 #EasyDataHDF5 - read/write Plot:
 #-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, p::Plot, elem::AbstractString)
+function __write(w::EasyDataWriter, p::Plot, elem::String)
 	grp = creategrp(w, plotelempath(elem))
 	subplotidx = 1
 
@@ -107,7 +107,7 @@ function __write(w::EasyDataWriter, p::Plot, elem::AbstractString)
 	a_write(grp, "subplotcount", length(p.subplots))
 end
 
-function __read(r::EasyDataReader, ::Type{Plot}, elem::AbstractString)
+function __read(r::EasyDataReader, ::Type{Plot}, elem::String)
 	grp = opengrp(r, plotelempath(elem))
 	subplotcount = a_read(grp, "subplotcount")
 	result = EasyPlot.new(title = a_read(grp, "title"))
@@ -154,21 +154,21 @@ Base.read(r::EasyDataReader, ::Type{Plot}; idx::Int=1) =
 
 #Read/write from files directly:
 #-------------------------------------------------------------------------------
-function Base.write(::Type{EasyDataWriter}, path::AbstractString,
+function Base.write(::Type{EasyDataWriter}, path::String,
 	opt::IOOptionsWrite, plotlist::Vector{Plot})
 	open(EasyDataWriter, path) do w
 		write(w, plotlist)
 	end
 end
-Base.write(::Type{EasyDataWriter}, path::AbstractString, opt::IOOptionsWrite, plot::Plot) =
+Base.write(::Type{EasyDataWriter}, path::String, opt::IOOptionsWrite, plot::Plot) =
 	write(EasyDataWriter, path, opt, [plot])
 
-function Base.read(::Type{EasyDataReader}, path::AbstractString, T::Type{Vector{Plot}})
+function Base.read(::Type{EasyDataReader}, path::String, T::Type{Vector{Plot}})
 	open(EasyDataReader, path) do r
 		read(r, T)
 	end
 end
-function Base.read(::Type{EasyDataReader}, path::AbstractString, T::Type{Plot}; idx::Int=1)
+function Base.read(::Type{EasyDataReader}, path::String, T::Type{Plot}; idx::Int=1)
 	open(EasyDataReader, path) do r
 		read(r, T, idx=idx)
 	end
@@ -180,14 +180,14 @@ end
 
 #Explicit module-level read/write functions:
 #-------------------------------------------------------------------------------
-_write(path::AbstractString, plotlist::Vector{Plot}) =
+_write(path::String, plotlist::Vector{Plot}) =
 	write(EasyDataWriter, path, IOOptions(write=true), plotlist)
-_write(path::AbstractString, plot::Plot) =
+_write(path::String, plot::Plot) =
 	write(EasyDataWriter, path, IOOptions(write=true), plot)
 
-_read(path::AbstractString, T::Type{Vector{Plot}}) =
+_read(path::String, T::Type{Vector{Plot}}) =
 	read(EasyDataReader, path, T)
-_read(path::AbstractString, T::Type{Plot}; idx::Int = 1) =
+_read(path::String, T::Type{Plot}; idx::Int = 1) =
 	read(EasyDataReader, path, T, idx=idx)
 
 #Last Line

@@ -20,7 +20,7 @@ EasyData.jl makes it easy to write [EasyPlot](https://github.com/ma-laforge/Easy
 
 Extensive compatibility testing of EasyData.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.4.0
+ - Linux / Julia-0.5.0
 
 ## Disclaimer
 

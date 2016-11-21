@@ -25,9 +25,9 @@ function getdemodisplay(d::EasyPlot.EasyPlotDisplay)
 	return getdisp(d)
 end
 
-function getdemodisplay(d::EasyPlot.NullDisplay) #Use MPL as default
-	eval(:(import EasyPlotMPL))
-	return getdemodisplay(EasyPlotMPL.PlotDisplay())
+function getdemodisplay(d::EasyPlot.NullDisplay) #Use InspectDR as default
+	eval(:(import EasyPlotInspect))
+	return getdemodisplay(EasyPlotInspect.PlotDisplay())
 end
 
 function getdemodisplay(d::EasyPlot.UninitializedDisplay)
@@ -43,6 +43,9 @@ function getdemodisplay(d::EasyPlot.UninitializedDisplay)
 	elseif :Plots == d.dtype
 		eval(:(import EasyPlotPlots))
 		return getdemodisplay(EasyPlotPlots.PlotDisplay())
+	elseif :Inspect == d.dtype
+		eval(:(import EasyPlotInspect))
+		return getdemodisplay(EasyPlotInspect.PlotDisplay())
 	else
 		return getdemodisplay(EasyPlot.NullDisplay())
 	end

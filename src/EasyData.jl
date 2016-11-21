@@ -24,10 +24,10 @@ include("hdf5plots.jl")
 #==Un-exported public interface: _read/_write
 ================================================================================
 #Using _read/_write interface ensures EasyData module handles operation.
-	_read(path::AbstractString, Vector{Plot})
-		_write(path::AbstractString, v::Vector{Plot})
-	_read(path::AbstractString, Plot)
-		_write(path::AbstractString, p::Plot, idx=[Int])
+	_read(path::String, Vector{Plot})
+		_write(path::String, v::Vector{Plot})
+	_read(path::String, Plot)
+		_write(path::String, p::Plot, idx=[Int])
 
 #TODO: provide _open interface as well
 ==#

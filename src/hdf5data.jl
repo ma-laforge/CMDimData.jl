@@ -5,15 +5,15 @@
 ===============================================================================#
 
 #High-level data types that can be written:
-const MAP_STR2TDATA = Dict{AbstractString, DataType}(
+const MAP_STR2TDATA = Dict{String, DataType}(
 	"DataF1" => DataF1,
 	"DataHR" => DataHR,
 	"DataRS" => DataRS,
 )
-const MAP_TDATA2STR = Dict{DataType, AbstractString}([v=>k for (k,v) in MAP_STR2TDATA])
+const MAP_TDATA2STR = Dict{DataType, String}(v=>k for (k,v) in MAP_STR2TDATA)
 
 #Possible element types of high-level data types:
-const MAP_STR2TELEM = Dict{AbstractString, DataType}(
+const MAP_STR2TELEM = Dict{String, DataType}(
 	"DataRS" => DataRS,
 	"DataF1" => DataF1,
 	"INT64" => Int64,
@@ -23,7 +23,7 @@ const MAP_STR2TELEM = Dict{AbstractString, DataType}(
 	"CPLX128" => Complex{Float64},
 	"BOOL" => Bool,
 )
-const MAP_TELEM2STR = Dict{DataType, AbstractString}([v=>k for (k,v) in MAP_STR2TELEM])
+const MAP_TELEM2STR = Dict{DataType, String}(v=>k for (k,v) in MAP_STR2TELEM)
 
 #==Helper functions
 ===============================================================================#
@@ -61,21 +61,21 @@ end
 
 #Read/write DataF1:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::AbstractString, d::DataF1)
+function Base.write(w::EasyDataWriter, path::String, d::DataF1)
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataF1])
 	grp["x"] = d.x
 	grp["y"] = d.y
 end
 
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataF1})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataF1})
 	grp = opengrp(r, path)
 	return DataF1(d_read(grp, "x"), d_read(grp, "y"))
 end
 
 #Read/write DataRS{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write{T<:Number}(w::EasyDataWriter, path::AbstractString, d::DataRS{T})
+function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataRS{T})
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataRS])
 	writesubtype(grp, typeof(d))
@@ -83,7 +83,7 @@ function Base.write{T<:Number}(w::EasyDataWriter, path::AbstractString, d::DataR
 	grp["data"] = d.elem
 end
 
-function Base.read{T<:Number}(r::EasyDataReader, path::AbstractString, ::Type{DataRS{T}})
+function Base.read{T<:Number}(r::EasyDataReader, path::String, ::Type{DataRS{T}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
@@ -95,7 +95,7 @@ end
 
 #Read/write DataHR{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write{T<:Number}(w::EasyDataWriter, path::AbstractString, d::DataHR{T})
+function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataHR{T})
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataHR])
 	writesubtype(grp, typeof(d))
@@ -103,7 +103,7 @@ function Base.write{T<:Number}(w::EasyDataWriter, path::AbstractString, d::DataH
 	grp["data"] = d.elem
 end
 
-function Base.read{T<:Number}(r::EasyDataReader, path::AbstractString, ::Type{DataHR{T}})
+function Base.read{T<:Number}(r::EasyDataReader, path::String, ::Type{DataHR{T}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	data = d_read(grp, "data")
@@ -113,7 +113,7 @@ end
 
 #Read/write DataRS{DataF1}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::AbstractString, d::DataRS{DataF1})
+function Base.write(w::EasyDataWriter, path::String, d::DataRS{DataF1})
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataRS])
 	writesubtype(grp, typeof(d))
@@ -124,7 +124,7 @@ function Base.write(w::EasyDataWriter, path::AbstractString, d::DataRS{DataF1})
 	end
 end
 
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataRS{DataF1}})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataF1}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
@@ -141,7 +141,7 @@ end
 
 #Read/write DataHR{DataF1}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::AbstractString, d::DataHR{DataF1})
+function Base.write(w::EasyDataWriter, path::String, d::DataHR{DataF1})
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataHR])
 	writesubtype(grp, typeof(d))
@@ -153,7 +153,7 @@ function Base.write(w::EasyDataWriter, path::AbstractString, d::DataHR{DataF1})
 	end
 end
 
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataHR{DataF1}})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataHR{DataF1}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	data = DataHR{DataF1}(sweeps)
@@ -168,7 +168,7 @@ end
 
 #Read/write DataRS{DataRS}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::AbstractString, d::DataRS{DataRS})
+function Base.write(w::EasyDataWriter, path::String, d::DataRS{DataRS})
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataRS])
 	writesubtype(grp, typeof(d))
@@ -179,7 +179,7 @@ function Base.write(w::EasyDataWriter, path::AbstractString, d::DataRS{DataRS})
 	end
 end
 
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataRS})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataRS})
 	grp = opengrp(r, path)
 	dtype = MAP_STR2TDATA[a_read(grp, "type")]
 	if dtype != DataRS
@@ -189,7 +189,7 @@ function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataRS})
 	return read(r, path, dtype) #Read appropriate data structure
 end
 
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataRS{DataRS}})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataRS}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
@@ -206,7 +206,7 @@ end
 
 #Read/write DataMD:
 #-------------------------------------------------------------------------------
-function Base.read(r::EasyDataReader, path::AbstractString, ::Type{DataMD})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataMD})
 	grp = opengrp(r, path)
 	dtype = MAP_STR2TDATA[a_read(grp, "type")]
 	dtype = readsubtype(grp, dtype)
