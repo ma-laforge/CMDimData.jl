@@ -31,7 +31,7 @@ end
 
 #Core algorithm for "set" interface:
 #-------------------------------------------------------------------------------
-function set(obj::Any, listfnmap::AttributeListFunctionMap, fnmap::AttributeFunctionMap, args...; kwargs...)
+function _set(obj::Any, listfnmap::AttributeListFunctionMap, fnmap::AttributeFunctionMap, args...; kwargs...)
 	for value in args
 		setfn = get(listfnmap, typeof(value), nothing)
 
@@ -62,14 +62,14 @@ end
 #==Plot-level functionality
 ===============================================================================#
 
-settitle(p::Plot, a::AbstractString) = (p.title = a)
+settitle(p::Plot, a::String) = (p.title = a)
 setdisplaylegend(p::Plot, a::Bool) = (p.displaylegend = a)
 
 
 #==Subplot-level functionality
 ===============================================================================#
 
-settitle(s::Subplot, a::AbstractString) = (s.title = a)
+settitle(s::Subplot, a::String) = (s.title = a)
 setaxes(s::Subplot, a::AxesAttributes) = ApplyNewAttributes(s.axes, a)
 function seteyeparam(s::Subplot, a::EyeAttributes)
 	ApplyNewAttributes(s.eye, a)
@@ -80,7 +80,7 @@ end
 #==Waveform-level functionality
 ===============================================================================#
 
-setid(w::Waveform, a::AbstractString) = (w.id = a)
+setid(w::Waveform, a::String) = (w.id = a)
 setline(w::Waveform, a::LineAttributes) = ApplyNewAttributes(w.line, a)
 setglyph(w::Waveform, a::GlyphAttributes) = ApplyNewAttributes(w.glyph, a)
 
@@ -97,7 +97,7 @@ const setplot_fnmap = AttributeFunctionMap([
 	(:displaylegend, setdisplaylegend)
 ])
 set(p::Plot, args...; kwargs...) =
-	set(p, empty_listfnmap, setplot_fnmap, args...; kwargs...)
+	_set(p, empty_listfnmap, setplot_fnmap, args...; kwargs...)
 
 #-------------------------------------------------------------------------------
 const setsubplot_listfnmap = AttributeListFunctionMap([
@@ -108,7 +108,7 @@ const setsubplot_fnmap = AttributeFunctionMap([
 	(:title, settitle)
 ])
 set(s::Subplot, args...; kwargs...) =
-	set(s, setsubplot_listfnmap, setsubplot_fnmap, args...; kwargs...)
+	_set(s, setsubplot_listfnmap, setsubplot_fnmap, args...; kwargs...)
 
 #-------------------------------------------------------------------------------
 const setwfrm_listfnmap = AttributeListFunctionMap([
@@ -119,6 +119,6 @@ const setwfrm_fnmap = AttributeFunctionMap([
 	(:id, setid)
 ])
 set(w::Waveform, args...; kwargs...) =
-	set(w, setwfrm_listfnmap, setwfrm_fnmap, args...; kwargs...)
+	_set(w, setwfrm_listfnmap, setwfrm_fnmap, args...; kwargs...)
 
 #Last line

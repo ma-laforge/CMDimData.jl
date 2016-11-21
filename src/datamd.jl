@@ -20,7 +20,7 @@ end
 
 #Add a waveform to a typical plot:
 function _addwfrm(ax::AbstractAxes, d::DataF1,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
 	cur_la = deepcopy(la)
 	if nothing == cur_la.color
 		cur_la.color = pidx
@@ -30,7 +30,7 @@ end
 
 #Add a waveform to an eye diagram:
 function _addwfrm(ax::AbstractAxes{:eye}, d::DataF1,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
 	param = ax.eye
 	eye = buildeye(d, param.tbit, param.teye, tstart=param.tstart)
 
@@ -50,8 +50,8 @@ end
 ===============================================================================#
 
 #Add collection of DataRS{DataF1} results:
-function _addwfrm(ax::AbstractAxes, d::DataRS{DataF1}, crnid::AbstractString,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
+function _addwfrm(ax::AbstractAxes, d::DataRS{DataF1}, crnid::String,
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
 	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
@@ -63,15 +63,15 @@ function _addwfrm(ax::AbstractAxes, d::DataRS{DataF1}, crnid::AbstractString,
 end
 
 #Add collection of DataRS{Number} results:
-function _addwfrm{T<:Number}(ax::AbstractAxes, d::DataRS{T}, crnid::AbstractString,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
+function _addwfrm{T<:Number}(ax::AbstractAxes, d::DataRS{T}, crnid::String,
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
 	cur_id = "" == crnid? id: "$id; $curcrnid"
 	return _addwfrm(ax, DataF1(d.sweep.v, d.elem), cur_id, la, ga, pidx)
 end
 
 #Add collection of DataRS{DataRS} results:
-function _addwfrm(ax::AbstractAxes, d::DataRS{DataRS}, crnid::AbstractString,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
+function _addwfrm(ax::AbstractAxes, d::DataRS{DataRS}, crnid::String,
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
 	crnid = ""==crnid? crnid: "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
@@ -83,7 +83,7 @@ end
 
 #If corner id !exists, use "" & relay call:
 _addwfrm(ax::AbstractAxes, d::DataRS,
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, pidx::Int) =
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int) =
 	_addwfrm(ax, d, "", id, la, ga, pidx)
 
 
@@ -92,7 +92,7 @@ _addwfrm(ax::AbstractAxes, d::DataRS,
 
 #Add waveforms from a collection of DataHR{DataF1}:
 function _addwfrm(ax::AbstractAxes, d::DataHR{DataF1},
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int)
+	id::String, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int)
 	sweepnames = names(sweeps(d))
 
 	for inds in subscripts(d)
@@ -107,7 +107,7 @@ end
 #Add waveforms from a collection of DataHR{DataF1}:
 #(Convert DataHR{Number} => DataHR{DataF1} & add):
 function _addwfrm{T<:Number}(ax::AbstractAxes, d::DataHR{T},
-	id::AbstractString, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int)
+	id::String, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int)
 	return _addwfrm(ax, DataHR{DataF1}(d), id, la, ga, wfrmidx)
 end
 

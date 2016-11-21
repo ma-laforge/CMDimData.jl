@@ -93,7 +93,7 @@ abstract AbstractAxes{T} #One of VALID_SUBPLOTSTYLES (symbol)
 #-------------------------------------------------------------------------------
 type Waveform
 	data::DataMD
-	id::AbstractString
+	id::String
 	line::LineAttributes
 	glyph::GlyphAttributes
 end
@@ -102,7 +102,7 @@ Waveform(data::DataMD) = Waveform(data, "", line(), glyph())
 #-------------------------------------------------------------------------------
 #TODO: Find a better way to deal with different subplot types
 type Subplot
-	title::AbstractString
+	title::String
 	style::Symbol
 	wfrmlist::Vector{Waveform}
 	axes::AxesAttributes
@@ -113,7 +113,7 @@ Subplot() = Subplot("", :xy, Waveform[], axes(xscale=:lin, yscale=:lin), eyepara
 
 #-------------------------------------------------------------------------------
 type Plot
-	title::AbstractString
+	title::String
 	ncolumns::Int #TODO: Create a more flexible
 	subplots::Vector{Subplot}
 	displaylegend::Bool

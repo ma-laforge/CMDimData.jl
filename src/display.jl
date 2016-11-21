@@ -9,13 +9,13 @@ Defaults are initialized from ENV[] variables, so that they can be set from
 
 Plot "Displays" should register their own EasyPlotDisplays objects to be used:
    1) Explicitly from the display stack (ex: with external GUI plot applications),
-   2) Indirectly from the writemime system (ex: generating inline plot images),
+   2) Indirectly from the show(MIME) system (ex: generating inline plot images),
 =#
 
 
 #==Constants
 ===============================================================================#
-#const FILE2MIME_MAP = Dict{DataType,ASCIIString}(
+#const FILE2MIME_MAP = Dict{DataType,String}(
 const FILE2MIME_MAP = ObjectIdDict(
 	FileIO2.PNGFmt => "image/png",
 	FileIO2.SVGFmt => "image/svg+xml",
@@ -49,7 +49,7 @@ end
 
 #Helpers
 #-------------------------------------------------------------------------------
-function readdefaults(::Type{EasyPlotDisplay}, envstr::ASCIIString)
+function readdefaults(::Type{EasyPlotDisplay}, envstr::String)
 	val = get(ENV, envstr, "ANY")
 	uval = uppercase(val)
 	if "ANY" == uval
@@ -57,11 +57,11 @@ function readdefaults(::Type{EasyPlotDisplay}, envstr::ASCIIString)
 	elseif "NONE" == uval
 		return NullDisplay()
 	else
-		return UninitializedDisplay(symbol(val))
+		return UninitializedDisplay(Symbol(val))
 	end
 end
 
-function readdefaults(::Type{Bool}, envstr::ASCIIString, default::Bool)
+function readdefaults(::Type{Bool}, envstr::String, default::Bool)
 	const bstr = ["FALSE", "TRUE"]
 	val = get(ENV, envstr, string(default))
 	uval = uppercase(val)
@@ -153,25 +153,25 @@ Base.mimewritable(mime::MIME"image/svg+xml", p::Plot) =
 	defaults.rendersvg && Base.mimewritable(mime, p, defaults.renderdisplay)
 
 #Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
-Base.writemime(io::IO, ::MIME"text/plain", p::Plot) = Base.showlimited(io, p)
+Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.showlimited(io, p)
 
-function Base.writemime(io::IO, mime::MIME, p::Plot)
+function Base.show(io::IO, mime::MIME, p::Plot)
 	d = defaults.renderdisplay
 	#Try to figure out if possible *before* rendering:
 	if !mimewritable(mime, p, d)
-		throw(MethodError(writemime, (io, mime, p)))
+		throw(MethodError(show, (io, mime, p)))
 	end
 	nativeplot = render(d, p)
-	writemime(io, mime, nativeplot)
+	show(io, mime, nativeplot)
 end
 
 
 #==Exporting to file:
 ===============================================================================#
-#TODO: Should this be overloading "writemime" instead?
-function _write(filepath::AbstractString, mime::MIME, nativeplot)
+#TODO: Should this be overloading "show" instead?
+function _write(filepath::String, mime::MIME, nativeplot)
 	open(filepath, "w") do io
-		writemime(io, mime, nativeplot)
+		show(io, mime, nativeplot)
 	end
 end
 
@@ -181,7 +181,7 @@ function _write{T}(file::File{T}, plot::Plot, d::EasyPlotDisplay)
 		throw(methoderror(_write, (file, plot, d)))
 	end
 	nativeplot = render(d, plot)
-	_write(file.path, MIME{symbol(mimestr)}(), nativeplot)
+	_write(file.path, MIME{Symbol(mimestr)}(), nativeplot)
 end
 
 _write(file::File, plot::Plot) =_write(file, plot, defaults.renderdisplay)
