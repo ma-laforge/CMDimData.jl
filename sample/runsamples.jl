@@ -1,19 +1,27 @@
-#EasyPlotQwt demonstration 1: Render sample EasyPlot plots
+#Run sample code
 #-------------------------------------------------------------------------------
 
-using FileIO2
 using EasyPlot
 using EasyPlotQwt
+using FileIO2
 
 
 #==Constants
 ===============================================================================#
 pdisp = EasyPlotQwt.PlotDisplay()
+demolist = EasyPlot.demofilelist()
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-plot = evalfile(EasyPlot.sampleplotfile(1));
+for demofile in demolist
+	fileshort = basename(demofile)
+	sepline = "---------------------------------------------------------------------"
+	println("\nExecuting $fileshort...")
+	println(sepline)
+	plot = evalfile(demofile)
 	display(pdisp, plot)
-#	EasyPlot._write(File(:png, "image.png"), plot, pdisp)
-#Last line
+	#EasyPlot._write(File(:png, "image.png"), plot, pdisp)
+end
+
+:SampleCode_Executed
