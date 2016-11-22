@@ -75,7 +75,7 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 end
 
 Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
-	method_exists(writemime, (IO, typeof(mime), InspectDR.Multiplot))
+	method_exists(show, (IO, typeof(mime), InspectDR.Multiplot))
 
 
 #==Initialization
