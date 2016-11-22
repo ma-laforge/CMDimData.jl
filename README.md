@@ -18,7 +18,7 @@ See main [PyPlot.jl](https://github.com/stevengj/PyPlot.jl) module for supported
 
 Extensive compatibility testing of EasyPlotMPL.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.4.2
+ - Linux / Julia-0.5.0
 
 ## Disclaimer
 

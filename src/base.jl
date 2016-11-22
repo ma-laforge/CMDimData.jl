@@ -5,12 +5,12 @@
 #==Constants
 ===============================================================================#
 
-const scalemap = Dict{Symbol, AbstractString}(
+const scalemap = Dict{Symbol, String}(
 	:lin => "linear",
 	:log => "log",
 )
 
-const linestylemap = Dict{Symbol, AbstractString}(
+const linestylemap = Dict{Symbol, String}(
 	:none    => "none",
 	:solid   => "-",
 	:dash    => "--",
@@ -18,7 +18,7 @@ const linestylemap = Dict{Symbol, AbstractString}(
 	:dashdot => "-.",
 )
 
-const markermap = Dict{Symbol, AbstractString}(
+const markermap = Dict{Symbol, String}(
 	:none    => "",
 	:square    => "s",
 	:diamond   => "D", #Diagsquare; diamond is d
@@ -80,7 +80,7 @@ function int2mplcolorstr(v::UInt)
 		result[i] = HEX_CODES[(v & 0xF)+1]
 		v >>= 4
 	end
-	return bytestring(result)
+	return String(result)
 end
 
 function mapcolor(v::Colorant)
@@ -117,7 +117,7 @@ function mapmarkershape(v::Symbol)
 end
 mapmarkershape(::Void) = "" #default (no marker)
 
-function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
+function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT?
 		nothing: mapfacecolor(attr.glyphfillcolor)
 
@@ -151,7 +151,7 @@ function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
 	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
 	mplattr = WfrmAttributes(id, attr) #Attributes understood by MPL
