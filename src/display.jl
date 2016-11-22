@@ -58,7 +58,7 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 end
 
 Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
-	method_exists(writemime, (IO, typeof(mime), GracePlot.Plot))
+	method_exists(show, (IO, typeof(mime), GracePlot.Plot))
 
 
 #==Initialization

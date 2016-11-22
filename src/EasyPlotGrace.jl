@@ -1,5 +1,7 @@
 #EasyPlotGrace: Render EasyPlot-plots with Grace/xmgrace (through GracePlot)
 #-------------------------------------------------------------------------------
+#__precompile__()
+
 module EasyPlotGrace
 
 using MDDatasets

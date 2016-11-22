@@ -19,7 +19,7 @@ typealias NullOr{T} Union{Void, T} #Simpler than Nullable
 #NOTE: 0 appears to be bkgnd color & 1: default frame color
 type ColorMgr
 	plt::GracePlot.Plot #Needed to send commands
-	colormap::Dict{ASCIIString, Int} #Maps #RRGGBB hex color string to registered color number
+	colormap::Dict{String, Int} #Maps #RRGGBB hex color string to registered color number
 	nextcolor::Int
 end
 ColorMgr(p::GracePlot.Plot) = ColorMgr(p, Dict(), NCOLORS_GRACEDFLT+1)
@@ -46,10 +46,10 @@ function int2hexcolorstr(v::UInt)
 		result[i] = HEX_CODES[(v & 0xF)+1]
 		v >>= 4
 	end
-	return bytestring(result)
+	return String(result)
 end
 
-function buildcmd_mapcolor(id::Int, colorval::UInt, idstr::ASCIIString)
+function buildcmd_mapcolor(id::Int, colorval::UInt, idstr::String)
 	colorval = Int32(colorval) #Don't display results in hex
 	r = (colorval>>16) & 0xFF
 	g = (colorval>>8) & 0xFF
@@ -113,7 +113,7 @@ end
 ===============================================================================#
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
 	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
 	_line = _graceline(attr, ax.colormgr)
