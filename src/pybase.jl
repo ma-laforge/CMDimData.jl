@@ -56,7 +56,7 @@ function subplot(fig::Figure, m::Int, n::Int, pos::Int)
 	return Axes(fig, row, col)
 end
 
-function _save(fig::Figure, filepath::AbstractString, format::ASCIIString; draft::Bool=false)
+function _save(fig::Figure, filepath::String, format::String; draft::Bool=false)
 	format = lowercase(format)
 	fig[:save](filepath, format, draft)
 end

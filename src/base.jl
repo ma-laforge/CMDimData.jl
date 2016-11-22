@@ -7,12 +7,12 @@
 #TODO: Support transparent, or *read* plot background color somehow.
 const COLOR_BACKGROUND = EasyPlot.COLOR_WHITE
 
-const scalemap = Dict{Symbol, ASCIIString}(
+const scalemap = Dict{Symbol, String}(
 	:lin => "lin",
 	:log => "log",
 )
 
-const linestylemap = Dict{Symbol, ASCIIString}(
+const linestylemap = Dict{Symbol, String}(
 	:none    => "",
 	:solid   => "-",
 	:dash    => "--",
@@ -20,7 +20,7 @@ const linestylemap = Dict{Symbol, ASCIIString}(
 	:dashdot => "-.",
 )
 
-const markermap = Dict{Symbol, ASCIIString}(
+const markermap = Dict{Symbol, String}(
 	:none      => "",
 	:square    => "s",
 	:diamond   => "d",
@@ -82,7 +82,7 @@ function int2mplcolorstr(v::UInt)
 		result[i] = HEX_CODES[(v & 0xF)+1]
 		v >>= 4
 	end
-	return bytestring(result)
+	return String(result)
 end
 
 function mapcolor(v::Colorant)
@@ -122,7 +122,7 @@ function mapmarkershape(v::Symbol)
 end
 mapmarkershape(::Void) = mapmarkershape(:none) #default (no marker)
 
-function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
+function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	#TODO: Figure out how to support transparency:
 	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT?
 		mapfacecolor(COLOR_BACKGROUND): mapfacecolor(attr.glyphfillcolor)
@@ -169,7 +169,7 @@ function _addwfrm(ax::Axes, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::EPAxes, d::DataF1, id::AbstractString,
+function EasyPlot.addwfrm(ax::EPAxes, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
 	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
 	qwtattr = WfrmAttributes(id, attr) #Attributes understood by Qwt
