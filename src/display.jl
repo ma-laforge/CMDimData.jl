@@ -152,8 +152,8 @@ Base.mimewritable(mime::MIME"text/plain", p::Plot) = true
 Base.mimewritable(mime::MIME"image/svg+xml", p::Plot) =
 	defaults.rendersvg && Base.mimewritable(mime, p, defaults.renderdisplay)
 
-#Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
-Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.showlimited(io, p)
+#Maintain text/plain MIME support.
+Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.showcompact(io, p)
 
 function Base.show(io::IO, mime::MIME, p::Plot)
 	d = defaults.renderdisplay
