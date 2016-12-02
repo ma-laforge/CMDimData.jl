@@ -20,7 +20,7 @@ function Defaults()
 	val = get(ENV, envstr, dflt)
 	renderingtool = lowercase(val)
 
-	Defaults(symbol(renderingtool))
+	Defaults(Symbol(renderingtool))
 end
 
 #Data
@@ -44,7 +44,7 @@ PlotDisplay(args...; kwargs...) =
 
 #==Top-level rendering functions
 ===============================================================================#
-EasyPlot._display(fig::FigureMulti) = display(fig.subplots)
+EasyPlot._display(fig::FigureMulti) = display(fig.p)
 function EasyPlot._display(fig::FigureSng)
 	for s in fig.subplots
 		display(s) #Defined in Plots.jl
@@ -69,26 +69,26 @@ Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) = false
 #Assume PNG is supported by all backends:
 Base.mimewritable(mime::MIME"image/png", eplot::EasyPlot.Plot, d::PlotDisplay) = true
 
-#Maintain text/plain MIME support (Is this ok?... showlimited is not exported).
-Base.writemime(io::IO, ::MIME"text/plain", fig::Figure) = Base.showlimited(io, fig)
-Base.writemime(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.showlimited(io, fig)
+#Maintain text/plain MIME support.
+Base.show(io::IO, ::MIME"text/plain", fig::Figure) = Base.showcompact(io, fig)
+Base.show(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.showcompact(io, fig)
 
 #Currently no support for non-FigureMulti plots... but could generate a single image...:
-Base.writemime(io::IO, mime::MIME, fig::Figure) =
-	throw(MethodError(writemime, (io, mime, fig)))
-Base.writemime(io::IO, mime::MIME, fig::FigureMulti) =
-	writemime(io, mime, fig.subplots)
+Base.show(io::IO, mime::MIME, fig::Figure) =
+	throw(MethodError(show, (io, mime, fig)))
+Base.show(io::IO, mime::MIME, fig::FigureMulti) =
+	show(io, mime, fig.p)
 
 
 #==Support saving
 ===============================================================================#
 #Support for saving FigureSng to multiple files:
-function EasyPlot._write(filepath::AbstractString, mime::MIME, fig::FigureSng)
+function EasyPlot._write(filepath::String, mime::MIME, fig::FigureSng)
 	fsplit = splitext(filepath)
 	for (i, s) in enumerate(fig.subplots)
 		spath = join(fsplit, "_subplot$i")
 		open(spath, "w") do io
-			Base.writemime(io, mime, s)
+			Base.show(io, mime, s)
 		end
 	end
 end

@@ -51,7 +51,8 @@ const markermap = Dict{Symbol, Symbol}(
 :star4, :star5, :star6, :star7, :star8
 =#
 
-const NOMULTISUPPORT = Set([:gr])
+#const NOMULTISUPPORT = Set([:gr]) #GR now supported using multiplot model.
+const NOMULTISUPPORT = Set([])
 
 immutable FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
@@ -62,7 +63,7 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 typealias NullOr{T} Union{Void, T} #Simpler than Nullable
 
 type Axes{T} <: EasyPlot.AbstractAxes{T}
-	ref::Plots.Plot #Axes reference
+	ref::Plots.Subplot #Axes reference
 	theme::EasyPlot.Theme
 	eye::NullOr{EasyPlot.EyeAttributes}
 end
@@ -73,13 +74,15 @@ Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
 #Top-level plot (which might contain subplots)
 abstract Figure
 
+#TODO: Is this workaround still needed??
 type FigureSng <: Figure #For backends that support single plots only (no subplots)
 	subplots::Vector{Plots.Plot}
 end
 FigureSng() = FigureSng(Plots.Plot[])
 
 type FigureMulti <: Figure #For backends that support subplots
-	subplots::NullOr{Plots.Subplot} #Actually contains all subplots
+	p::NullOr{Plots.Plot} #NullOr - So construction does not display anything.
+#	subplots::Vector{Plots.Subplot}
 end
 FigureMulti() = FigureMulti(nothing)
 
@@ -88,7 +91,7 @@ Figure(toolid::Symbol) =
 
 #Immutable? would be on stack...
 type WfrmAttributes
-	label::NullOr{AbstractString}
+	label::NullOr{String}
 
 	linetype::Symbol
 	linestyle::Symbol
@@ -115,15 +118,16 @@ function addsubplots(fig::FigureSng, ncols::Int, nsubplots::Int)
 	return fig
 end
 function addsubplots(fig::FigureMulti, ncols::Int, nsubplots::Int)
-	fig.subplots = Plots.subplot(nc=ncols, n=nsubplots)
+	nrows = div(nsubplots-1, ncols) + 1
+	fig.p = Plots.plot(layout=(nrows, ncols))
 	return fig
 end
 
 
 #==Helper functions
 ===============================================================================#
-getsubplot(p::FigureSng, idx::Int) = p.subplots[idx]
-getsubplot(p::FigureMulti, idx::Int) = p.subplots.plts[idx]
+getsubplot(fig::FigureSng, idx::Int) = fig.subplots[idx]
+getsubplot(fig::FigureMulti, idx::Int) = fig.p.subplots[idx]
 
 #Linewidth:
 maplinewidth(w) = w
@@ -162,7 +166,7 @@ function mapmarkershape(v::Symbol)
 end
 mapmarkershape(::Void) = "" #default (no marker)
 
-function WfrmAttributes(id::AbstractString, attr::EasyPlot.WfrmAttributes)
+function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	linewidth = maplinewidth(attr.linewidth)
 	markercolor = attr.glyphfillcolor
 	markeralpha = 1.0
@@ -189,10 +193,10 @@ end
 #==Rendering functions
 ===============================================================================#
 displaylegend(fig::FigureSng, v::Bool) = nothing
-displaylegend(fig::FigureMulti, v::Bool) = Plots.subplot!(fig.subplots, legend=v)
+displaylegend(fig::FigureMulti, v::Bool) = Plots.plot!(fig.p, legend=v)
 
 #Add DataF1 results:
-function _addwfrm(ax::Plots.Plot, d::DataF1, a::WfrmAttributes)
+function _addwfrm(ax::Plots.Subplot, d::DataF1, a::WfrmAttributes)
 	kwargs = Any[]
 	for attrib in fieldnames(a)
 		v = getfield(a,attrib)
@@ -206,14 +210,14 @@ function _addwfrm(ax::Plots.Plot, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::AbstractString,
+function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
 	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
 	plotsattr = WfrmAttributes(id, attr) #Attributes understood by Plots.jl
 	_addwfrm(ax.ref, d, plotsattr)
 end
 
-function rendersubplot(ax::Plots.Plot, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
+function rendersubplot(ax::Plots.Subplot, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	Plots.title!(ax, subplot.title)
 
 
