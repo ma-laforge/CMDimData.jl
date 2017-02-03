@@ -133,6 +133,7 @@ end
 
 function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	iplot = InspectDR.Plot2D()
+	strip = iplot.strips[1]
 
 	#TODO Ugly: setting defaults like this should be done in EasyPlot
 	ep = nothing
@@ -152,19 +153,18 @@ function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	#Update axis limits:
 	_getlim(v::Void) = NaN
 	_getlim(v::Real) = Float64(v)
-	iplot.ext_full = InspectDR.PExtents2D(
-		xmin=_getlim(srca.xmin), xmax=_getlim(srca.xmax),
-		ymin=_getlim(srca.ymin), ymax=_getlim(srca.ymax)
-	)
+	iplot.xext_full = InspectDR.PExtents1D(_getlim(srca.xmin), _getlim(srca.xmax))
+	strip.yext_full = InspectDR.PExtents1D(_getlim(srca.ymin), _getlim(srca.ymax))
 
 	#Apply x/y scales:
-	iplot.axes = InspectDR.axes(scalemap[srca.xscale], scalemap[srca.yscale])
+	iplot.xscale = InspectDR.AxisScale(scalemap[srca.xscale])
+	strip.yscale = InspectDR.AxisScale(scalemap[srca.yscale], tgtmajor=8, tgtminor=2)
 	
 	#Apply x/y labels:
 	a = iplot.annotation
 	a.title = subplot.title
 	a.xlabel = srca.xlabel
-	a.ylabel = srca.ylabel
+	a.ylabels = [srca.ylabel]
 	return iplot
 end
 
