@@ -8,33 +8,50 @@ using EasyPlot
 #==Obtain plot rendering display:
 ===============================================================================#
 
-function getdemodisplay(d::EasyPlot.NullDisplay) #Use InspectDR as default
+#initplotbackend: importing backend initializes module
+#-------------------------------------------------------------------------------
+function initplotbackend(d::EasyPlot.NullDisplay) #Use InspectDR as default
 	eval(:(import EasyPlotInspect))
-	return EasyPlotInspect.PlotDisplay()
+	return
 end
 
-function getdemodisplay(d::EasyPlot.UninitializedDisplay)
+function initplotbackend(d::EasyPlot.UninitializedDisplay)
 	if :Grace == d.dtype
 		eval(:(import EasyPlotGrace))
-		d = EasyPlotGrace.PlotDisplay()
-		plotdefaults = GracePlot.defaults(linewidth=2.5)
-		d.args = tuple(plotdefaults, d.args...) #Improve appearance a bit
-		return d
 	elseif :MPL == d.dtype
 		eval(:(import EasyPlotMPL))
-		return EasyPlotMPL.PlotDisplay()
 	elseif :Qwt == d.dtype
 		eval(:(import EasyPlotQwt))
-		return EasyPlotQwt.PlotDisplay()
 	elseif :Plots == d.dtype
 		eval(:(import EasyPlotPlots))
-		return EasyPlotPlots.PlotDisplay()
 	elseif :Inspect == d.dtype
 		eval(:(import EasyPlotInspect))
-		return EasyPlotInspect.PlotDisplay()
 	else #Don't recognize requested display... use default:
-		return getdemodisplay(EasyPlot.NullDisplay())
+		initplotbackend(EasyPlot.NullDisplay())
 	end
+	return
+end
+
+function initplotbackend(d)
+	return #Already initialized
+end
+
+#getdemodisplay: Potentially overwrite defaults:
+#-------------------------------------------------------------------------------
+#Default behaviour, just use provided display:
+getdemodisplay(d::EasyPlot.EasyPlotDisplay) = d
+
+#Must initialize display before defining specialized "getdemodisplay":
+initplotbackend(EasyPlot.defaults.maindisplay)
+
+if isdefined(:EasyPlotGrace)
+#Improve display appearance a bit:
+function getdemodisplay(d::EasyPlotGrace.PlotDisplay)
+	d = EasyPlotGrace.PlotDisplay()
+	plotdefaults = GracePlot.defaults(linewidth=2.5)
+	d.args = tuple(plotdefaults, d.args...) #Improve appearance a bit
+	return d
+end
 end
 
 
@@ -42,7 +59,7 @@ end
 ===============================================================================#
 pdisp = getdemodisplay(EasyPlot.defaults.maindisplay)
 
-#for i in 1
+#for i in 4
 for i in 1:4
 	file = "./demo$i.jl"
 	sepline = "---------------------------------------------------------------------"
