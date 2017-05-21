@@ -11,7 +11,7 @@ const DEFAULT_RENDERH = DEFAULT_RENDERW / φ #φ: golden ratio
 
 #==Defaults
 ===============================================================================#
-type Defaults
+mutable struct Defaults
 	#Default width/height for rendering inline plots:
 	wrender::Float64
 	hrender::Float64
@@ -45,7 +45,7 @@ const defaults = Defaults()
 
 #==Types
 ===============================================================================#
-type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
+mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	#w/h of data area:
 	wdata::Float64
 	hdata::Float64

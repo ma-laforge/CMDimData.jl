@@ -19,7 +19,7 @@ The values of `EASYPLOTINSPECT_RENDERW/H` can therefore be set from `.juliarc.jl
 
 Extensive compatibility testing of EasyPlotInspect.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.5.0
+ - Linux / Julia-0.6.0-rc1
 
 ## Disclaimer
 

@@ -30,15 +30,15 @@ const glyphmap = Dict{Symbol, Symbol}(
 	:star      => :star, :* => :*,
 )
 
-immutable FlagType{T}; end
+struct FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
 
 
 #==Base types
 ===============================================================================#
-typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Void, T} #Simpler than Nullable
 
-type Axes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
 	ref::InspectDR.Plot2D #Plot reference
 	theme::EasyPlot.Theme
 	eye::NullOr{EasyPlot.EyeAttributes}
@@ -46,7 +46,7 @@ end
 Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
 	Axes{style}(ref, theme, eye)
 
-type WfrmAttributes
+mutable struct WfrmAttributes
 	label
 	linecolor
 	linewidth #[0, 10]
