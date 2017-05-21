@@ -4,11 +4,11 @@
 
 #==Types
 ===============================================================================#
-typealias ColorRef Union{Symbol, Int, Colorant}
+const ColorRef = Union{Symbol, Int, Colorant}
 
 #Low-level waveform attributes (compared to LineAttributes & GlyphAttributes)
 #NOTE: line & glyph values are "untangled" here.
-type WfrmAttributes
+mutable struct WfrmAttributes
 	linestyle::Symbol
 	linewidth::Float64 #[0, 10]
 	linecolor::ColorRef

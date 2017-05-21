@@ -8,7 +8,7 @@ not support eye-diagrams directly.==#
 
 #==Types
 ===============================================================================#
-type DataEye
+mutable struct DataEye
 	data::Vector{DataF1}
 end
 DataEye() = DataEye(DataF1[])

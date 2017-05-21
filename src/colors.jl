@@ -11,11 +11,11 @@ rgbu8(r::Integer, g::Integer, b::Integer) = rgbu8(UInt8(r), UInt8(g), UInt8(b))
 
 #==Types
 ===============================================================================#
-immutable FlagType{T}; end
+struct FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
 
 #TODO: merely typealias???
-type ColorScheme
+mutable struct ColorScheme
 	colors::Vector{Colorant} #Colorant: might support alpha in the future
 end
 

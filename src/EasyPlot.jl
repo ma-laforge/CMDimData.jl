@@ -63,7 +63,7 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 #==Rendering modules should implement:
 ================================================================================
 Subtype EasyPlotDisplay, for example:
-	immutable NEWPLOTDisplay <: EasyPlotDisplay{:NEWPLOTID}
+	struct NEWPLOTDisplay <: EasyPlotDisplay{:NEWPLOTID}
 
 	EasyPlot.getdisplay(::Type{EasyPlotDisplay{:NEWPLOTID}}) 
 		=> return NEWPLOTDisplay object

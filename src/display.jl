@@ -26,16 +26,16 @@ const FILE2MIME_MAP = ObjectIdDict(
 ===============================================================================#
 
 #To be subtyped by supported plot displays:
-abstract EasyPlotDisplay <: Display
-immutable NullDisplay <: EasyPlotDisplay; end
-immutable UninitializedDisplay <: EasyPlotDisplay
+abstract type EasyPlotDisplay <: Display end
+struct NullDisplay <: EasyPlotDisplay; end
+struct UninitializedDisplay <: EasyPlotDisplay
 	dtype::Symbol
 end
 
 
 #==Defaults
 ===============================================================================#
-type Defaults
+mutable struct Defaults
 	rendersvg::Bool #Might want to dissalow SVG renderings for performance reasons
 
 	#Plot-aware display to be added to the display stack:

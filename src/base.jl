@@ -24,10 +24,10 @@ const VALID_SUBPLOTSTYLES = Set([:xy, :strip, :eye, :stripeye])
 #==Plot/subplot/waveform attributes
 ===============================================================================#
 
-typealias NullOr{T} Union{Void, T}
+const NullOr{T} = Union{Void, T}
 
 #-------------------------------------------------------------------------------
-type LineAttributes <: AttributeList
+mutable struct LineAttributes <: AttributeList
 	style
 	width #[0, 10]
 	color
@@ -37,7 +37,7 @@ end
 eval(genexpr_attriblistbuilder(:line, LineAttributes, reqfieldcnt=0))
 
 #-------------------------------------------------------------------------------
-type GlyphAttributes <: AttributeList #Don't use "Symbol" - name used by Julia
+mutable struct GlyphAttributes <: AttributeList #Don't use "Symbol" - name used by Julia
 #==IMPORTANT:
 Edge width & color taken from LineAttributes
 ==#
@@ -49,7 +49,7 @@ end
 #"glyph" constructor:
 eval(genexpr_attriblistbuilder(:glyph, GlyphAttributes, reqfieldcnt=0))
 
-type AxesAttributes <: AttributeList
+mutable struct AxesAttributes <: AttributeList
 	xlabel; ylabel
 	xmin; xmax; ymin; ymax
 	xscale; yscale #VALID_AXISSCALES
@@ -58,7 +58,7 @@ end
 #"axes" constructor:
 eval(genexpr_attriblistbuilder(:axes, AxesAttributes, reqfieldcnt=0))
 
-type EyeAttributes <: AttributeList
+mutable struct EyeAttributes <: AttributeList
 	tbit
 	teye
 	tstart
@@ -70,7 +70,7 @@ eval(genexpr_attriblistbuilder(:eyeparam, EyeAttributes, reqfieldcnt=1))
 #Plot theme.
 #Thought: Renering function can also be passed a theme when plot does not
 #specify values.
-type Theme
+mutable struct Theme
 	colorscheme::NullOr{ColorScheme}
 
 #=Under consideration
@@ -88,10 +88,10 @@ Theme() = Theme(nothing)
 #==Main data structures
 ===============================================================================#
 #Provides advanced functionality to rendering modules.
-abstract AbstractAxes{T} #One of VALID_SUBPLOTSTYLES (symbol)
+abstract type AbstractAxes{T} end #One of VALID_SUBPLOTSTYLES (symbol)
 
 #-------------------------------------------------------------------------------
-type Waveform
+mutable struct Waveform
 	data::DataMD
 	id::String
 	line::LineAttributes
@@ -101,7 +101,7 @@ Waveform(data::DataMD) = Waveform(data, "", line(), glyph())
 
 #-------------------------------------------------------------------------------
 #TODO: Find a better way to deal with different subplot types
-type Subplot
+mutable struct Subplot
 	title::String
 	style::Symbol
 	wfrmlist::Vector{Waveform}
@@ -112,7 +112,7 @@ Subplot() = Subplot("", :xy, Waveform[], axes(xscale=:lin, yscale=:lin), eyepara
 
 
 #-------------------------------------------------------------------------------
-type Plot
+mutable struct Plot
 	title::String
 	ncolumns::Int #TODO: Create a more flexible
 	subplots::Vector{Subplot}
