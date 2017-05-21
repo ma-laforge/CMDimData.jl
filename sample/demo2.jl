@@ -54,12 +54,12 @@ s = add(plot, vvst, title="Tones")
 	add(s, tones, id="")
 #Filter 2nd harmonic:
 s = add(plot, vvst, title="Tones ($(strns(2tfund)))")
-	add(s, sub(tones, period=2tfund), id="")
+	add(s, getsubarray(tones, period=2tfund), id="")
 s = add(plot, vvst, title="Tones ($(strns(3tfund)))")
-	add(s, sub(tones, period=3tfund), id="")
+	add(s, getsubarray(tones, period=3tfund), id="")
 #Filter slope:
 s = add(plot, vvst, title="Tones (increasing slope)")
-	add(s, sub(tones, :,3,:), id="")
+	add(s, getsubarray(tones, :,3,:), id="")
 #throw("STOP")
 
 #==Show results

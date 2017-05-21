@@ -8,14 +8,14 @@
 #==Main data structures
 ===============================================================================#
 
-immutable EasyDataHDF5 <: FileIO2.DataFormat; end
+struct EasyDataHDF5 <: FileIO2.DataFormat; end
 FileIO2.File(::FileIO2.Shorthand{:edh5}, path::String) = File{EasyDataHDF5}(path)
 
-type EasyDataReader <: AbstractReader{EasyDataHDF5}
+mutable struct EasyDataReader <: AbstractReader{EasyDataHDF5}
 	reader::HDF5.HDF5File
 end
 
-type EasyDataWriter <: AbstractWriter{EasyDataHDF5}
+mutable struct EasyDataWriter <: AbstractWriter{EasyDataHDF5}
 	writer::HDF5.HDF5File
 end
 

@@ -5,15 +5,15 @@
 ===============================================================================#
 
 #High-level data types that can be written:
-const MAP_STR2TDATA = Dict{String, DataType}(
+const MAP_STR2TDATA = Dict{String, Type}(
 	"DataF1" => DataF1,
 	"DataHR" => DataHR,
 	"DataRS" => DataRS,
 )
-const MAP_TDATA2STR = Dict{DataType, String}(v=>k for (k,v) in MAP_STR2TDATA)
+const MAP_TDATA2STR = Dict{Type, String}(v=>k for (k,v) in MAP_STR2TDATA)
 
 #Possible element types of high-level data types:
-const MAP_STR2TELEM = Dict{String, DataType}(
+const MAP_STR2TELEM = Dict{String, Type}(
 	"DataRS" => DataRS,
 	"DataF1" => DataF1,
 	"INT64" => Int64,
@@ -23,7 +23,7 @@ const MAP_STR2TELEM = Dict{String, DataType}(
 	"CPLX128" => Complex{Float64},
 	"BOOL" => Bool,
 )
-const MAP_TELEM2STR = Dict{DataType, String}(v=>k for (k,v) in MAP_STR2TELEM)
+const MAP_TELEM2STR = Dict{Type, String}(v=>k for (k,v) in MAP_STR2TELEM)
 
 #==Helper functions
 ===============================================================================#
