@@ -7,24 +7,24 @@
 const NCOLORS_GRACEDFLT = 15 #Number of colors expected to be defined by Grace.
 #NOTE: Assuming color 0 is white/background color (not to be used)
 
-immutable FlagType{T}; end
+struct FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
 
 
 #==Base types
 ===============================================================================#
-typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Void, T} #Simpler than Nullable
 
 #Manages additional colors (leaves default ones intact):
 #NOTE: 0 appears to be bkgnd color & 1: default frame color
-type ColorMgr
+mutable struct ColorMgr
 	plt::GracePlot.Plot #Needed to send commands
 	colormap::Dict{String, Int} #Maps #RRGGBB hex color string to registered color number
 	nextcolor::Int
 end
 ColorMgr(p::GracePlot.Plot) = ColorMgr(p, Dict(), NCOLORS_GRACEDFLT+1)
 
-type Axes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
 	ref::GracePlot.GraphRef #Axes reference
 	theme::EasyPlot.Theme
 	colormgr::ColorMgr
@@ -39,8 +39,8 @@ Axes(style::Symbol, ref::GracePlot.GraphRef, theme::EasyPlot.Theme, colormgr::Co
 const HEX_CODES = UInt8[
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
-function int2hexcolorstr(v::UInt)
-	result = Array(UInt8, 7)
+function int2hexcolorstr(v::UInt32)
+	result = Array{UInt8}(7)
 	result[1] = '#'
 	for i in length(result):-1:2
 		result[i] = HEX_CODES[(v & 0xF)+1]
@@ -49,8 +49,7 @@ function int2hexcolorstr(v::UInt)
 	return String(result)
 end
 
-function buildcmd_mapcolor(id::Int, colorval::UInt, idstr::String)
-	colorval = Int32(colorval) #Don't display results in hex
+function buildcmd_mapcolor(id::Int, colorval::UInt32, idstr::String)
 	r = (colorval>>16) & 0xFF
 	g = (colorval>>8) & 0xFF
 	b = colorval & 0xFF
@@ -60,7 +59,7 @@ end
 #Automatically adds color if does not exist:
 function _getcoloridx(mgr::ColorMgr, v::Colorant)
 	v = convert(RGB24, v)
-	v = UInt(v.color)
+	v = v.color
 	colorid = int2hexcolorstr(v)
 	idx = get(mgr.colormap, colorid, NOTFOUND)
 	if idx != NOTFOUND

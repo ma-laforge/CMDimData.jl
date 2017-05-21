@@ -9,7 +9,7 @@ DEFAULT_RENDERDPI = 75 #Low res for inline graphics
 
 #==Defaults
 ===============================================================================#
-type Defaults
+mutable struct Defaults
 	renderdpi::Int #Low res for inline graphics
 end
 
@@ -34,7 +34,7 @@ const defaults = Defaults()
 ===============================================================================#
 #TODO: support guimode=false
 
-type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
+mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	guimode::Bool
 	dpi::Int
 	args::Tuple
