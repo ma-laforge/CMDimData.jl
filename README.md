@@ -45,13 +45,14 @@ Default settings can be initialized even *before* loading modules with the help 
 
 To select the default EasyPlot display, add the following:
 
-	ENV["EASYPLOT_DEFAULTDISPLAY"] = "Grace"
+	ENV["EASYPLOT_DEFAULTDISPLAY"] = "InspectDR"
 
 Currently supported displays are:
  - `None`: Do not auto-initialize default displays.
  - `Any`: First `import`ed module is used as the default.
- - `MPL`: (EasyPlotMPL)
+ - `InspectDR`: (EasyPlotInspect)
  - `Grace`: (EasyPlotGrace)
+ - `MPL`: (EasyPlotMPL)
  - `Qwt`: (EasyPlotQwt)
  - `Plots`: (EasyPlotPlots)
 
