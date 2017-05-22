@@ -63,7 +63,7 @@ Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 
 #==Initialization
 ===============================================================================#
-EasyPlot.registerdefaults(:Grace,
+EasyPlot.registerdefaults(:EasyPlotGrace,
 	maindisplay = PlotDisplay(guimode=true),
 	renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
 )
