@@ -25,6 +25,33 @@ include("datamd.jl")
 include("themes.jl")
 include("display.jl")
 
+#Initialize backend (importing module initializes corresponding backend)
+#-------------------------------------------------------------------------------
+function _initbackend(d::EasyPlot.NullDisplay) #Use InspectDR as default
+	eval(:(import EasyPlotInspect))
+	return
+end
+
+function _initbackend(d::EasyPlot.UninitializedDisplay)
+	bkmodule = d.dtype
+
+	if "ANY" == uppercase(string(bkmodule))
+		_initbackend(EasyPlot.NullDisplay())
+	else
+		eval(:(import $bkmodule))
+	end
+	return
+end
+
+function _initbackend(d)
+	return #Already initialized
+end
+
+#Initialize any un-initialized backend specified as the main display:
+function initbackend()
+	_initbackend(defaults.maindisplay)
+end
+
 
 #==Interface
 ===============================================================================#
@@ -48,6 +75,7 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 	addwfrm(ax::AbstractAxes, ...) #
 	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
 	getcolor()
+	initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
 
 	#Constants:
 	COLORSCHEME[{:default/}] #List of color schemes

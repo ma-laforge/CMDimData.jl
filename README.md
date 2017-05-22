@@ -41,20 +41,24 @@ If SVG inline plots are undesired (ex: for performance reasons), they can be sup
 
 ### Initializing Defaults
 
-Default settings can be initialized even *before* loading modules with the help of environment variables.  The following code describes how this can be done from the `.juliarc.jl` file.
+Default settings can be initialized even *before* importing the `EasyPlot` module with the help of environment variables.  The following code describes how this can be done from the `.juliarc.jl` file.
 
-To select the default EasyPlot display, add the following:
+To select the default `EasyPlot` display, add the following:
 
-	ENV["EASYPLOT_DEFAULTDISPLAY"] = "InspectDR"
+	ENV["EASYPLOT_DEFAULTDISPLAY"] = "EasyPlotInspect"
 
-Currently supported displays are:
+To initialize said user-selected display module once `EasyPlot` is loaded, simply execute the following:
+
+	EasyPlot.initbackend()
+
+Currently supported options for `EASYPLOT_DEFAULTDISPLAY` are:
  - `None`: Do not auto-initialize default displays.
  - `Any`: First `import`ed module is used as the default.
- - `InspectDR`: (EasyPlotInspect)
- - `Grace`: (EasyPlotGrace)
- - `MPL`: (EasyPlotMPL)
- - `Qwt`: (EasyPlotQwt)
- - `Plots`: (EasyPlotPlots)
+ - `EasyPlotInspect`: (InspectDR)
+ - `EasyPlotGrace`: (GracePlot)
+ - `EasyPlotMPL`: (PyPlot/Matplotlib)
+ - `EasyPlotQwt`: (Qwt)
+ - `EasyPlotPlots`: (Plots.jl)
 
 To display EasyPlot plots using inline graphics, add the following:
 
