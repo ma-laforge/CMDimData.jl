@@ -80,7 +80,7 @@ Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 
 #==Initialization
 ===============================================================================#
-EasyPlot.registerdefaults(:InspectDR,
+EasyPlot.registerdefaults(:EasyPlotInspect,
 	maindisplay = PlotDisplay(),
 	renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
 )
