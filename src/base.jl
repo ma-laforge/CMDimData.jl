@@ -161,10 +161,11 @@ function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	strip.yscale = InspectDR.AxisScale(scalemap[srca.yscale], tgtmajor=8, tgtminor=2)
 	
 	#Apply x/y labels:
+	stringlabel(s) = (s isa String)? s: ""
 	a = iplot.annotation
 	a.title = subplot.title
-	a.xlabel = srca.xlabel
-	a.ylabels = [srca.ylabel]
+	a.xlabel = stringlabel(srca.xlabel)
+	a.ylabels = [stringlabel(srca.ylabel)]
 	return iplot
 end
 
