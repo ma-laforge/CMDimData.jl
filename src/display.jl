@@ -12,7 +12,7 @@ const backends = Set(["tk", "gtk3", "gtk", "qt", "wx"])
 
 #==Defaults
 ===============================================================================#
-type Defaults
+mutable struct Defaults
 	backend::Symbol
 end
 
@@ -40,7 +40,7 @@ const defaults = Defaults()
 
 #==Main Types
 ===============================================================================#
-type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
+mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	guimode::Bool
 	backend::Symbol
 	args::Tuple
@@ -51,7 +51,7 @@ end
 PlotDisplay(args...; kwargs...) = PlotDisplay(defaults.backend, args...; kwargs...)
 
 #Keeps key features of Matplotlib/PyPlot state needed for plotting
-type MPLState
+mutable struct MPLState
 	interactive::Bool
 	backend::Symbol
 	guimode::Bool
