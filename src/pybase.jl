@@ -12,7 +12,7 @@ PyCall.pygui_start(:qt_pyqt4) #Runs Qt application thread in background?
 
 #==Wrapper types
 ===============================================================================#
-type Figure
+mutable struct Figure
 	o::PyObject
 	function Figure(args...; kwargs...)
 		fig = QwtPyPlot.figure(args...; kwargs...)
@@ -20,14 +20,14 @@ type Figure
 	end
 end
 
-type Axes
+mutable struct Axes
 	o::PyObject
 	function Axes(fig::Figure, row::Int, col::Int)
 		return new(fig.o[:get_axes](row, col))
 	end
 end
 
-type Curve
+mutable struct Curve
 	o::PyObject
 	function Curve(args...; kwargs...)
 		return new(QwtBuilder.make[:curve](args...; kwargs...))

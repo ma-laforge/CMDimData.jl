@@ -32,14 +32,14 @@ const markermap = Dict{Symbol, String}(
 	:star      => "*", :* => "*",
 )
 
-immutable FlagType{T}; end
+struct FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Base types
 ===============================================================================#
-typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Void, T} #Simpler than Nullable
 
-type EPAxes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct EPAxes{T} <: EasyPlot.AbstractAxes{T}
 	ref::Axes #Axes reference
 	theme::EasyPlot.Theme
 	eye::NullOr{EasyPlot.EyeAttributes}
@@ -47,7 +47,7 @@ end
 EPAxes(style::Symbol, ref::Axes, theme::EasyPlot.Theme, eye=nothing) =
 	EPAxes{style}(ref, theme, eye)
 
-type WfrmAttributes
+mutable struct WfrmAttributes
 	title #Not label, for some reason
 	color #linecolor
 	linewidth
@@ -76,7 +76,7 @@ const HEX_CODES = UInt8[
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
 function int2mplcolorstr(v::UInt)
-	result = Array(UInt8, 7)
+	result = Array{UInt8}(7) #6Hex+hash character
 	result[1] = '#'
 	for i in length(result):-1:2
 		result[i] = HEX_CODES[(v & 0xF)+1]

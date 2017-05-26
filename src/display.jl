@@ -18,7 +18,7 @@ const MIME2QWTFMT_MAP = Dict{String,String}(
 ===============================================================================#
 #TODO: support guimode=false
 
-type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
+mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	guimode::Bool
 	args::Tuple
 	kwargs::Vector{Any}
@@ -26,7 +26,7 @@ type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 end
 
 #TODO: Generate from MIME2QWTFMT_MAP?
-typealias SupportedMIME Union{
+const SupportedMIME = Union{
 	MIME"image/png",
 	MIME"image/bmp",
 	MIME"image/tiff",

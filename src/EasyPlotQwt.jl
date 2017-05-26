@@ -10,7 +10,7 @@ import EasyPlot: render
 
 #Type used to dispatch on a symbol & minimize namespace pollution:
 #-------------------------------------------------------------------------------
-immutable DS{Symbol}; end; #Dispatchable symbol
+struct DS{Symbol}; end; #Dispatchable symbol
 DS(v::Symbol) = DS{v}()
 
 include("pybase.jl")

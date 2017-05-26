@@ -37,7 +37,7 @@ That being said, it would be preferable to create native Julia version of the Qw
 
 Extensive compatibility testing of EasyPlotQwt.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.5.0 (64-bit)
+ - Linux / Julia-0.6.0-rc1 (64-bit)
 
 #### Repository versions:
 
