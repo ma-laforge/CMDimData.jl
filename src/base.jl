@@ -169,15 +169,15 @@ function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	return iplot
 end
 
-function render(mplot::InspectDR.Multiplot, eplot::EasyPlot.Plot, lyt::InspectDR.Layout)
-	mplot.ncolumns = eplot.ncolumns
+function render(mplot::InspectDR.Multiplot, eplot::EasyPlot.Plot, lyt::InspectDR.PlotLayout)
+	mplot.layout[:ncolumns] = eplot.ncolumns
 	mplot.title = eplot.title
 
 	for s in eplot.subplots
 		plot = generatesubplot(s, eplot.theme)
-		plot.layout = lyt
+		plot.layout.values = lyt
 		add(mplot, plot)
-		plot.layout.legend.enabled = eplot.displaylegend
+		plot.layout[:enable_legend] = eplot.displaylegend
 	end
 
 	return mplot

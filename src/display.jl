@@ -67,10 +67,10 @@ end
 
 function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	mplot = InspectDR.Multiplot() #d.kwargs...
-	layout = InspectDR.Layout()
-	layout.wdata = d.wdata
-	layout.hdata = d.hdata
-	render(mplot, eplot, layout)
+	layout = InspectDR.StyleType(InspectDR.defaults.plotlayout)
+	layout[:halloc_data] = d.wdata
+	layout[:valloc_data] = d.hdata
+	render(mplot, eplot, layout.values)
 	return mplot
 end
 
