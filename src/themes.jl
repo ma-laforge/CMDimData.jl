@@ -23,7 +23,7 @@ end
 
 #==Selecting colors
 ===============================================================================#
-getcolor(::Void, v) = getcolor(COLORSCHEME_DEFAULT, v) #If no theme selected
+getcolor(::Nothing, v) = getcolor(COLORSCHEME_DEFAULT, v) #If no theme selected
 #getcolor(t::Theme, v) = getcolor(t.colorscheme, v)
 
 
@@ -44,13 +44,13 @@ function WfrmAttributes(t::Theme, la::LineAttributes, ga::GlyphAttributes;
 	hasglyph = (ga.shape != nothing)
 	hasglyphcolor = (ga.color != nothing)
 
-	linewidth = (nothing == la.width)? (1): la.width
-	linecolor = (nothing == la.color)? (:default): la.color
+	linewidth = (nothing == la.width) ? (1) : la.width
+	linecolor = (nothing == la.color) ? (:default) : la.color
 
-	glyphshape = hasglyph? ga.shape: (:none)
-	glyphsize = (nothing == ga.size)? (1): ga.size
+	glyphshape = hasglyph ? ga.shape : (:none)
+	glyphsize = (nothing == ga.size) ? (1) : ga.size
 
-	glyphfillcolor = hasglyphcolor? ga.color: (:transparent)
+	glyphfillcolor = hasglyphcolor ? ga.color : (:transparent)
 
 	if hasglyph && !haslinestyle
 		linestyle = :none

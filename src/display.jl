@@ -16,7 +16,7 @@ Plot "Displays" should register their own EasyPlotDisplays objects to be used:
 #==Constants
 ===============================================================================#
 #const FILE2MIME_MAP = Dict{DataType,String}(
-const FILE2MIME_MAP = ObjectIdDict(
+const FILE2MIME_MAP = IdDict(
 	FileIO2.PNGFmt => "image/png",
 	FileIO2.SVGFmt => "image/svg+xml",
 )
@@ -26,7 +26,7 @@ const FILE2MIME_MAP = ObjectIdDict(
 ===============================================================================#
 
 #To be subtyped by supported plot displays:
-abstract type EasyPlotDisplay <: Display end
+abstract type EasyPlotDisplay <: AbstractDisplay end
 struct NullDisplay <: EasyPlotDisplay; end
 struct UninitializedDisplay <: EasyPlotDisplay
 	dtype::Symbol
@@ -62,7 +62,7 @@ function readdefaults(::Type{EasyPlotDisplay}, envstr::String)
 end
 
 function readdefaults(::Type{Bool}, envstr::String, default::Bool)
-	const bstr = ["FALSE", "TRUE"]
+	bstr = ["FALSE", "TRUE"] #WANTCONST
 	val = get(ENV, envstr, string(default))
 	uval = uppercase(val)
 
@@ -72,7 +72,7 @@ function readdefaults(::Type{Bool}, envstr::String, default::Bool)
 	end
 
 	#Return default if not recognized as !default:
-	return bstr[!default+1] != uval? default: !default
+	return bstr[!default+1] != uval ? default : !default
 end
 
 #Constructors
@@ -93,7 +93,7 @@ end
 #Data
 #-------------------------------------------------------------------------------
 function __init__()
-global const defaults = Defaults()
+global defaults = Defaults() #WANTCONST
 end
 
 
@@ -138,27 +138,27 @@ end
 
 #==Rendering functions
 ===============================================================================#
-Base.mimewritable(mime::MIME, p::Plot, d::NullDisplay) = false
-Base.mimewritable(mime::MIME, p::Plot, d::UninitializedDisplay) = false
+Base.showable(mime::MIME, p::Plot, d::NullDisplay) = false
+Base.showable(mime::MIME, p::Plot, d::UninitializedDisplay) = false
 
 function render(d::UninitializedDisplay, plot::Plot)
 	warn("Plot display not initialized: $(d.dtype)")
 	throw(MethodError(render, (d, plot)))
 end
 
-Base.mimewritable(mime::MIME, p::Plot) =
-	Base.mimewritable(mime, p, defaults.renderdisplay)
-Base.mimewritable(mime::MIME"text/plain", p::Plot) = true
-Base.mimewritable(mime::MIME"image/svg+xml", p::Plot) =
-	defaults.rendersvg && Base.mimewritable(mime, p, defaults.renderdisplay)
+Base.showable(mime::MIME, p::Plot) =
+	Base.showable(mime, p, defaults.renderdisplay)
+Base.showable(mime::MIME"text/plain", p::Plot) = true
+Base.showable(mime::MIME"image/svg+xml", p::Plot) =
+	defaults.rendersvg && Base.showable(mime, p, defaults.renderdisplay)
 
 #Maintain text/plain MIME support.
-Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.showcompact(io, p)
+Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.show(io, p)
 
 function Base.show(io::IO, mime::MIME, p::Plot)
 	d = defaults.renderdisplay
 	#Try to figure out if possible *before* rendering:
-	if !mimewritable(mime, p, d)
+	if !showable(mime, p, d)
 		throw(MethodError(show, (io, mime, p)))
 	end
 	nativeplot = render(d, p)
@@ -175,7 +175,7 @@ function _write(filepath::String, mime::MIME, nativeplot)
 	end
 end
 
-function _write{T}(file::File{T}, plot::Plot, d::EasyPlotDisplay)
+function _write(file::File{T}, plot::Plot, d::EasyPlotDisplay) where T
 	mimestr = get(FILE2MIME_MAP, T, nothing)
 	if nothing == mimestr
 		throw(methoderror(_write, (file, plot, d)))

@@ -7,7 +7,7 @@ using MDDatasets
 #No real test code yet... just run demos:
 
 function printsep()
-	const separator = "\n-----------------------------"
+	separator = "\n-----------------------------"
 	println(separator)
 end
 

@@ -10,7 +10,7 @@ not support multi-dimensional datasets directly.==#
 ===============================================================================#
 addwfrm() = nothing #Register symbol here (implemented by rendering modules)
 
-function _addwfrm{T<:DataMD}(ax::AbstractAxes, d::T, args...; kwargs...)
+function _addwfrm(ax::AbstractAxes, d::T, args...; kwargs...) where T<:DataMD
 	throw("Plotting $T datasets not supported.")
 end
 
@@ -52,7 +52,7 @@ end
 #Add collection of DataRS{DataF1} results:
 function _addwfrm(ax::AbstractAxes, d::DataRS{DataF1}, crnid::String,
 	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
-	crnid = ""==crnid? crnid: "$crnid / "
+	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
@@ -63,16 +63,16 @@ function _addwfrm(ax::AbstractAxes, d::DataRS{DataF1}, crnid::String,
 end
 
 #Add collection of DataRS{Number} results:
-function _addwfrm{T<:Number}(ax::AbstractAxes, d::DataRS{T}, crnid::String,
-	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
-	cur_id = "" == crnid? id: "$id; $curcrnid"
+function _addwfrm(ax::AbstractAxes, d::DataRS{T}, crnid::String,
+	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int) where T<:Number
+	cur_id = (""==crnid) ? id : "$id; $curcrnid"
 	return _addwfrm(ax, DataF1(d.sweep.v, d.elem), cur_id, la, ga, pidx)
 end
 
 #Add collection of DataRS{DataRS} results:
 function _addwfrm(ax::AbstractAxes, d::DataRS{DataRS}, crnid::String,
 	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int)
-	crnid = ""==crnid? crnid: "$crnid / "
+	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
@@ -106,8 +106,8 @@ end
 
 #Add waveforms from a collection of DataHR{DataF1}:
 #(Convert DataHR{Number} => DataHR{DataF1} & add):
-function _addwfrm{T<:Number}(ax::AbstractAxes, d::DataHR{T},
-	id::String, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int)
+function _addwfrm(ax::AbstractAxes, d::DataHR{T},
+	id::String, la::LineAttributes, ga::GlyphAttributes, wfrmidx::Int) where T<:Number
 	return _addwfrm(ax, DataHR{DataF1}(d), id, la, ga, wfrmidx)
 end
 

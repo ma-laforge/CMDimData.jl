@@ -24,7 +24,7 @@ const VALID_SUBPLOTSTYLES = Set([:xy, :strip, :eye, :stripeye])
 #==Plot/subplot/waveform attributes
 ===============================================================================#
 
-const NullOr{T} = Union{Void, T}
+const NullOr{T} = Union{Nothing, T}
 
 #-------------------------------------------------------------------------------
 mutable struct LineAttributes <: AttributeList
@@ -154,8 +154,8 @@ const SHOW_INDENTSTR = "   "
 const SHOW_DEFAULTSTR = "default"
 
 function string_scales(axes::AxesAttributes)
-	xscale = nothing==axes.xscale? SHOW_DEFAULTSTR : string(axes.xscale)
-	yscale = nothing==axes.yscale? SHOW_DEFAULTSTR : string(axes.yscale)
+	xscale = nothing==axes.xscale ? SHOW_DEFAULTSTR : string(axes.xscale)
+	yscale = nothing==axes.yscale ? SHOW_DEFAULTSTR : string(axes.yscale)
 	return "$xscale/$yscale"
 end
 

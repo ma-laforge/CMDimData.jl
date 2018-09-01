@@ -87,7 +87,7 @@ const COLORSCHEME = Dict{Symbol, ColorScheme}(
 
 #==Selecting colors
 ===============================================================================#
-getcolor(s::ColorScheme, ::Void) = COLOR_BLACK #TODO: something better?
+getcolor(s::ColorScheme, ::Nothing) = COLOR_BLACK #TODO: something better?
 
 #Assumes value "v" starts at 1 (not 0):
 function getcolor(s::ColorScheme, v::Integer)

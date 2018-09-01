@@ -13,14 +13,14 @@ const AttributeFunctionMap = Dict{Symbol, Function}
 #      using keyword arguments
 #TODO: Find way to restrict Dict to DataTypes inherited from AttributeList
 #const AttributeListFunctionMap = Dict{DataType, Function}
-const AttributeListFunctionMap = ObjectIdDict #{DataType, Function}
+const AttributeListFunctionMap = IdDict #{DataType, Function}
 
 #==Helper functions
 ===============================================================================#
 
 #Copy in only attributes that are not "nothing":
-function ApplyNewAttributes{T<:AttributeList}(dest::T, newlist::T)
-	for attrib in fieldnames(newlist)
+function ApplyNewAttributes(dest::T, newlist::T) where T<:AttributeList
+	for attrib in fieldnames(T)
 		v = getfield(newlist,attrib)
 
 		if v != nothing

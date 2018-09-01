@@ -25,7 +25,7 @@ x = DataF1(x, 1*x)
 ===============================================================================#
 plot = EasyPlot.new(title = "Sample Plot")
 subplot = add(plot, linlin, alabels, title = "Symbol Test")
-xoffset=0; yoffset=0
+let xoffset=0, yoffset=0
 for sz in [1, 3, 5]
 	for w in [1, 2, 3]
 		wfrm = add(subplot, xshift(x+yoffset, xoffset), id="sz=$sz, w=$w")
@@ -41,6 +41,7 @@ for sz in [1, 2]
 		set(wfrm, line(style=:solid, color=:blue, width=w), glyph(shape=:square, size=sz))
 		xoffset += .5; yoffset += 10
 	end
+end
 end
 
 

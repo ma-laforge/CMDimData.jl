@@ -1,6 +1,9 @@
 #EasyPlot: A quick/easy way to generate, save, & display plots.
 #-------------------------------------------------------------------------------
-#__precompile__()
+#=
+TAGS:
+	#WANTCONST, HIDEWARN_0.7
+=#
 
 module EasyPlot
 
@@ -15,6 +18,7 @@ demofilelist() =
 using Colors
 using MDDatasets
 using FileIO2
+import Base: axes
 
 include("codegen.jl")
 include("colors.jl")
@@ -56,7 +60,6 @@ end
 #==Interface
 ===============================================================================#
 export line, glyph #Waveform attributes
-export axes #Plot axes attributes
 export eyeparam #Eye diagram parameters
 export add #Add new plot/subplot/waveform/...
 export set #Set Plot/Subplot/Waveform/... attributes
@@ -70,6 +73,7 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 
 #==Unexported tools available to rendering modules:
 ================================================================================
+	axes() #Plot axes attributes
 	AbstractAxes #Type: Provides advanced functionality to rendering modules.
 	AbstractAxes{:eye}: Expects .eye::EyeAttributes
 	addwfrm(ax::AbstractAxes, ...) #
