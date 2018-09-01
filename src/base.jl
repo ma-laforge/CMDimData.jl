@@ -36,7 +36,7 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
 mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
 	ref::InspectDR.Plot2D #Plot reference
@@ -72,31 +72,31 @@ mapglyphcolor(v) = mapcolor(v) #In case we want to diverge
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(::Void) = maplinewidth(1) #default
+maplinewidth(::Nothing) = maplinewidth(1) #default
 
 #Glyph size:
 mapglyphsize(sz) = 6*sz
-mapglyphsize(::Void) = mapglyphsize(1) #default
+mapglyphsize(::Nothing) = mapglyphsize(1) #default
 
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Line style not supported: :$v")
+		@info("Line style not supported: :$v")
 		result = maplinestyle(nothing)
 	end
 	return result
 end
-maplinestyle(::Void) = "-" #default
+maplinestyle(::Nothing) = "-" #default
 
 function mapglyphshape(v::Symbol)
 	result = get(glyphmap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Glyph shape not supported: :$v")
+		@info("Glyph shape not supported: :$v")
 		result = :o #Use some supported glyph shape
 	end
 	return result
 end
-mapglyphshape(::Void) = :none #default (no glyph)
+mapglyphshape(::Nothing) = :none #default (no glyph)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	return WfrmAttributes(label=id,
@@ -151,7 +151,7 @@ function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	srca = subplot.axes
 
 	#Update axis limits:
-	_getlim(v::Void) = NaN
+	_getlim(v::Nothing) = NaN
 	_getlim(v::Real) = Float64(v)
 	iplot.xext_full = InspectDR.PExtents1D(_getlim(srca.xmin), _getlim(srca.xmax))
 	strip.yext_full = InspectDR.PExtents1D(_getlim(srca.ymin), _getlim(srca.ymax))
@@ -161,7 +161,7 @@ function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	strip.yscale = InspectDR.AxisScale(scalemap[srca.yscale], tgtmajor=8, tgtminor=2)
 	
 	#Apply x/y labels:
-	stringlabel(s) = (s isa String)? s: ""
+	stringlabel(s) = (s isa String) ? s : ""
 	a = iplot.annotation
 	a.title = subplot.title
 	a.xlabel = stringlabel(srca.xlabel)

@@ -6,7 +6,7 @@
 ===============================================================================#
 #Default width/height for rendering inline plots (preferably low res):
 const DEFAULT_RENDERW = 300.0
-const DEFAULT_RENDERH = DEFAULT_RENDERW / φ #φ: golden ratio
+const DEFAULT_RENDERH = DEFAULT_RENDERW / MathConstants.φ #φ: golden ratio
 
 
 #==Defaults
@@ -18,22 +18,22 @@ mutable struct Defaults
 end
 
 function Defaults()
-	const ENVSTR_RENDERW = "EASYPLOTINSPECT_RENDERW"
-	const ENVSTR_RENDERH = "EASYPLOTINSPECT_RENDERH"
+	ENVSTR_RENDERW = "EASYPLOTINSPECT_RENDERW" #WANTCONST
+	ENVSTR_RENDERH = "EASYPLOTINSPECT_RENDERH" #WANTCONST
 	wrender = get(ENV, ENVSTR_RENDERW, "$DEFAULT_RENDERW")
 	hrender = get(ENV, ENVSTR_RENDERH, "$DEFAULT_RENDERH")
 
 	try
 		wrender = parse(Float64, wrender)
 	catch
-		warn("Invalid value for $ENVSTR_RENDERW: $wrender.  Setting to $DEFAULT_RENDERW.")
+		@warn("Invalid value for $ENVSTR_RENDERW: $wrender.  Setting to $DEFAULT_RENDERW.")
 		wrender = DEFAULT_RENDERW
 	end
 
 	try
 		hrender = parse(Float64, hrender)
 	catch
-		warn("Invalid value for $ENVSTR_RENDERH: $hrender.  Setting to $DEFAULT_RENDERH.")
+		@warn("Invalid value for $ENVSTR_RENDERH: $hrender.  Setting to $DEFAULT_RENDERH.")
 		hrender = DEFAULT_RENDERH
 	end
 
@@ -50,7 +50,7 @@ mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify w
 	wdata::Float64
 	hdata::Float64
 	args::Tuple
-	kwargs::Vector{Any}
+	kwargs::Base.Iterators.Pairs
 	PlotDisplay(args...;
 		wdata=InspectDR.DEFAULT_DATA_WIDTH, hdata=InspectDR.DEFAULT_DATA_HEIGHT, kwargs...) =
 		new(wdata, hdata, args, kwargs)
@@ -74,7 +74,7 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return mplot
 end
 
-Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), InspectDR.Multiplot))
 
 

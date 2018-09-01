@@ -1,6 +1,9 @@
 #EasyPlotInspect: Render EasyPlot-plots with InspectDR.jl
 #-------------------------------------------------------------------------------
-#__precompile__()
+#=
+TAGS:
+	#WANTCONST, HIDEWARN_0.7
+=#
 
 module EasyPlotInspect
 
