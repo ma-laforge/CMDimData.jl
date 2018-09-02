@@ -80,9 +80,11 @@ Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 
 #==Initialization
 ===============================================================================#
-EasyPlot.registerdefaults(:EasyPlotInspect,
-	maindisplay = PlotDisplay(),
-	renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
-)
+function __init__()
+	EasyPlot.registerdefaults(:EasyPlotInspect,
+		maindisplay = PlotDisplay(),
+		renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
+	)
+end
 
 #Last line
