@@ -1,12 +1,12 @@
 #EasyPlot: A quick/easy way to generate, save, & display plots.
 #-------------------------------------------------------------------------------
+__precompile__(true)
 #=
 TAGS:
 	#WANTCONST, HIDEWARN_0.7
 =#
 
 module EasyPlot
-
 const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
 #TODO: deprecate:
 sampleplotfile(id::Int) =
