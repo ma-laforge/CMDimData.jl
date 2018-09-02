@@ -53,7 +53,7 @@ end
 
 #Initialize any un-initialized backend specified as the main display:
 function initbackend()
-	_initbackend(defaults.maindisplay)
+	_initbackend(EasyPlot.defaults.maindisplay)
 end
 
 

@@ -109,12 +109,12 @@ function registerdefaults(displayid::Symbol;
 	maindisplay::EasyPlotDisplay = NullDisplay(),
 	renderdisplay::EasyPlotDisplay = NullDisplay())
 
-	if overwriteunitinialized(defaults.maindisplay, displayid, maindisplay)
-		defaults.maindisplay = maindisplay
+	if overwriteunitinialized(EasyPlot.defaults.maindisplay, displayid, maindisplay)
+		EasyPlot.defaults.maindisplay = maindisplay
 		pushdisplay(maindisplay)
 	end
-	if overwriteunitinialized(defaults.renderdisplay, displayid, renderdisplay)
-		defaults.renderdisplay = renderdisplay
+	if overwriteunitinialized(EasyPlot.defaults.renderdisplay, displayid, renderdisplay)
+		EasyPlot.defaults.renderdisplay = renderdisplay
 	end
 end
 
@@ -147,16 +147,16 @@ function render(d::UninitializedDisplay, plot::Plot)
 end
 
 Base.showable(mime::MIME, p::Plot) =
-	Base.showable(mime, p, defaults.renderdisplay)
+	Base.showable(mime, p, EasyPlot.defaults.renderdisplay)
 Base.showable(mime::MIME"text/plain", p::Plot) = true
 Base.showable(mime::MIME"image/svg+xml", p::Plot) =
-	defaults.rendersvg && Base.showable(mime, p, defaults.renderdisplay)
+	EasyPlot.defaults.rendersvg && Base.showable(mime, p, EasyPlot.defaults.renderdisplay)
 
 #Maintain text/plain MIME support.
 Base.show(io::IO, ::MIME"text/plain", p::Plot) = Base.show(io, p)
 
 function Base.show(io::IO, mime::MIME, p::Plot)
-	d = defaults.renderdisplay
+	d = EasyPlot.defaults.renderdisplay
 	#Try to figure out if possible *before* rendering:
 	if !showable(mime, p, d)
 		throw(MethodError(show, (io, mime, p)))
@@ -184,7 +184,7 @@ function _write(file::File{T}, plot::Plot, d::EasyPlotDisplay) where T
 	_write(file.path, MIME{Symbol(mimestr)}(), nativeplot)
 end
 
-_write(file::File, plot::Plot) =_write(file, plot, defaults.renderdisplay)
+_write(file::File, plot::Plot) =_write(file, plot, EasyPlot.defaults.renderdisplay)
 
 
 #Last line
