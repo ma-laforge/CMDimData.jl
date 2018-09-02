@@ -30,10 +30,10 @@ const MAP_TELEM2STR = Dict{Type, String}(v=>k for (k,v) in MAP_STR2TELEM)
 
 #Read/write dataset subtype:
 #-------------------------------------------------------------------------------
-writesubtype{T}(grp::HDF5Group, ::Type{DataHR{T}}) = a_write(grp, "subtype", MAP_TELEM2STR[T])
-writesubtype{T}(grp::HDF5Group, ::Type{DataRS{T}}) = a_write(grp, "subtype", MAP_TELEM2STR[T])
+writesubtype(grp::HDF5Group, ::Type{DataHR{T}}) where T = a_write(grp, "subtype", MAP_TELEM2STR[T])
+writesubtype(grp::HDF5Group, ::Type{DataRS{T}}) where T = a_write(grp, "subtype", MAP_TELEM2STR[T])
 
-readsubtype{T}(grp::HDF5Group, ::Type{T}) = T
+readsubtype(grp::HDF5Group, ::Type{T}) where T = T
 readsubtype(grp::HDF5Group, ::Type{DataHR}) = DataHR{MAP_STR2TELEM[a_read(grp, "subtype")]}
 readsubtype(grp::HDF5Group, ::Type{DataRS}) = DataRS{MAP_STR2TELEM[a_read(grp, "subtype")]}
 
@@ -75,7 +75,7 @@ end
 
 #Read/write DataRS{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataRS{T})
+function Base.write(w::EasyDataWriter, path::String, d::DataRS{T}) where T<:Number
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataRS])
 	writesubtype(grp, typeof(d))
@@ -83,11 +83,11 @@ function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataRS{T})
 	grp["data"] = d.elem
 end
 
-function Base.read{T<:Number}(r::EasyDataReader, path::String, ::Type{DataRS{T}})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{T}}) where T<:Number
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
-		throw(ParseError("Each DataRS node must have exactly one sweep:\n$path"))
+		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
 	end
 	data = d_read(grp, "data")
 	return DataRS{T}(sweeps[1], data)
@@ -95,7 +95,7 @@ end
 
 #Read/write DataHR{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataHR{T})
+function Base.write(w::EasyDataWriter, path::String, d::DataHR{T}) where T<:Number
 	grp = creategrp(w, path)
 	a_write(grp, "type", MAP_TDATA2STR[DataHR])
 	writesubtype(grp, typeof(d))
@@ -103,7 +103,7 @@ function Base.write{T<:Number}(w::EasyDataWriter, path::String, d::DataHR{T})
 	grp["data"] = d.elem
 end
 
-function Base.read{T<:Number}(r::EasyDataReader, path::String, ::Type{DataHR{T}})
+function Base.read(r::EasyDataReader, path::String, ::Type{DataHR{T}}) where T<:Number
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	data = d_read(grp, "data")
@@ -128,7 +128,7 @@ function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataF1}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
-		throw(ParseError("Each DataRS node must have exactly one sweep:\n$path"))
+		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
 	end
 	data = DataRS{DataF1}(sweeps[1])
 
@@ -183,7 +183,7 @@ function Base.read(r::EasyDataReader, path::String, ::Type{DataRS})
 	grp = opengrp(r, path)
 	dtype = MAP_STR2TDATA[a_read(grp, "type")]
 	if dtype != DataRS
-		throw(ParseError("Expecting DataRS node:\n$path"))
+		throw(Meta.ParseError("Expecting DataRS node:\n$path"))
 	end
 	dtype = readsubtype(grp, dtype)
 	return read(r, path, dtype) #Read appropriate data structure
@@ -193,7 +193,7 @@ function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataRS}})
 	grp = opengrp(r, path)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
-		throw(ParseError("Each DataRS node must have exactly one sweep:\n$path"))
+		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
 	end
 	data = DataRS{DataRS}(sweeps[1])
 

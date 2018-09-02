@@ -17,7 +17,7 @@ datapath(subpath::String) = "$hdf5dataroot/$subpath"
 function writeattr(w::EasyDataWriter, alist::AttributeList, elem::String)
 	grp = creategrp(w, plotelempath(elem))
 
-	for attrib in fieldnames(alist)
+	for attrib in fieldnames(typeof(alist))
 		v = getfield(alist, attrib)
 
 		#Write out only AttributeList attributes that are not "nothing":

@@ -9,7 +9,7 @@ using EasyData
 #No real test code yet... just run demos:
 
 function printsep()
-	const separator = "\n-----------------------------"
+	separator = "\n-----------------------------" #WANTCONST
 	println(separator)
 end
 
@@ -22,6 +22,7 @@ dread = EasyData._read(filepath, h5path, DataMD)
 @show data - dread
 
 #throw(:ERR)
+let filepath #HIDEWARN_0.7
 for i in 1:1
 	#Test high-level "File()" read/write interface:
 	filepath = "./sampleplot$i.hdf5"
@@ -31,6 +32,7 @@ for i in 1:1
 		write(file, p)
 	println("\n\nReloading...")
 		@show p=read(file, EasyPlot.Plot);
+end
 end
 #throw(:ERR)
 

@@ -1,5 +1,11 @@
 #EasyData: A quick/easy way to save datasets/plots to file.
 #-------------------------------------------------------------------------------
+__precompile__(true)
+#=
+TAGS:
+	#WANTCONST, HIDEWARN_0.7
+=#
+
 module EasyData
 
 const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
