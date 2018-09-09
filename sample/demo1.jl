@@ -6,8 +6,8 @@ using MDDatasets
 
 #==Constants
 ===============================================================================#
-const linlin = axes(xscale = :lin, yscale = :lin)
-const alabels = axes(xlabel="X-Axis Label", ylabel="X-Axis Label")
+const linlin = paxes(xscale = :lin, yscale = :lin)
+const alabels = paxes(xlabel="X-Axis Label", ylabel="X-Axis Label")
 
 #Defaults
 #-------------------------------------------------------------------------------

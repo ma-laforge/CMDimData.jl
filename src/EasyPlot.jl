@@ -18,7 +18,6 @@ demofilelist() =
 using Colors
 using MDDatasets
 using FileIO2
-import Base: axes
 
 include("codegen.jl")
 include("colors.jl")
@@ -63,6 +62,7 @@ export line, glyph #Waveform attributes
 export eyeparam #Eye diagram parameters
 export add #Add new plot/subplot/waveform/...
 export set #Set Plot/Subplot/Waveform/... attributes
+export paxes #Plot axes attributes (Bad idea to extend Base.axes: when defining zero-argument signature)
 
 #
 export render #render will not display (if possible).  "display()" shows plot.
@@ -73,7 +73,6 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 
 #==Unexported tools available to rendering modules:
 ================================================================================
-	axes() #Plot axes attributes
 	AbstractAxes #Type: Provides advanced functionality to rendering modules.
 	AbstractAxes{:eye}: Expects .eye::EyeAttributes
 	addwfrm(ax::AbstractAxes, ...) #

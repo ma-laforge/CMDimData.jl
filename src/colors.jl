@@ -104,7 +104,7 @@ function getcolor(s::ColorScheme, v::Symbol)
 
 	result = get(COLOR_NAMED, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Color not supported: $v")
+		@info("Color not supported: $v")
 		result = getcolor(s, nothing)
 	end
 	return result

@@ -55,8 +55,8 @@ mutable struct AxesAttributes <: AttributeList
 	xscale; yscale #VALID_AXISSCALES
 end
 
-#"axes" constructor:
-eval(genexpr_attriblistbuilder(:axes, AxesAttributes, reqfieldcnt=0))
+#"paxes" constructor:
+eval(genexpr_attriblistbuilder(:paxes, AxesAttributes, reqfieldcnt=0))
 
 mutable struct EyeAttributes <: AttributeList
 	tbit
@@ -108,7 +108,7 @@ mutable struct Subplot
 	axes::AxesAttributes
 	eye::EyeAttributes #TODO: should not be available in all plot types
 end
-Subplot() = Subplot("", :xy, Waveform[], axes(xscale=:lin, yscale=:lin), eyeparam(1, tstart=0))
+Subplot() = Subplot("", :xy, Waveform[], paxes(xscale=:lin, yscale=:lin), eyeparam(1, tstart=0))
 
 
 #-------------------------------------------------------------------------------

@@ -68,7 +68,7 @@ function readdefaults(::Type{Bool}, envstr::String, default::Bool)
 
 	if !(in(uval, bstr))
 		optstr = join(bstr, ", ")
-		warn("$envstr valid settings are: $optstr")
+		@warn("$envstr valid settings are: $optstr")
 	end
 
 	#Return default if not recognized as !default:
@@ -142,7 +142,7 @@ Base.showable(mime::MIME, p::Plot, d::NullDisplay) = false
 Base.showable(mime::MIME, p::Plot, d::UninitializedDisplay) = false
 
 function render(d::UninitializedDisplay, plot::Plot)
-	warn("Plot display not initialized: $(d.dtype)")
+	@warn("Plot display not initialized: $(d.dtype)")
 	throw(MethodError(render, (d, plot)))
 end
 

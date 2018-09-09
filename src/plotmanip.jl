@@ -40,7 +40,7 @@ function _set(obj::Any, listfnmap::AttributeListFunctionMap, fnmap::AttributeFun
 		else
 			argstr = string(typeof(value))
 			objtype = typeof(obj)
-			warn("Argument \"$argstr\" not recognized by \"set(::$objtype, ...)\"")
+			@warn("Argument \"$argstr\" not recognized by \"set(::$objtype, ...)\"")
 		end
 	end
 
@@ -52,7 +52,7 @@ function _set(obj::Any, listfnmap::AttributeListFunctionMap, fnmap::AttributeFun
 		else
 			argstr = string(arg)
 			objtype = typeof(obj)
-			warn("Argument \"$argstr\" not recognized by \"set(::$objtype, ...)\"")
+			@warn("Argument \"$argstr\" not recognized by \"set(::$objtype, ...)\"")
 		end
 	end
 	return

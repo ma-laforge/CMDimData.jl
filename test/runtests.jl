@@ -17,7 +17,7 @@ x=collect(1:10)
 printsep()
 	dfltline = line(style=:solid, color=:red)
 	dfltglyph = glyph(shape=:square, size=3)
-	axes_loglin = axes(xscale = :log, yscale = :lin)
+	axes_loglin = paxes(xscale = :log, yscale = :lin)
 	@show dfltline
 	@show dfltglyph
 
