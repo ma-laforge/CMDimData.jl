@@ -36,7 +36,7 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
 mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
 	ref::PyCall.PyObject #Axes reference
@@ -64,7 +64,7 @@ WfrmAttributes(;label=nothing,
 	markeredgecolor=nothing) =
 	WfrmAttributes(label, color, linewidth, linestyle,
 		marker, markersize, markerfacecolor, markeredgecolor, linewidth,
-		nothing == markerfacecolor?"none":"full"
+		nothing == markerfacecolor ? "none" : "full"
 	)
 
 
@@ -74,7 +74,7 @@ const HEX_CODES = UInt8[
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
 function int2mplcolorstr(v::UInt)
-	result = Array{UInt8}(7) #6HEX+Hash symbol
+	result = Array{UInt8}(undef, 7) #6HEX+Hash symbol
 	result[1] = '#'
 	for i in length(result):-1:2
 		result[i] = HEX_CODES[(v & 0xF)+1]
@@ -91,35 +91,35 @@ mapfacecolor(v) = mapcolor(v) #In case we want to diverge
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(::Void) = maplinewidth(1) #default
+maplinewidth(::Nothing) = maplinewidth(1) #default
 
 #Marker size:
 mapmarkersize(sz) = 5*sz
-mapmarkersize(::Void) = mapmarkersize(1)
+mapmarkersize(::Nothing) = mapmarkersize(1)
 
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Line style not supported")
+		@info("Line style not supported")
 		result = maplinestyle(nothing)
 	end
 	return result
 end
-maplinestyle(::Void) = "-" #default
+maplinestyle(::Nothing) = "-" #default
 
 function mapmarkershape(v::Symbol)
 	result = get(markermap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Marker shape not supported")
+		@info("Marker shape not supported")
 		result = "o" #Use some supported marker
 	end
 	return result
 end
-mapmarkershape(::Void) = "" #default (no marker)
+mapmarkershape(::Nothing) = "" #default (no marker)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
-	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT?
-		nothing: mapfacecolor(attr.glyphfillcolor)
+	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT ?
+		nothing : mapfacecolor(attr.glyphfillcolor)
 
 	return WfrmAttributes(label=id,
 		color=mapcolor(attr.linecolor),
@@ -139,7 +139,7 @@ end
 #Add DataF1 results:
 function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 	kwargs = Any[]
-	for attrib in fieldnames(a)
+	for attrib in fieldnames(typeof(a))
 		v = getfield(a,attrib)
 
 		if v != nothing

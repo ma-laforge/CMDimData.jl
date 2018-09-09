@@ -24,6 +24,7 @@ pdisp_nogui = EasyPlotMPL.PlotDisplay(guimode=false)
 
 #==Render sample EasyPlot plots
 ===============================================================================#
+let plot #HIDEWARN_0.7
 for demofile in demolist
 	fileshort = basename(demofile)
 	sepline = "---------------------------------------------------------------------"
@@ -32,6 +33,7 @@ for demofile in demolist
 	plot = evalfile(demofile)
 	display(pdisp, plot)
 end
+end
 
 
 #==Test different backends
@@ -39,10 +41,12 @@ end
 if false
 #	backendlist = [:tk, :gtk3, :gtk, :qt, :wx]
 	backendlist = [:tk, :gtk, :qt, :wx]
+	let pdisp #HIDEWARN_0.7
 	for backend in backendlist
 		pdisp = EasyPlotMPL.PlotDisplay(backend)
 		plot.title = "Backend: $backend"
 		display(pdisp, plot)
+	end
 	end
 end
 

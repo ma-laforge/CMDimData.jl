@@ -4,7 +4,7 @@
 
 #==Constants
 ===============================================================================#
-#HACK: mimewritable works on Figure objects (not types)
+#HACK: showable works on Figure objects (not types)
 #HACK: hardcoding supported mimes (might not be true for different backends)
 const _supportedmimes = Set(["image/svg+xml", "image/png"])
 const backends = Set(["tk", "gtk3", "gtk", "qt", "wx"])
@@ -26,11 +26,11 @@ function Defaults()
 
 	if !in(bk, backends)
 		optstr = join(backends, ", ")
-		warn("$envstr valid settings are: $optstr")
+		@warn("$envstr valid settings are: $optstr")
 		bk = dflt
 	end
 
-	Defaults(bk)
+	Defaults(Symbol(bk))
 end
 
 #Data
@@ -44,7 +44,7 @@ mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify w
 	guimode::Bool
 	backend::Symbol
 	args::Tuple
-	kwargs::Vector{Any}
+	kwargs::Base.Iterators.Pairs
 	PlotDisplay(backend::Symbol, args...; guimode::Bool=true, kwargs...) =
 		new(guimode, backend, args, kwargs)
 end
@@ -102,16 +102,18 @@ function render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return fig
 end
 
-Base.mimewritable{T}(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) where T =
 	in(string(T), _supportedmimes)
 #method_exists(writemime, (IO, typeof(mime), PyPlot.Figure) #Apparently not enough
 
 
 #==Initialization
 ===============================================================================#
-EasyPlot.registerdefaults(:MPL,
-	maindisplay = PlotDisplay(guimode=true),
-	renderdisplay = PlotDisplay(guimode=false)
-)
+function __init__()
+	EasyPlot.registerdefaults(:EasyPlotMPL,
+		maindisplay = PlotDisplay(guimode=true),
+		renderdisplay = PlotDisplay(guimode=false)
+	)
+end
 
 #Last line

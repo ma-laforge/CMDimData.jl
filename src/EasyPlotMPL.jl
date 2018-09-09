@@ -1,5 +1,10 @@
 #EasyPlotMPL: Render EasyPlot-plots with Matplotlib (through PyPlot)
 #-------------------------------------------------------------------------------
+__precompile__(true)
+#=
+TAGS:
+	#WANTCONST, HIDEWARN_0.7
+=#
 module EasyPlotMPL
 
 import EasyPlot #Import only - avoid collisions
