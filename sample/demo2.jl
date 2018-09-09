@@ -10,7 +10,7 @@ import Printf: @sprintf
 
 #==Constants
 ===============================================================================#
-vvst = axes(xlabel="Time (s)", ylabel="Amplitude (V)")
+vvst = paxes(xlabel="Time (s)", ylabel="Amplitude (V)")
 color1 = line(color=2)
 color2 = line(color=3)
 color3 = line(color=4)

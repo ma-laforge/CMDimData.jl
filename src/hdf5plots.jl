@@ -88,7 +88,7 @@ function __read(p::Plot, r::EasyDataReader, elem::String)
 		__read(subplot, r, "$elem/wfrm$wfrmidx")
 	end
 
-	set(subplot, readattr(r, EasyPlot.axes(), "$elem/axes"))
+	set(subplot, readattr(r, EasyPlot.paxes(), "$elem/axes"))
 	return subplot
 end
 
