@@ -4,6 +4,7 @@
 using EasyPlotGrace
 using EasyPlot
 using FileIO2
+import GracePlot
 
 
 #==Constants
@@ -28,6 +29,7 @@ pdisp_nogui = EasyPlotGrace.PlotDisplay(guimode=false)
 
 #==Render sample EasyPlot plots
 ===============================================================================#
+let plot #HIDEWARN_0.7
 for demofile in demolist
 	fileshort = basename(demofile)
 	sepline = "---------------------------------------------------------------------"
@@ -35,6 +37,7 @@ for demofile in demolist
 	println(sepline)
 	plot = evalfile(demofile)
 	display(pdisp, plot)
+end
 end
 
 :SampleCode_Executed

@@ -13,7 +13,7 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
 #Manages additional colors (leaves default ones intact):
 #NOTE: 0 appears to be bkgnd color & 1: default frame color
@@ -40,7 +40,7 @@ const HEX_CODES = UInt8[
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
 function int2hexcolorstr(v::UInt32)
-	result = Array{UInt8}(7)
+	result = Array{UInt8}(undef, 7)
 	result[1] = '#'
 	for i in length(result):-1:2
 		result[i] = HEX_CODES[(v & 0xF)+1]
@@ -82,11 +82,11 @@ mapfacecolor(mgr::ColorMgr, v) = mapcolor(mgr, v) #In case we want to diverge
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(::Void) = maplinewidth(1) #default
+maplinewidth(::Nothing) = maplinewidth(1) #default
 
 #Glyph size:
 mapglyphsize(sz) = sz/2
-mapglyphsize(::Void) = mapglyphsize(1) #default
+mapglyphsize(::Nothing) = mapglyphsize(1) #default
 
 #TODO: Support ColorScheme:
 function _graceline(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
@@ -97,13 +97,13 @@ function _graceline(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
 end
 function _graceglyph(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
 	nofill = (EasyPlot.COLOR_TRANSPARENT == attr.glyphfillcolor)
-	glyphfillcolor = nofill? EasyPlot.COLOR_WHITE: attr.glyphfillcolor
+	glyphfillcolor = nofill ? EasyPlot.COLOR_WHITE : attr.glyphfillcolor
 	return glyph(shape=attr.glyphshape,
 	             size=mapglyphsize(attr.glyphsize),
 	             linewidth=maplinewidth(attr.linewidth),
 	             color=mapcolor(mgr, attr.glyphlinecolor),
 	             fillcolor=mapfacecolor(mgr, glyphfillcolor),
-	             fillpattern=(nofill?0:1)
+	             fillpattern=(nofill ? 0 : 1)
 	            )
 end
 
@@ -140,7 +140,7 @@ function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot,
 
 	autofit(g)
 	srca = subplot.axes
-	set(g, GracePlot.axes(
+	set(g, GracePlot.paxes(
 		xscale = srca.xscale, yscale = srca.yscale,
 		xmin = srca.xmin, xmax = srca.xmax,
 		ymin = srca.ymin, ymax = srca.ymax,

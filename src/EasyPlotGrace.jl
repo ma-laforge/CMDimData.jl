@@ -1,6 +1,10 @@
 #EasyPlotGrace: Render EasyPlot-plots with Grace/xmgrace (through GracePlot)
 #-------------------------------------------------------------------------------
-#__precompile__()
+__precompile__(true)
+#=
+TAGS:
+	#WANTCONST, HIDEWARN_0.7
+=#
 
 module EasyPlotGrace
 

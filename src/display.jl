@@ -14,7 +14,7 @@ mutable struct Defaults
 end
 
 function Defaults()
-	const ENVSTR_RENDERDPI = "EASYPLOTGRACE_RENDERDPI"
+	ENVSTR_RENDERDPI = "EASYPLOTGRACE_RENDERDPI" #WANTCONST
 	renderdpi = get(ENV, ENVSTR_RENDERDPI, "$DEFAULT_RENDERDPI")
 
 	try
@@ -38,7 +38,7 @@ mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify w
 	guimode::Bool
 	dpi::Int
 	args::Tuple
-	kwargs::Vector{Any}
+	kwargs::Base.Iterators.Pairs
 	PlotDisplay(args...; guimode=true, dpi=GracePlot.DEFAULT_DPI, kwargs...) =
 		new(guimode, dpi, args, kwargs)
 end
@@ -57,15 +57,17 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return render(plot, eplot)
 end
 
-Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), GracePlot.Plot))
 
 
 #==Initialization
 ===============================================================================#
-EasyPlot.registerdefaults(:EasyPlotGrace,
-	maindisplay = PlotDisplay(guimode=true),
-	renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
-)
+function __init__()
+	EasyPlot.registerdefaults(:EasyPlotGrace,
+		maindisplay = PlotDisplay(guimode=true),
+		renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
+	)
+end
 
 #Last line
