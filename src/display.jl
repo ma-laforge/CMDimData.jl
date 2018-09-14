@@ -2,47 +2,6 @@
 #-------------------------------------------------------------------------------
 
 
-#==Constants
-===============================================================================#
-#Default width/height for rendering inline plots (preferably low res):
-const DEFAULT_RENDERW = 300.0
-const DEFAULT_RENDERH = DEFAULT_RENDERW / MathConstants.φ #φ: golden ratio
-
-
-#==Defaults
-===============================================================================#
-mutable struct Defaults
-	#Default width/height for rendering inline plots:
-	wrender::Float64
-	hrender::Float64
-end
-
-function Defaults()
-	ENVSTR_RENDERW = "EASYPLOTINSPECT_RENDERW" #WANTCONST
-	ENVSTR_RENDERH = "EASYPLOTINSPECT_RENDERH" #WANTCONST
-	wrender = get(ENV, ENVSTR_RENDERW, "$DEFAULT_RENDERW")
-	hrender = get(ENV, ENVSTR_RENDERH, "$DEFAULT_RENDERH")
-
-	try
-		wrender = parse(Float64, wrender)
-	catch
-		@warn("Invalid value for $ENVSTR_RENDERW: $wrender.  Setting to $DEFAULT_RENDERW.")
-		wrender = DEFAULT_RENDERW
-	end
-
-	try
-		hrender = parse(Float64, hrender)
-	catch
-		@warn("Invalid value for $ENVSTR_RENDERH: $hrender.  Setting to $DEFAULT_RENDERH.")
-		hrender = DEFAULT_RENDERH
-	end
-
-	Defaults(wrender, hrender)
-end
-
-const defaults = Defaults()
-
-
 #==Types
 ===============================================================================#
 mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
@@ -76,15 +35,5 @@ end
 
 Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), InspectDR.Multiplot))
-
-
-#==Initialization
-===============================================================================#
-function __init__()
-	EasyPlot.registerdefaults(:EasyPlotInspect,
-		maindisplay = PlotDisplay(),
-		renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
-	)
-end
 
 #Last line

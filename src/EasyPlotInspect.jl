@@ -18,6 +18,20 @@ import InspectDR: LineAttributes, GlyphAttributes
 
 include("base.jl")
 include("display.jl")
+include("defaults.jl")
+
+
+#==Initialization
+===============================================================================#
+function __init__()
+	global defaults
+	_initialize(defaults)
+
+	EasyPlot.registerdefaults(:EasyPlotInspect,
+		maindisplay = PlotDisplay(),
+		renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
+	)
+end
 
 end
 
