@@ -1,22 +1,10 @@
 #EasyPlot Display functionnality
 #-------------------------------------------------------------------------------
-#display
-
-
-#=Design philosophy:
-Defaults are initialized from ENV[] variables, so that they can be set from
-.juliarc.jl without first loading the EasyPlot module.
-
-Plot "Displays" should register their own EasyPlotDisplays objects to be used:
-   1) Explicitly from the display stack (ex: with external GUI plot applications),
-   2) Indirectly from the show(MIME) system (ex: generating inline plot images),
-=#
 
 
 #==Constants
 ===============================================================================#
-#const FILE2MIME_MAP = Dict{DataType,String}(
-const FILE2MIME_MAP = IdDict(
+const FILE2MIME_MAP = IdDict{DataType,String}(
 	FileIO2.PNGFmt => "image/png",
 	FileIO2.SVGFmt => "image/svg+xml",
 )
@@ -30,92 +18,6 @@ abstract type EasyPlotDisplay <: AbstractDisplay end
 struct NullDisplay <: EasyPlotDisplay; end
 struct UninitializedDisplay <: EasyPlotDisplay
 	dtype::Symbol
-end
-
-
-#==Defaults
-===============================================================================#
-mutable struct Defaults
-	rendersvg::Bool #Might want to dissalow SVG renderings for performance reasons
-
-	#Plot-aware display to be added to the display stack:
-	maindisplay::EasyPlotDisplay
-
-	#Display used to render MIME-compatible plots
-	#(ex: support for "plot-unaware" displays, like bitmap canvases)
-	renderdisplay::EasyPlotDisplay
-end
-
-
-#Helpers
-#-------------------------------------------------------------------------------
-function readdefaults(::Type{EasyPlotDisplay}, envstr::String)
-	val = get(ENV, envstr, "ANY")
-	uval = uppercase(val)
-	if "ANY" == uval
-		return UninitializedDisplay(:Any)
-	elseif "NONE" == uval
-		return NullDisplay()
-	else
-		return UninitializedDisplay(Symbol(val))
-	end
-end
-
-function readdefaults(::Type{Bool}, envstr::String, default::Bool)
-	bstr = ["FALSE", "TRUE"] #WANTCONST
-	val = get(ENV, envstr, string(default))
-	uval = uppercase(val)
-
-	if !(in(uval, bstr))
-		optstr = join(bstr, ", ")
-		@warn("$envstr valid settings are: $optstr")
-	end
-
-	#Return default if not recognized as !default:
-	return bstr[!default+1] != uval ? default : !default
-end
-
-#Constructors
-#-------------------------------------------------------------------------------
-function Defaults()
-	rendersvg = readdefaults(Bool, "EASYPLOT_RENDERSVG", true)
-	renderonly = readdefaults(Bool, "EASYPLOT_RENDERONLY", false)
-	d = readdefaults(EasyPlotDisplay, "EASYPLOT_DEFAULTDISPLAY")
-	maindisplay = renderdisplay = d
-
-	if renderonly
-		maindisplay = NullDisplay()
-	end
-
-	Defaults(rendersvg, maindisplay, renderdisplay)
-end
-
-#Data
-#-------------------------------------------------------------------------------
-function __init__()
-global defaults = Defaults() #WANTCONST
-end
-
-
-#==Registration functions
-===============================================================================#
-overwriteunitinialized(::EasyPlotDisplay, ::Symbol, ::EasyPlotDisplay) = false
-overwriteunitinialized(::UninitializedDisplay, ::Symbol, ::NullDisplay) = false
-function overwriteunitinialized(d::UninitializedDisplay, displayid::Symbol, newd::EasyPlotDisplay)
-	return (:Any == d.dtype || displayid  == d.dtype)
-end
-
-function registerdefaults(displayid::Symbol; 
-	maindisplay::EasyPlotDisplay = NullDisplay(),
-	renderdisplay::EasyPlotDisplay = NullDisplay())
-
-	if overwriteunitinialized(EasyPlot.defaults.maindisplay, displayid, maindisplay)
-		EasyPlot.defaults.maindisplay = maindisplay
-		pushdisplay(maindisplay)
-	end
-	if overwriteunitinialized(EasyPlot.defaults.renderdisplay, displayid, renderdisplay)
-		EasyPlot.defaults.renderdisplay = renderdisplay
-	end
 end
 
 

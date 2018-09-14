@@ -27,6 +27,7 @@ include("eyediag.jl")
 include("datamd.jl")
 include("themes.jl")
 include("display.jl")
+include("defaults.jl")
 
 #Initialize backend (importing module initializes corresponding backend)
 #-------------------------------------------------------------------------------
@@ -103,6 +104,14 @@ EasyPlot.render{T<:Symbol}(::Backend{T}, plot::EasyPlot.Plot, args...; kwargs...
 	=> returns YOUR_MODULE_PLOT object
 Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 ==#
+
+
+#==Initialization
+===============================================================================#
+function __init__()
+	global defaults
+	_initialize(defaults)
+end
 
 end #EasyPlot
 
