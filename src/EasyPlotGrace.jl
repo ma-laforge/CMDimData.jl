@@ -18,6 +18,20 @@ import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")
 include("display.jl")
+include("defaults.jl")
+
+
+#==Initialization
+===============================================================================#
+function __init__()
+	global defaults
+	_initialize(defaults)
+
+	EasyPlot.registerdefaults(:EasyPlotGrace,
+		maindisplay = PlotDisplay(guimode=true),
+		renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
+	)
+end
 
 end
 

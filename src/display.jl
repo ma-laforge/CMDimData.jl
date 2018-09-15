@@ -2,34 +2,6 @@
 #-------------------------------------------------------------------------------
 
 
-#==Constants
-===============================================================================#
-DEFAULT_RENDERDPI = 75 #Low res for inline graphics
-
-
-#==Defaults
-===============================================================================#
-mutable struct Defaults
-	renderdpi::Int #Low res for inline graphics
-end
-
-function Defaults()
-	ENVSTR_RENDERDPI = "EASYPLOTGRACE_RENDERDPI" #WANTCONST
-	renderdpi = get(ENV, ENVSTR_RENDERDPI, "$DEFAULT_RENDERDPI")
-
-	try
-		renderdpi = parse(Int, renderdpi)
-	catch
-		warn("Invalid value for $ENVSTR_RENDERDPI: $renderdpi.  Setting to $(DEFAULT_RENDERDPI).")
-		renderdpi = DEFAULT_RENDERDPI
-	end
-
-	Defaults(renderdpi)
-end
-
-const defaults = Defaults()
-
-
 #==Types
 ===============================================================================#
 #TODO: support guimode=false
@@ -60,14 +32,5 @@ end
 Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), GracePlot.Plot))
 
-
-#==Initialization
-===============================================================================#
-function __init__()
-	EasyPlot.registerdefaults(:EasyPlotGrace,
-		maindisplay = PlotDisplay(guimode=true),
-		renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
-	)
-end
 
 #Last line
