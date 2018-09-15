@@ -91,32 +91,32 @@ const empty_listfnmap = AttributeListFunctionMap()
 const empty_fnmap = AttributeFunctionMap()
 
 #-------------------------------------------------------------------------------
-const setplot_fnmap = AttributeFunctionMap([
-	(:title, settitle)
-	(:displaylegend, setdisplaylegend)
-])
+const setplot_fnmap = AttributeFunctionMap(
+	:title => settitle,
+	:displaylegend => setdisplaylegend
+)
 set(p::Plot, args...; kwargs...) =
 	_set(p, empty_listfnmap, setplot_fnmap, args...; kwargs...)
 
 #-------------------------------------------------------------------------------
-const setsubplot_listfnmap = AttributeListFunctionMap([
-	(AxesAttributes, setaxes)
-	(EyeAttributes, seteyeparam)
-])
-const setsubplot_fnmap = AttributeFunctionMap([
-	(:title, settitle)
-])
+const setsubplot_listfnmap = AttributeListFunctionMap(
+	AxesAttributes => setaxes,
+	EyeAttributes => seteyeparam
+)
+const setsubplot_fnmap = AttributeFunctionMap(
+	:title => settitle
+)
 set(s::Subplot, args...; kwargs...) =
 	_set(s, setsubplot_listfnmap, setsubplot_fnmap, args...; kwargs...)
 
 #-------------------------------------------------------------------------------
-const setwfrm_listfnmap = AttributeListFunctionMap([
-	(LineAttributes, setline)
-	(GlyphAttributes, setglyph)
-])
-const setwfrm_fnmap = AttributeFunctionMap([
-	(:id, setid)
-])
+const setwfrm_listfnmap = AttributeListFunctionMap(
+	LineAttributes => setline,
+	GlyphAttributes => setglyph
+)
+const setwfrm_fnmap = AttributeFunctionMap(
+	:id => setid
+)
 set(w::Waveform, args...; kwargs...) =
 	_set(w, setwfrm_listfnmap, setwfrm_fnmap, args...; kwargs...)
 
