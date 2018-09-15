@@ -6,36 +6,8 @@
 ===============================================================================#
 #HACK: showable works on Figure objects (not types)
 #HACK: hardcoding supported mimes (might not be true for different backends)
-const _supportedmimes = Set(["image/svg+xml", "image/png"])
-const backends = Set(["tk", "gtk3", "gtk", "qt", "wx"])
-
-
-#==Defaults
-===============================================================================#
-mutable struct Defaults
-	backend::Symbol
-end
-
-#Constructors
-#-------------------------------------------------------------------------------
-function Defaults()
-	dflt = "tk"
-	envstr = "EASYPLOTMPL_DEFAULTBACKEND"
-	val = get(ENV, envstr, dflt)
-	bk = lowercase(val)
-
-	if !in(bk, backends)
-		optstr = join(backends, ", ")
-		@warn("$envstr valid settings are: $optstr")
-		bk = dflt
-	end
-
-	Defaults(Symbol(bk))
-end
-
-#Data
-#-------------------------------------------------------------------------------
-const defaults = Defaults()
+const SUPPORTED_MIMES = Set(["image/svg+xml", "image/png"])
+const SUPPORTED_BACKENDS = Set(["tk", "gtk3", "gtk", "qt", "wx"])
 
 
 #==Main Types
@@ -103,17 +75,7 @@ function render(d::PlotDisplay, eplot::EasyPlot.Plot)
 end
 
 Base.showable(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) where T =
-	in(string(T), _supportedmimes)
+	in(string(T), SUPPORTED_MIMES)
 #method_exists(writemime, (IO, typeof(mime), PyPlot.Figure) #Apparently not enough
-
-
-#==Initialization
-===============================================================================#
-function __init__()
-	EasyPlot.registerdefaults(:EasyPlotMPL,
-		maindisplay = PlotDisplay(guimode=true),
-		renderdisplay = PlotDisplay(guimode=false)
-	)
-end
 
 #Last line

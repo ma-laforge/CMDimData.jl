@@ -17,7 +17,19 @@ import EasyPlot: render
 
 include("base.jl")
 include("display.jl")
+include("defaults.jl")
 
+#==Initialization
+===============================================================================#
+function __init__()
+	global defaults
+	_initialize(defaults)
+
+	EasyPlot.registerdefaults(:EasyPlotMPL,
+		maindisplay = PlotDisplay(guimode=true),
+		renderdisplay = PlotDisplay(guimode=false)
+	)
+end
 
 end
 
