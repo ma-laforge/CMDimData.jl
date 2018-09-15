@@ -49,7 +49,7 @@ To select the default `EasyPlot` display, add the following:
 
 To initialize said user-selected display module once `EasyPlot` is loaded, simply execute the following:
 
-	EasyPlot.initbackend()
+	EasyPlot.@initbackend()
 
 Currently supported options for `EASYPLOT_DEFAULTDISPLAY` are:
  - `None`: Do not auto-initialize default displays.
@@ -59,6 +59,8 @@ Currently supported options for `EASYPLOT_DEFAULTDISPLAY` are:
  - `EasyPlotMPL`: (PyPlot/Matplotlib)
  - `EasyPlotQwt`: (Qwt)
  - `EasyPlotPlots`: (Plots.jl)
+
+Please note that the `@initbackend()` macro should only be used for interactive plotting & simple scripts.  Conditionally importing of modules does not work well with the Julia pre-compilation system.
 
 To display EasyPlot plots using inline graphics, add the following:
 

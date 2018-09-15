@@ -28,33 +28,7 @@ include("datamd.jl")
 include("themes.jl")
 include("display.jl")
 include("defaults.jl")
-
-#Initialize backend (importing module initializes corresponding backend)
-#-------------------------------------------------------------------------------
-function _initbackend(d::EasyPlot.NullDisplay) #Use InspectDR as default
-	eval(:(import EasyPlotInspect))
-	return
-end
-
-function _initbackend(d::EasyPlot.UninitializedDisplay)
-	bkmodule = d.dtype
-
-	if "ANY" == uppercase(string(bkmodule))
-		_initbackend(EasyPlot.NullDisplay())
-	else
-		eval(:(import $bkmodule))
-	end
-	return
-end
-
-function _initbackend(d)
-	return #Already initialized
-end
-
-#Initialize any un-initialized backend specified as the main display:
-function initbackend()
-	_initbackend(EasyPlot.defaults.maindisplay)
-end
+include("init.jl")
 
 
 #==Interface
@@ -79,7 +53,8 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 	addwfrm(ax::AbstractAxes, ...) #
 	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
 	getcolor()
-	initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
+	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay (typically through .juliarc)
+		=> Only to be used in interactive mode; conditionally importing a module is bad for precompile.
 
 	#Constants:
 	COLORSCHEME[{:default/}] #List of color schemes
@@ -111,6 +86,10 @@ Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 function __init__()
 	global defaults
 	_initialize(defaults)
+
+	show(:HACK_SHOWTOUNFREEZE) #Not sure why show does this
+	println() #newline
+	return
 end
 
 end #EasyPlot
