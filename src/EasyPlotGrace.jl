@@ -31,8 +31,6 @@ function __init__()
 		maindisplay = PlotDisplay(guimode=true),
 		renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
 	)
-	show(:HACK_SHOWTOUNFREEZE) #Not sure why show does this
-	println(" - EasyPlotGrace")
 	return
 end
 
