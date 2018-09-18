@@ -29,8 +29,6 @@ function __init__()
 		maindisplay = PlotDisplay(guimode=true),
 		renderdisplay = PlotDisplay(guimode=false)
 	)
-	show(:HACK_SHOWTOUNFREEZE) #Not sure why show does this
-	println(" - EasyPlotMPL")
 	return
 end
 
