@@ -31,8 +31,6 @@ function __init__()
 		maindisplay = PlotDisplay(),
 		renderdisplay = PlotDisplay(wrender=defaults.wrender, hrender=defaults.hrender)
 	)
-	show(:HACK_SHOWTOUNFREEZE) #Not sure why show does this
-	println(" - EasyPlotInspect")
 	return
 end
 
