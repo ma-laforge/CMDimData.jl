@@ -86,9 +86,6 @@ Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 function __init__()
 	global defaults
 	_initialize(defaults)
-
-	show(:HACK_SHOWTOUNFREEZE) #Not sure why show does this
-	println() #newline
 	return
 end
 
