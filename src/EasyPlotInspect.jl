@@ -11,7 +11,6 @@ module EasyPlotInspect
 using MDDatasets
 import EasyPlot #Import only - avoid collisions
 using InspectDR
-using Colors
 
 import EasyPlot: render
 import InspectDR: LineAttributes, GlyphAttributes
