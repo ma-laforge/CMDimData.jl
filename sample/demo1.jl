@@ -8,8 +8,9 @@ using FileIO2
 
 #==Constants
 ===============================================================================#
-renderingtool = :pyplot #Python based
-#renderingtool = :gadfly
+#renderingtool = :pyplot #Python based
+renderingtool = :inspectdr
+#renderingtool = :gadfly #Deprecated
 #renderingtool = :gr
 #renderingtool = :pgfplots
 #renderingtool = :plotly #Browser based?

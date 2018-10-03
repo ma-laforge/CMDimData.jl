@@ -45,7 +45,7 @@ Consequently, not all backends have been fully tested (if at all).  Please visit
 
 Extensive compatibility testing of EasyPlotPlots.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.4.2
+ - Linux / Julia-1.0
 
 ## Disclaimer
 

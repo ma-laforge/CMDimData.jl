@@ -54,15 +54,15 @@ const markermap = Dict{Symbol, Symbol}(
 #const NOMULTISUPPORT = Set([:gr]) #GR now supported using multiplot model.
 const NOMULTISUPPORT = Set([])
 
-immutable FlagType{T}; end
+struct FlagType{T}; end
 const NOTFOUND = FlagType{:NOTFOUND}()
 
 
 #==Base types
 ===============================================================================#
-typealias NullOr{T} Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
-type Axes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
 	ref::Plots.Subplot #Axes reference
 	theme::EasyPlot.Theme
 	eye::NullOr{EasyPlot.EyeAttributes}
@@ -72,25 +72,25 @@ Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
 
 
 #Top-level plot (which might contain subplots)
-abstract Figure
+abstract type Figure end
 
 #TODO: Is this workaround still needed??
-type FigureSng <: Figure #For backends that support single plots only (no subplots)
+mutable struct FigureSng <: Figure #For backends that support single plots only (no subplots)
 	subplots::Vector{Plots.Plot}
 end
 FigureSng() = FigureSng(Plots.Plot[])
 
-type FigureMulti <: Figure #For backends that support subplots
+mutable struct FigureMulti <: Figure #For backends that support subplots
 	p::NullOr{Plots.Plot} #NullOr - So construction does not display anything.
 #	subplots::Vector{Plots.Subplot}
 end
 FigureMulti() = FigureMulti(nothing)
 
 Figure(toolid::Symbol) =
-	in(toolid, NOMULTISUPPORT)? FigureSng(): FigureMulti()
+	in(toolid, NOMULTISUPPORT) ? FigureSng() : FigureMulti()
 
 #Immutable? would be on stack...
-type WfrmAttributes
+mutable struct WfrmAttributes
 	label::NullOr{String}
 
 	linetype::Symbol
@@ -131,11 +131,11 @@ getsubplot(fig::FigureMulti, idx::Int) = fig.p.subplots[idx]
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(::Void) = maplinewidth(1) #default
+maplinewidth(::Nothing) = maplinewidth(1) #default
 
 #Marker size:
 mapmarkersize(sz) = 5*sz
-mapmarkersize(::Void) = mapmarkersize(1)
+mapmarkersize(::Nothing) = mapmarkersize(1)
 
 function maplinetype(v::Symbol) #Only support small subset of linetype values
 	if :none == v
@@ -144,27 +144,27 @@ function maplinetype(v::Symbol) #Only support small subset of linetype values
 		return :line
 	end
 end
-maplinetype(::Void) = :line #default
+maplinetype(::Nothing) = :line #default
 
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Line style not supported")
+		@info("Line style not supported")
 		result = maplinestyle(nothing)
 	end
 	return result
 end
-maplinestyle(::Void) = :solid #default
+maplinestyle(::Nothing) = :solid #default
 
 function mapmarkershape(v::Symbol)
 	result = get(markermap, v, NOTFOUND)
 	if NOTFOUND == result
-		info("Marker shape not supported")
+		@info("Marker shape not supported")
 		result = "o" #Use some supported marker
 	end
 	return result
 end
-mapmarkershape(::Void) = "" #default (no marker)
+mapmarkershape(::Nothing) = "" #default (no marker)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	linewidth = maplinewidth(attr.linewidth)
@@ -198,7 +198,7 @@ displaylegend(fig::FigureMulti, v::Bool) = Plots.plot!(fig.p, legend=v)
 #Add DataF1 results:
 function _addwfrm(ax::Plots.Subplot, d::DataF1, a::WfrmAttributes)
 	kwargs = Any[]
-	for attrib in fieldnames(a)
+	for attrib in fieldnames(typeof(a))
 		v = getfield(a,attrib)
 
 		if v != nothing

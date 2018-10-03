@@ -4,42 +4,45 @@
 
 #==Constants
 ===============================================================================#
+const DEFAULT_RENDERINGTOOL = :pyplot
 
 
 #==Defaults
 ===============================================================================#
-type Defaults
+mutable struct Defaults
 	renderingtool::Symbol
 end
+Defaults() = Defaults(DEFAULT_RENDERINGTOOL)
 
-#Constructors
-#-------------------------------------------------------------------------------
-function Defaults()
-	dflt = "pyplot"
-	envstr = "EASYPLOTPLOTS_RENDERINGTOOL"
-	val = get(ENV, envstr, dflt)
-	renderingtool = lowercase(val)
 
-	Defaults(Symbol(renderingtool))
-end
-
-#Data
-#-------------------------------------------------------------------------------
-const defaults = Defaults()
+#==Data
+===============================================================================#
+const global defaults = Defaults()
 
 
 #==Main Types
 ===============================================================================#
-type PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
+mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	toolid::Symbol
 	guimode::Bool
 	args::Tuple
-	kwargs::Vector{Any}
+	kwargs::Base.Iterators.Pairs
 	PlotDisplay(toolid::Symbol, args...; guimode::Bool=true, kwargs...) =
 		new(toolid, guimode, args, kwargs)
 end
 PlotDisplay(args...; kwargs...) =
 	PlotDisplay(defaults.renderingtool, args...; kwargs...)
+
+
+#==Initialization
+===============================================================================#
+function _initialize(dflt::Defaults)
+	dflttool = string(DEFAULT_RENDERINGTOOL)
+	envstr = "EASYPLOTPLOTS_RENDERINGTOOL"
+	val = get(ENV, envstr, dflttool)
+	dflt.renderingtool = Symbol(lowercase(val))
+	return
+end
 
 
 #==Top-level rendering functions
@@ -65,13 +68,13 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 end
 
 #Module does not yet support other inline formats (must figure out how)
-Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) = false
+Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) = false
 #Assume PNG is supported by all backends:
-Base.mimewritable(mime::MIME"image/png", eplot::EasyPlot.Plot, d::PlotDisplay) = true
+Base.showable(mime::MIME"image/png", eplot::EasyPlot.Plot, d::PlotDisplay) = true
 
 #Maintain text/plain MIME support.
-Base.show(io::IO, ::MIME"text/plain", fig::Figure) = Base.showcompact(io, fig)
-Base.show(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.showcompact(io, fig)
+Base.show(io::IO, ::MIME"text/plain", fig::Figure) = Base.show(io, fig)
+Base.show(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.show(io, fig)
 
 #Currently no support for non-FigureMulti plots... but could generate a single image...:
 Base.show(io::IO, mime::MIME, fig::Figure) =
@@ -92,13 +95,5 @@ function EasyPlot._write(filepath::String, mime::MIME, fig::FigureSng)
 		end
 	end
 end
-
-
-#==Initialization
-===============================================================================#
-EasyPlot.registerdefaults(:Plots,
-	maindisplay = PlotDisplay(defaults.renderingtool, guimode=true),
-	renderdisplay = EasyPlot.NullDisplay() #No support for render-only
-)
 
 #Last line
