@@ -21,7 +21,7 @@ const MIME2QWTFMT_MAP = Dict{String,String}(
 mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	guimode::Bool
 	args::Tuple
-	kwargs::Vector{Any}
+	kwargs::Base.Iterators.Pairs
 	PlotDisplay(args...; guimode=true, kwargs...) = new(guimode, args, kwargs)
 end
 
@@ -37,7 +37,7 @@ const SupportedMIME = Union{
 
 #==Helper functions
 ===============================================================================#
-mimestr{T}(::MIME{T}) = string(T)
+mimestr(::MIME{T}) where T = string(T)
 
 
 #==Top-level rendering functions
@@ -75,15 +75,7 @@ function Base.show(io::IO, mime::SupportedMIME, fig::Figure)
 	rm(tmpfile)
 end
 
-Base.mimewritable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), Figure))
-
-
-#==Initialization
-===============================================================================#
-EasyPlot.registerdefaults(:Qwt,
-	maindisplay = PlotDisplay(guimode=true),
-	renderdisplay = EasyPlot.NullDisplay() #No support at the moment.
-)
 
 #Last line

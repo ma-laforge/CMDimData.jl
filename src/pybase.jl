@@ -7,7 +7,7 @@ import PyCall: @pyimport, PyObject
 @pyimport guiqwt.pyplot as QwtPyPlot
 @pyimport guiqwt.builder as QwtBuilder
 
-PyCall.pygui_start(:qt_pyqt4) #Runs Qt application thread in background?
+PyCall.pygui_start(:qt) #Runs Qt application thread in background?
 
 
 #==Wrapper types

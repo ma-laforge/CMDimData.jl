@@ -37,7 +37,7 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Void, T} #Simpler than Nullable
+const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
 mutable struct EPAxes{T} <: EasyPlot.AbstractAxes{T}
 	ref::Axes #Axes reference
@@ -76,7 +76,7 @@ const HEX_CODES = UInt8[
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 ]
 function int2mplcolorstr(v::UInt)
-	result = Array{UInt8}(7) #6Hex+hash character
+	result = Array{UInt8}(undef, 7) #6Hex+hash character
 	result[1] = '#'
 	for i in length(result):-1:2
 		result[i] = HEX_CODES[(v & 0xF)+1]
@@ -94,11 +94,11 @@ mapfacecolor(v) = mapcolor(v) #In case we want to diverge
 
 #Linewidth:
 maplinewidth(w) = w
-maplinewidth(::Void) = maplinewidth(1) #default
+maplinewidth(::Nothing) = maplinewidth(1) #default
 
 #Marker size:
 mapmarkersize(sz) = 5*sz
-mapmarkersize(::Void) = mapmarkersize(1)
+mapmarkersize(::Nothing) = mapmarkersize(1)
 
 function maplinestyle(v::Symbol)
 	result = get(linestylemap, v, NOTFOUND)
@@ -108,7 +108,7 @@ function maplinestyle(v::Symbol)
 	end
 	return result
 end
-maplinestyle(::Void) = "-" #default
+maplinestyle(::Nothing) = "-" #default
 
 function mapmarkershape(v::Symbol)
 	result = get(markermap, v, NOTFOUND)
@@ -120,12 +120,12 @@ function mapmarkershape(v::Symbol)
 	end
 	return result
 end
-mapmarkershape(::Void) = mapmarkershape(:none) #default (no marker)
+mapmarkershape(::Nothing) = mapmarkershape(:none) #default (no marker)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	#TODO: Figure out how to support transparency:
-	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT?
-		mapfacecolor(COLOR_BACKGROUND): mapfacecolor(attr.glyphfillcolor)
+	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT ?
+		mapfacecolor(COLOR_BACKGROUND) : mapfacecolor(attr.glyphfillcolor)
 
 	return WfrmAttributes(label=id,
 		color=mapcolor(attr.linecolor),
@@ -196,11 +196,11 @@ function rendersubplot(ax::Axes, subplot::EasyPlot.Subplot, theme::EasyPlot.Them
 
 	#Update axis limits:
 	_lim = ax[:xlimits]
-	(xmin, xmax) = _lim != nothing? _lim: (nothing, nothing)
+	(xmin, xmax) = _lim != nothing ? _lim : (nothing, nothing)
 	if srca.xmin != nothing; xmin = srca.xmin; end
 	if srca.xmax != nothing; xmax = srca.xmax; end
 	_lim = ax[:ylimits]
-	(ymin, ymax) = _lim != nothing? _lim: (nothing, nothing)
+	(ymin, ymax) = _lim != nothing ? _lim : (nothing, nothing)
 	if srca.ymin != nothing; ymin = srca.ymin; end
 	if srca.ymax != nothing; ymax = srca.ymax; end
 	_setlim(ax, :set_xlim, xmin, xmax)

@@ -17,6 +17,16 @@ include("pybase.jl")
 include("base.jl")
 include("display.jl")
 
+#==Initialization
+===============================================================================#
+function __init__()
+	EasyPlot.registerdefaults(:Qwt,
+		maindisplay = PlotDisplay(guimode=true),
+		renderdisplay = EasyPlot.NullDisplay() #No support at the moment.
+	)
+	return
+end
+
 end
 
 #Last line
