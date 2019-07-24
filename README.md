@@ -81,7 +81,7 @@ To dissallow SVG inline plots, add the following:
 
 Extensive compatibility testing of EasyPlot.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.7.0
+ - Linux / Julia-1.1.1
 
 ## Disclaimer
 
