@@ -26,27 +26,32 @@ function buildeye(d::DataF1, tbit::Number, teye::Number; tstart::Number=0)
 	while i <= length(x) && x[i] < tstart
 		i+=1
 	end
+
 	wndnum = 0
 	inext = i
-	done = i > length(x)
-	while !done
-		istart = inext
+	while true
+		if inext > length(x); break; end #Nothing else to add
 		wndstart = tstart+wndnum*tbit
 		nexteye = wndstart+tbit
 		wndend = wndstart+teye
+		istart = inext
+		i = istart
 		while i <= length(x) && x[i] < nexteye
 			i+=1
 		end
 		inext = i
-		while i <= length(x) && x[i] < wndend
+		while i <= length(x) && x[i] <= wndend
 			i+=1
 		end
 		if i > length(x)
 			i = length(x)
 		end
-		if i == istart; break; end #Nothing to add
-		push!(eye.data, DataF1(x[istart:i].-wndstart,y[istart:i]))
-		if inext > length(x); break; end #Nothing else
+		if x[i] > wndend
+			i -= 1
+		end
+		if i > istart
+			push!(eye.data, DataF1(x[istart:i].-wndstart,y[istart:i]))
+		end
 		wndnum += 1
 	end
 	return eye
