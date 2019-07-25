@@ -18,7 +18,7 @@ The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `.juliarc.jl` w
 
 Extensive compatibility testing of EasyPlotGrace.jl has not been performed.  The module has been tested using the following environment(s):
 
- - Linux / Julia-0.6.0-rc1
+ - Linux / Julia-1.1.1
 
 ## Disclaimer
 
