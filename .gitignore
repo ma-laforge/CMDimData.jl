@@ -1,0 +1,8 @@
+*.pyc
+.*.swp
+
+#Images
+*.png
+*.eps
+*.svg
+*.pdf
