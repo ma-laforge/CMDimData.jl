@@ -1,19 +1,14 @@
 #EasyPlotGrace: Render EasyPlot-plots with Grace/xmgrace (through GracePlot)
 #-------------------------------------------------------------------------------
-__precompile__(true)
-#=
-TAGS:
-	#WANTCONST, HIDEWARN_0.7
-=#
-
 module EasyPlotGrace
 
-using MDDatasets
-import EasyPlot #Import only - avoid collisions
+import CMDimData
+import CMDimData.EasyPlot #Import only - avoid collisions
+using CMDimData.MDDatasets
+using CMDimData.Colors
 using GracePlot
-using Colors
 
-import EasyPlot: render
+import CMDimData.EasyPlot: render
 import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")

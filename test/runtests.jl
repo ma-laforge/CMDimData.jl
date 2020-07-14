@@ -1,41 +1,22 @@
-#Test code
-#-------------------------------------------------------------------------------
+using Test, CMDimData
+using CMDimData.EasyPlot
+using CMDimData.MDDatasets
 
-using EasyPlot 
-using MDDatasets
-
-#No real test code yet... just run demos:
-
-function printsep()
-	separator = "\n-----------------------------"
-	println(separator)
+function printsep(title)
+	println("\n", title, "\n", repeat("-", 80))
 end
 
-x=collect(1:10)
-@show d1 = DataF1(x, x.^2)
-
-printsep()
-	dfltline = line(style=:solid, color=:red)
-	dfltglyph = glyph(shape=:square, size=3)
-	axes_loglin = paxes(xscale = :log, yscale = :lin)
-	@show dfltline
-	@show dfltglyph
-
-	plot = EasyPlot.new(title = "Sample Plot")
-	subplot = add(plot, axes_loglin, title = "Subplot 1")
-	wfrm = add(subplot, d1, id="Quadratic")
-
-printsep()
-	@show wfrm
-	set(wfrm, dfltline, dfltglyph)
-printsep()
-	@show plot
-printsep()
-	@show wfrm
-
-for i in 1:1
-	printsep()
-	@show p=evalfile(EasyPlot.sampleplotfile(1));
+function show_testset_description()
+	@info Test.get_testset().description
 end
+
+@testset "CMDimData tests" begin
+	testfiles = ["EasyPlot.jl"]
+
+	for testfile in testfiles
+		include(testfile)
+	end
+
+end #testset
 
 :Test_Complete

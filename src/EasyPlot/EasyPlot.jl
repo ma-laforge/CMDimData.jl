@@ -1,23 +1,18 @@
 #EasyPlot: A quick/easy way to generate, save, & display plots.
 #-------------------------------------------------------------------------------
-__precompile__(true)
-#=
-TAGS:
-	#WANTCONST, HIDEWARN_0.7
-=#
-
 module EasyPlot
-const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
+
+import ..CMDimData: rootpath
+
 #TODO: deprecate:
-sampleplotfile(id::Int) =
-	joinpath(rootpath, "sample", "demo$id.jl")
+sampleplotfile(id::Int) = throw(:sampleplotfile_DEPRECATED)
+#	joinpath(rootpath, "sample_plots", "demo$id.jl")
 
 demofilelist() =
-	[joinpath(rootpath, "sample", "demo$i.jl") for i in 1:2]
+	[joinpath(rootpath, "sample_plots", "demo$i.jl") for i in 1:2]
 
 using Colors
 using MDDatasets
-using FileIO2
 
 include("codegen.jl")
 include("colors.jl")
@@ -84,6 +79,7 @@ Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 #==Initialization
 ===============================================================================#
 function __init__()
+	@info "EasyPlot.__init__()"
 	global defaults
 	_initialize(defaults)
 	return

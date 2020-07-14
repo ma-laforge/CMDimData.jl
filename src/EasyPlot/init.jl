@@ -1,11 +1,29 @@
 #EasyPlot initialization routines
 #-------------------------------------------------------------------------------
 
+#Import a given backend into the caller's module
+macro importbackend(backend::Symbol)
+#=Import glue code in caller's module.
+	Expected that caller's module has access to dependency information on both
+	`CMDimData` & plotting backend module.
+
+	Sadly, precompile of glue code cannot be reused across Julia sessions.
+=#
+	path = realpath(joinpath(rootpath,"subpkgs/$backend/src/$backend.jl"))
+	m = quote
+		if !@isdefined $backend
+			include($path)
+		end
+	end
+	return esc(m) #esc: Evaluate in calling module
+end
+
+
 #==Initialize backend (importing module initializes corresponding backend)
 ===============================================================================#
 
 function _initbackend(d::EasyPlot.NullDisplay) #Use default display
-	return :(import EasyPlotInspect) #Make InspectDR the default
+	return :(CMDimData.EasyPlot.@importbackend EasyPlotInspect) #Make InspectDR the default
 end
 
 function _initbackend(d::EasyPlot.UninitializedDisplay)
@@ -14,7 +32,7 @@ function _initbackend(d::EasyPlot.UninitializedDisplay)
 	if "ANY" == uppercase(string(bkmodule))
 		return _initbackend(EasyPlot.NullDisplay())
 	end
-	return :(import $bkmodule)
+	return :(CMDimData.EasyPlot.@importbackend $bkmodule)
 end
 
 function _initbackend(d) #Other cases: Display already initialized
@@ -24,11 +42,11 @@ end
 #Initialize any un-initialized backend specified as the main display:
 macro initbackend()
 #=NOTE:
-   Use macro so that no "import" command executes in this module.  Instead,
-   "import" gets executed in the user's (target) module.  This should presumably
-   be better for precompilation?
+	Use macro with "esc" so that no "import" command executes in this module.
+   Instead, "import" gets executed in the user's (target) module.  This should
+   presumably be better for precompilation?
 =#
-	_initbackend(EasyPlot.defaults.maindisplay)
+	esc(_initbackend(EasyPlot.defaults.maindisplay))
 end
 
 #Last line

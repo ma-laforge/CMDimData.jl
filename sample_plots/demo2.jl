@@ -1,8 +1,9 @@
 #demo2: Symbol test
 #-------------------------------------------------------------------------------
 
-using EasyPlot
-using MDDatasets
+using CMDimData
+using CMDimData.EasyPlot
+using CMDimData.MDDatasets
 
 #==Constants
 ===============================================================================#

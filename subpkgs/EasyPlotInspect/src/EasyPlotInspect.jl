@@ -1,19 +1,14 @@
-#EasyPlotInspect: Render EasyPlot-plots with InspectDR.jl
+#EasyPlotInspect: Implement EasyPlot interface with InspectDR.jl
 #-------------------------------------------------------------------------------
-__precompile__(true)
-#=
-TAGS:
-	#WANTCONST, HIDEWARN_0.7
-=#
-
 module EasyPlotInspect
 
-using MDDatasets
-import EasyPlot #Import only - avoid collisions
+import CMDimData
+import CMDimData.EasyPlot #Import only - avoid collisions
+using CMDimData.MDDatasets
+using CMDimData.Colors
 using InspectDR
-using Colors
 
-import EasyPlot: render
+import CMDimData.EasyPlot: render
 import InspectDR: LineAttributes, GlyphAttributes
 
 include("base.jl")

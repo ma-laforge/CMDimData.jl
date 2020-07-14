@@ -4,9 +4,9 @@
 
 #==Constants
 ===============================================================================#
-const FILE2MIME_MAP = IdDict{DataType,String}(
-	FileIO2.PNGFmt => "image/png",
-	FileIO2.SVGFmt => "image/svg+xml",
+const EXT2MIME_MAP = IdDict{Symbol,String}(
+	:png => "image/png",
+	:svg => "image/svg+xml",
 )
 
 
@@ -77,16 +77,22 @@ function _write(filepath::String, mime::MIME, nativeplot)
 	end
 end
 
-function _write(file::File{T}, plot::Plot, d::EasyPlotDisplay) where T
-	mimestr = get(FILE2MIME_MAP, T, nothing)
-	if nothing == mimestr
-		throw(methoderror(_write, (file, plot, d)))
-	end
+function _write(filepath::String, mime::MIME, plot::Plot, d::EasyPlotDisplay)
 	nativeplot = render(d, plot)
-	_write(file.path, MIME{Symbol(mimestr)}(), nativeplot)
+	_write(filepath, mime, nativeplot)
 end
 
-_write(file::File, plot::Plot) =_write(file, plot, EasyPlot.defaults.renderdisplay)
+_write(filepath::String, mime::MIME, plot::Plot) =_write(filepath, mime, plot, EasyPlot.defaults.renderdisplay)
 
+#TODO: Do forall mimes
+
+#write_png(filepath::String, plot::Plot, args...) =_write(filepath, MIME"image/png"(), plot, args...)
+
+#Create write_png, write_svg, ... convenience functions:
+for (ext, mime) in EXT2MIME_MAP; fn=Symbol(:write_,ext); @eval begin #CODEGEN----------------------------------------
+
+$fn(filepath::String, plot::Plot, args...) =_write(filepath, MIME($mime), plot, args...)
+
+end; end #CODEGEN---------------------------------------------------------------
 
 #Last line

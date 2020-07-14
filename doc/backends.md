@@ -1,28 +1,46 @@
-# EasyPlotInspect.jl
+# `CMDimData.EasyPlot` Backends
 
-## Description
+<a name="SupportedBackends"></a>
+## Supported Backends
 
-EasyPlotInspect.jl implements `EasyPlot.EasyPlotDisplay` using InspectDR.jl.
+The following is a list of modules implementing the `EasyPlot` interface, along with their corresponding plotting backends:
 
-## Configuration
+ - `EasyPlotInspect`: (InspectDR.jl)
+ - `EasyPlotGrace`: (GracePlot.jl)
+ - BROKEN `EasyPlotMPL`: (PyPlot.jl/Matplotlib)
+ - BROKEN `EasyPlotQwt`: (Qwt.jl)
+ - BROKEN `EasyPlotPlots`: (Plots.jl)
 
-By default, EasyPlotInspect.jl renders inline plots with a data display area of x x y pixels??.  To specify a different value, set the `EASYPLOTINSPECT_RENDERW/H` environment variables **NOT YET IMPLEMENTED**.
+## Importing Backends
+
+Before importing any backend, `CMDimData.EasyPlot` must already be imported.
+
+To import a specific interface module for a given plotting backend, as listed in [Supported Backends](#SupportedBackends), you must use the `@importbackend macro`:
+
+	#Import base CMDimData/EasyPlot facilities
+	using CMDimData
+	using CMDimData.EasyPlot
+
+	#Import a specific EasyPlot interface, and its associated backend module:
+	EasyPlot.@importbackend EasyPlotInspect #To render plots with InspectDR
+
+	#Now ready to create `EasyPlotInspect.PlotDisplay()` objects to render plots.
+
+## Configuring Backends
+
+### EasyPlotInspect
+
+By default, `EasyPlotInspect` renders inline plots with a data display area of x x y pixels??.  To specify a different value, set the `EASYPLOTINSPECT_RENDERW/H` environment variables **NOT YET IMPLEMENTED**.
 
 The values of `EASYPLOTINSPECT_RENDERW/H` can therefore be set from `.juliarc.jl` with the following:
 
 	ENV["EASYPLOTINSPECT_RENDERW"] = "300"
 	ENV["EASYPLOTINSPECT_RENDERH"] = "200"
 
-## Known Limitations
+### EasyPlotGrace
 
-### Compatibility
+By default, `EasyPlotGrace` renders inline plots at 75 dpi.  To specify a different value, set the `EASYPLOTGRACE_RENDERDPI` environment variable:
 
-Extensive compatibility testing of EasyPlotInspect.jl has not been performed.  The module has been tested using the following environment(s):
+The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `.juliarc.jl` with the following:
 
- - Linux / Julia-1.1.1
-
-## Disclaimer
-
-The EasyPlotInspect.jl module is not yet mature.  Expect significant changes.
-
-This software is provided "as is", with no guarantee of correctness.  Use at own risk.
+	ENV["EASYPLOTGRACE_RENDERDPI"] = "200"

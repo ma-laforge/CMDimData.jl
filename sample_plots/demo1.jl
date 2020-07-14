@@ -1,8 +1,10 @@
 #demo1: A simple plot
 #-------------------------------------------------------------------------------
 
-using EasyPlot
-using MDDatasets
+using CMDimData
+using CMDimData.EasyPlot
+using CMDimData.MDDatasets
+
 
 #==Constants
 ===============================================================================#
