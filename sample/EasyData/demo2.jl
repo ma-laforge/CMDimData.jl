@@ -1,10 +1,10 @@
 #Demo 2: Multi-dimensional datasets (advanced usage)
 #-------------------------------------------------------------------------------
 
-using FileIO2
-using MDDatasets
-using EasyPlot
-using EasyData
+using CMDimData
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 import Printf: @sprintf
 
 

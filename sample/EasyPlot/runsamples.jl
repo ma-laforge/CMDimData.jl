@@ -3,9 +3,11 @@
 
 module CMDimData_SampleGenerator
 
+#==Configuration
+===============================================================================#
 #List of backends to test:
-#const BACKENDLIST = [:EasyPlotGrace]
-const BACKENDLIST = [:EasyPlotInspect, :EasyPlotGrace]
+#const BACKENDLIST = [:EasyPlotInspect, :EasyPlotGrace, :EasyPlotMPL]
+const BACKENDLIST = [:EasyPlotGrace] #Grace is faster, if installed.
 
 #List of backends where SVG file is not to be saved:
 const NOSVG = [:EasyPlotGrace]
@@ -13,23 +15,30 @@ const NOSVG = [:EasyPlotGrace]
 using CMDimData
 using CMDimData.EasyPlot
 
+#Import all backends before defining getdisplay() functions:
+for bk in BACKENDLIST
+	eval(:(CMDimData.@includepkg $bk))
+end
+
 #Used to dispatch functions with the help of symbols:
 struct DS{T}; end
 DS(s::Symbol) = DS{s}()
 
-#Import all backends before defining getdisplay() functions:
-for bk in BACKENDLIST
-	eval(:(EasyPlot.@importbackend $bk))
-end
 
+#==Helper functions
+===============================================================================#
 function printsep(title)
 	println("\n", title, "\n", repeat("-", 80))
 end
 
-#==Get a EasyPlotDisplay object
-===============================================================================#
+#Get an EasyPlotDisplay object:
 getdisplay(::DS{T}; renderonly=false) where T = eval(:($T.PlotDisplay()))
 
+if @isdefined EasyPlotMPL
+function getdisplay(::DS{:EasyPlotMPL}; renderonly=false)
+	return EasyPlotMPL.PlotDisplay(guimode=!renderonly)
+end
+end
 if @isdefined EasyPlotGrace
 import GracePlot
 function getdisplay(::DS{:EasyPlotGrace}; renderonly=false)
@@ -44,7 +53,6 @@ function getdisplay(::DS{:EasyPlotGrace}; renderonly=false)
 	return pdisp
 end
 end
-
 getdisplay(s::Symbol; kwargs...) = getdisplay(DS(s); kwargs...)
 
 

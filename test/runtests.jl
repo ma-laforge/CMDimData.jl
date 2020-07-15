@@ -1,6 +1,5 @@
 using Test, CMDimData
-using CMDimData.EasyPlot
-using CMDimData.MDDatasets
+
 
 function printsep(title)
 	println("\n", title, "\n", repeat("-", 80))
@@ -11,7 +10,7 @@ function show_testset_description()
 end
 
 @testset "CMDimData tests" begin
-	testfiles = ["EasyPlot.jl"]
+	testfiles = ["EasyPlot.jl", "EasyData.jl"]
 
 	for testfile in testfiles
 		include(testfile)

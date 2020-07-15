@@ -1,10 +1,10 @@
 #Demo 1: Saving/loading multi-dimensional datasets
 #-------------------------------------------------------------------------------
 
-using FileIO2
-using MDDatasets
-using EasyPlot
-using EasyData
+using CMDimData
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 
 
 #==Constants

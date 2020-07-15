@@ -1,3 +1,6 @@
+using CMDimData.EasyPlot
+using CMDimData.MDDatasets
+
 @testset "EasyPlot tests" begin #Scope for test data
 
 

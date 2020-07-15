@@ -4,12 +4,8 @@ module EasyPlot
 
 import ..CMDimData: rootpath
 
-#TODO: deprecate:
-sampleplotfile(id::Int) = throw(:sampleplotfile_DEPRECATED)
-#	joinpath(rootpath, "sample_plots", "demo$id.jl")
-
 demofilelist() =
-	[joinpath(rootpath, "sample_plots", "demo$i.jl") for i in 1:2]
+	[joinpath(rootpath, "sample", "EasyPlot", "demo$i.jl") for i in 1:2]
 
 using Colors
 using MDDatasets

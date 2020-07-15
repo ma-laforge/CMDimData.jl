@@ -8,14 +8,11 @@
 #==Main data structures
 ===============================================================================#
 
-struct EasyDataHDF5 <: FileIO2.DataFormat; end
-FileIO2.File(::FileIO2.Shorthand{:edh5}, path::String) = File{EasyDataHDF5}(path)
-
-mutable struct EasyDataReader <: AbstractReader{EasyDataHDF5}
+mutable struct EasyDataReader
 	reader::HDF5.HDF5File
 end
 
-mutable struct EasyDataWriter <: AbstractWriter{EasyDataHDF5}
+mutable struct EasyDataWriter
 	writer::HDF5.HDF5File
 end
 
@@ -47,9 +44,7 @@ opengrp(r::EasyDataReader, path::String) = g_open(r.reader, path)
 ===============================================================================#
 #Open/close EasyDataHDF5 files:
 #-------------------------------------------------------------------------------
-function Base.open(::Type{EasyDataWriter}, path::String;
-	opt::IOOptionsWrite=IOOptions(write=true))
-	#NOTE: opt ignored for now.
+function Base.open(::Type{EasyDataWriter}, path::String)
 	writer = h5open(path, "w")
 	return EasyDataWriter(writer)
 end
@@ -60,6 +55,23 @@ function Base.open(::Type{EasyDataReader}, path::String)
 	return EasyDataReader(reader)
 end
 Base.close(r::EasyDataReader) = close(r.reader)
+
+
+#==Read/Write functions:
+===============================================================================#
+#Define read(::Type{EasyDataWriter}, filepath) functionality:
+function Base.read(RT::Type{EasyDataReader}, path::String, args...; kwargs...)
+	open(RT, path) do reader
+		return read(reader, args...; kwargs...)
+	end
+end
+
+#Define write(::Type{EasyDataWriter}, filepath) functionality:
+function Base.write(WT::Type{EasyDataWriter}, path::String, args...; kwargs...)
+	open(WT, path) do writer
+		return write(writer, args...; kwargs...)
+	end
+end
 
 #==Un-"Exported", user-level functions:
 ===============================================================================#

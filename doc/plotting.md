@@ -32,7 +32,7 @@ Here is a simple example showing how to display a plot with EasyPlot:
 	#Import CMDimData/EasyPlot facilities
 	using CMDimData
 	using CMDimData.EasyPlot
-	EasyPlot.@importbackend EasyPlotInspect #To render plots with InspectDR
+	CMDimData.@includepkg EasyPlotInspect #To render plots with InspectDR
 
 	#Create an object to tell EasyPlot how to render plots (with InspectDR backend)
 	pdisp = EasyPlotInspect.PlotDisplay() #<:EasyPlotDisplay
@@ -43,9 +43,9 @@ Here is a simple example showing how to display a plot with EasyPlot:
 	#Display the plot on the selected backend:
 	display(pdisp, plot)
 
-### Important note on `@importbackend`
+### Important note on `@includepkg`
 
-`@importbackend` imports the plotting backend module in whichever module it is called.  It also imports the module that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) to the same module.
+`@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
 
 These modules will therefore only be accessible from within that scope.  Consequently, your Julia environment must ensure it can resolve where the backend module resides.  This can be done by adding the backend module to the active julia "project".  For example, you can add the InspectDR backend to the active Julia project with the package add command:
 
@@ -114,5 +114,5 @@ To dissallow SVG inline plots, following key before importing `CMDimData`:
 
  - `EasyPlot` supports mostly x/y graphs & basic plot attributes at the moment.
  - `EasyPlot` does not support `DataTime` or `DataFreq`.
- - The `EasyPlot.@importbackend [backend]` macro evaluates the interfacing code at run time to circumvent having to add backends as dependencies of `CMDimData`.  They consequenly do not take advantage of Julia's pre-compilation cache.
+ - The `CMDimData.@includepkg [backend]` macro evaluates the interfacing code at run time to circumvent having to add backends as dependencies of `CMDimData`.  They consequenly do not take advantage of Julia's pre-compilation cache.
 

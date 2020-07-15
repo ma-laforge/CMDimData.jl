@@ -1,10 +1,10 @@
 #Demo 3: Saving/loading DataRS/DataHR
 #-------------------------------------------------------------------------------
 
-using FileIO2
-using MDDatasets
-using EasyPlot
-using EasyData
+using CMDimData
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 
 
 #==Constants

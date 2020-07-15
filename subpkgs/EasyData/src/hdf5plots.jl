@@ -154,14 +154,13 @@ Base.read(r::EasyDataReader, ::Type{Plot}; idx::Int=1) =
 
 #Read/write from files directly:
 #-------------------------------------------------------------------------------
-function Base.write(::Type{EasyDataWriter}, path::String,
-	opt::IOOptionsWrite, plotlist::Vector{Plot})
+function Base.write(::Type{EasyDataWriter}, path::String, plotlist::Vector{Plot})
 	open(EasyDataWriter, path) do w
 		write(w, plotlist)
 	end
 end
-Base.write(::Type{EasyDataWriter}, path::String, opt::IOOptionsWrite, plot::Plot) =
-	write(EasyDataWriter, path, opt, [plot])
+Base.write(::Type{EasyDataWriter}, path::String, plot::Plot) =
+	write(EasyDataWriter, path, [plot])
 
 function Base.read(::Type{EasyDataReader}, path::String, T::Type{Vector{Plot}})
 	open(EasyDataReader, path) do r
@@ -181,9 +180,9 @@ end
 #Explicit module-level read/write functions:
 #-------------------------------------------------------------------------------
 _write(path::String, plotlist::Vector{Plot}) =
-	write(EasyDataWriter, path, IOOptions(write=true), plotlist)
+	write(EasyDataWriter, path, plotlist)
 _write(path::String, plot::Plot) =
-	write(EasyDataWriter, path, IOOptions(write=true), plot)
+	write(EasyDataWriter, path, plot)
 
 _read(path::String, T::Type{Vector{Plot}}) =
 	read(EasyDataReader, path, T)

@@ -10,7 +10,7 @@ TODO: Merge in [MDDatasets.jl](https://github.com/ma-laforge/MDDatasets.jl), and
 
 ### Features/Highlights
 
- - Read/write plots to .hdf5 files using [EasyData.jl](https://github.com/ma-laforge/EasyData.jl).
+ - Read/write plots to .hdf5 files using [EasyData.jl](doc/EasyData.md).
  - [Plotting:](doc/plotting.md) Plot multi-dimensional datasets (`T<:MDDatasets.DataMD`: `DataHR{Number}`, `DataHR{DataF1}`, `DataF1`).
    - Support for multiple [backends](doc/backends.md)
    - Generate eye diagrams (even for backends without native support).

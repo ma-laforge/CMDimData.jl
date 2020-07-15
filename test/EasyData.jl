@@ -1,17 +1,10 @@
-#Test code
-#-------------------------------------------------------------------------------
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 
-using MDDatasets
-using FileIO2
-using EasyPlot
-using EasyData
+@testset "EasyData tests" begin #Scope for test data
 
 #No real test code yet... just run demos:
-
-function printsep()
-	separator = "\n-----------------------------" #WANTCONST
-	println(separator)
-end
 
 x = DataF1(1:100)
 data = sin(x)
@@ -21,22 +14,18 @@ EasyData._write(filepath, h5path, data)
 dread = EasyData._read(filepath, h5path, DataMD)
 @show data - dread
 
+filelist = EasyPlot.demofilelist()
+
 #throw(:ERR)
-let filepath #HIDEWARN_0.7
 for i in 1:1
 	#Test high-level "File()" read/write interface:
 	filepath = "./sampleplot$i.hdf5"
-	file = File(:edh5, filepath)
-	printsep()
-		@show p=evalfile(EasyPlot.sampleplotfile(i));
-		write(file, p)
+	printsep("")
+		@show p=evalfile(filelist[i]);
+		EasyData._write(filepath, p)
 	println("\n\nReloading...")
-		@show p=read(file, EasyPlot.Plot);
-end
+		@show p=EasyData._read(filepath, EasyPlot.Plot);
 end
 #throw(:ERR)
 
-include("../sample/runsamples.jl")
-
-
-:Test_Complete
+end

@@ -4,17 +4,9 @@ version = "0.1.0"
 
 [deps]
 MDDatasets = "176e4ad4-9107-502a-977c-53a5728fe704"
-FileIO2 = "4dd517ac-adcb-11e9-3f98-b322291dcd86"
-EasyPlot = "08def96e-adcc-11e9-1c5d-0b35f2b3a72c"
+CMDimData = "70385e83-f223-47f4-874b-539892411e49"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 #Meta
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[targets]
-test = ["Test", "Printf"]
 
 [compat]
 julia = "1"

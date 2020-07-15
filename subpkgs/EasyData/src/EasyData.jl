@@ -1,28 +1,29 @@
 #EasyData: A quick/easy way to save datasets/plots to file.
 #-------------------------------------------------------------------------------
-__precompile__(true)
-#=
-TAGS:
-	#WANTCONST, HIDEWARN_0.7
-=#
 
 module EasyData
 
-const rootpath = realpath(joinpath(dirname(realpath(@__FILE__)),"../."))
 
-using MDDatasets
-using FileIO2
-using EasyPlot
+import CMDimData
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
 using HDF5
 
-import EasyPlot: AttributeList
-import EasyPlot: Plot, Subplot, Waveform
+import CMDimData.EasyPlot: AttributeList
+import CMDimData.EasyPlot: Plot, Subplot, Waveform
 import HDF5: HDF5Group
-
 
 include("base.jl")
 include("hdf5data.jl")
 include("hdf5plots.jl")
+
+
+#==Initialization
+===============================================================================#
+function __init__()
+	#Needed by @includepkg
+end
+
 
 #==Already exported functions:
 ==#

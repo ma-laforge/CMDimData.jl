@@ -1,16 +1,17 @@
 #Demo 4: Test write/read of misc. plot attributes
 #-------------------------------------------------------------------------------
 
-using FileIO2
-using MDDatasets
-using EasyPlot
-using EasyData
+using CMDimData
+using CMDimData.MDDatasets
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 
 
 #==Generate plots
 ===============================================================================#
 #Load sample plot:
-plot = evalfile(EasyPlot.sampleplotfile(1));
+filelist = EasyPlot.demofilelist()
+plot = evalfile(filelist[1]);
 
 filepath ="./sampleplot4.hdf5"
 EasyData._write(filepath, plot)
