@@ -1,0 +1,20 @@
+name = "EasyPlotMPL"
+uuid = "f10b6c96-ae75-11e9-2b27-c1bbac4ac5ef"
+version = "0.1.0"
+
+[deps]
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+MDDatasets = "176e4ad4-9107-502a-977c-53a5728fe704"
+EasyPlot = "08def96e-adcc-11e9-1c5d-0b35f2b3a72c"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+FileIO2 = "4dd517ac-adcb-11e9-3f98-b322291dcd86"
+
+[targets]
+test = ["Test", "FileIO2"]
+
+[compat]
+julia = "1"
