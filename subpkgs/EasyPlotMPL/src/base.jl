@@ -147,7 +147,7 @@ function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 		end
 	end
 
-	wfrm = ax[:plot](d.x, d.y; kwargs...)
+	wfrm = ax.plot(d.x, d.y; kwargs...)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
@@ -159,7 +159,7 @@ function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
 end
 
 function rendersubplot(ax, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
-	ax[:set_title](subplot.title)
+	ax.set_title(subplot.title)
 
 	#TODO Ugly: setting defaults like this should be done in EasyPlot
 	ep = nothing
@@ -177,42 +177,42 @@ function rendersubplot(ax, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
 	srca = subplot.axes
 
 	#Update axis limits:
-	(xmin, xmax) = ax[:set_xlim]()
+	(xmin, xmax) = ax.set_xlim()
 	if srca.xmin != nothing; xmin = srca.xmin; end
 	if srca.xmax != nothing; xmax = srca.xmax; end
-	(ymin, ymax) = ax[:set_ylim]()
+	(ymin, ymax) = ax.set_ylim()
 	if srca.xmin != nothing; xmin = srca.xmin; end
 	if srca.xmax != nothing; xmax = srca.xmax; end
-	ax[:set_xlim](xmin, xmax)
-	ax[:set_ylim](ymin, ymax)
+	ax.set_xlim(xmin, xmax)
+	ax.set_ylim(ymin, ymax)
 
 	#Apply x/y scales:
-	ax[:set_xscale](scalemap[srca.xscale])
-	ax[:set_yscale](scalemap[srca.yscale])
+	ax.set_xscale(scalemap[srca.xscale])
+	ax.set_yscale(scalemap[srca.yscale])
 	
 	#Apply x/y labels:
-	if srca.xlabel != nothing; ax[:set_xlabel](srca.xlabel); end
-	if srca.ylabel != nothing; ax[:set_ylabel](srca.ylabel); end
+	if srca.xlabel != nothing; ax.set_xlabel(srca.xlabel); end
+	if srca.ylabel != nothing; ax.set_ylabel(srca.ylabel); end
 
 	return ax
 end
 
 function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot)
 	ncols = eplot.ncolumns
-	fig[:suptitle](eplot.title)
+	fig.suptitle(eplot.title)
 	nrows = div(length(eplot.subplots)-1, ncols)+1
 	subplotidx = 0
 
 	for s in eplot.subplots
 #		row = div(subplotidx, ncols) + 1
 #		col = mod(subplotidx, ncols) + 1
-		ax = fig[:add_subplot](nrows, ncols, subplotidx+1)
+		ax = fig.add_subplot(nrows, ncols, subplotidx+1)
 		rendersubplot(ax, s, eplot.theme)
-		if eplot.displaylegend; ax[:legend](); end
+		if eplot.displaylegend; ax.legend(); end
 		subplotidx += 1
 	end
 
-	fig[:canvas][:draw]()
+	fig.canvas.draw()
 	return fig
 end
 

@@ -35,13 +35,13 @@ MPLState(d::PlotDisplay) = MPLState(false, d.backend, d.guimode)
 ===============================================================================#
 #Do not overwrite Base.display... would circumvent display system.
 function EasyPlot._display(fig::PyPlot.Figure)
-	fig[:show]()
+	fig.show()
 	nothing
 end
 
 function _getstate()
 	return MPLState(
-		PyPlot.matplotlib[:is_interactive](),
+		PyPlot.matplotlib.is_interactive(),
 		PyPlot.pygui(),
 		!PyPlot.isjulia_display[1], #TODO: Hack!... not part of PyPlot interface.
 	)
@@ -52,7 +52,7 @@ function _applystate(s::MPLState)
 	PyPlot.pygui(s.guimode)
 #@show pygui(), PyPlot.isjulia_display[1]
 	#Must be applied last (in case backend does not support interactive):
-	PyPlot.matplotlib[:interactive](s.interactive)
+	PyPlot.matplotlib.interactive(s.interactive)
 end
 
 
