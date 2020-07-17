@@ -17,9 +17,9 @@ TODO: Merge in [MDDatasets.jl](https://github.com/ma-laforge/MDDatasets.jl), and
 
 ## Table of Contents
 
-  1. [`CMDimData.EasyPlot` Plotting Interface](doc/EasyPlot.md)
-   1. [`CMDimData.EasyPlot` Backends](doc/EasyPlot_backends.md)
-  1. [`CMDimData.EasyEasyData` Data/Plot &hArr; file (HDF5-based)](doc/EasyData.md)
+ 1. [`CMDimData.EasyPlot` Plotting Interface](doc/EasyPlot.md)
+    1. [`CMDimData.EasyPlot` Backends](doc/EasyPlot_backends.md)
+ 1. [`CMDimData.EasyEasyData` Data/Plot &hArr; file (HDF5-based)](doc/EasyData.md)
 
 ## Known Limitations
 
