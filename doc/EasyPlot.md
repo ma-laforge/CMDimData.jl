@@ -8,12 +8,6 @@ The goal of the `CMDimData.EasyPlot` interface is to let the user focus on analy
 
 That being said, the `CMDimData.EasyPlot` interface is relatively generic and should be adequate for many scientific fields.
 
-### Features/Highlights
-
- - Read/write plots to .hdf5 files using [EasyData.jl](https://github.com/ma-laforge/EasyData.jl).
- - Generate eye diagrams (even for backends without native support).
- - Plot multi-dimensional datasets (`T<:MDDatasets.DataMD`: `DataHR{Number}`, `DataHR{DataF1}`, `DataF1`).
-
 ## Plotting with EasyPlot
 
 There are two steps to plotting with EasyPlot:
@@ -21,9 +15,7 @@ There are two steps to plotting with EasyPlot:
  1. Create the `Plot` object
  2. Display the `Plot` object
 
-Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a plotting backend.
-
-### Supported Backends [here](backends.md)
+Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a [plotting backend](EasyPlot_backends.md).
 
 ### Displaying a Simple Plot
 
@@ -43,6 +35,8 @@ Here is a simple example showing how to display a plot with EasyPlot:
 	#Display the plot on the selected backend:
 	display(pdisp, plot)
 
+### [Supported Backends (link)](EasyPlot_backends.md)
+
 ### Important note on `@includepkg`
 
 `@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
@@ -53,7 +47,7 @@ These modules will therefore only be accessible from within that scope.  Consequ
 
 ### Sample Usage
 
-More elaborate examples of creating `EasyPlot.Plot` objects can be found in the [sample_plots](../sample_plots/) folder.
+More elaborate examples of creating `EasyPlot.Plot` objects can be found in the [sample/EasyPlot](../sample/EasyPlot/) folder.
 
 ### Specifying an Active Backend
 
@@ -81,7 +75,7 @@ If SVG inline plots are undesired (ex: for performance reasons), they can be sup
 
 ### Initializing Defaults
 
-Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `.juliarc.jl` file.
+Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `~/.julia/config/startup.jl` file.
 
 To select the default `EasyPlot.Plot` display, add the following key before importing `CMDimData`:
 

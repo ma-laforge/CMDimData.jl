@@ -19,6 +19,13 @@ Change `using CMDimData.Colors` -> `using Colors` statements in all `subpkgs/` o
 
 ### Consolidate sample files
 
+Create sample/plots/ploti.jl for sample plots
+
+Create demoi_bkname.jl files specific to a particular backend to better illustrate how to use the module.
+
+Make EasyData/runsamples.jl duplicate plots, instead of having evalfile() return an array of plots.
+
 ### Test plot write/read with actual images
 
 Compare input and output plots using a plotting backend that actually runs on CI.
+

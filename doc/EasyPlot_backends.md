@@ -32,14 +32,14 @@ To import a specific interface module for a given plotting backend, as listed in
 
 By default, `EasyPlotInspect` renders inline plots with a data display area of x x y pixels??.  To specify a different value, set the `EASYPLOTINSPECT_RENDERW/H` environment variables **NOT YET IMPLEMENTED**.
 
-The values of `EASYPLOTINSPECT_RENDERW/H` can therefore be set from `.juliarc.jl` with the following:
+The values of `EASYPLOTINSPECT_RENDERW/H` can therefore be set from ~/.julia/config/startup.jl` with the following:
 
 	ENV["EASYPLOTINSPECT_RENDERW"] = "300"
 	ENV["EASYPLOTINSPECT_RENDERH"] = "200"
 
 ### EasyPlotMPL
 
-To specify the default Matplotlib/PyPlot backend (i.e. GUI toolkit), add the following to your `.juliarc.jl` file:
+To specify the default Matplotlib/PyPlot backend (i.e. GUI toolkit), add the following to your `~/.julia/config/startup.jl` file:
 
 	ENV["EASYPLOTMPL_DEFAULTBACKEND"] = "gtk"
 
@@ -47,7 +47,7 @@ See main [PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl) module for supported 
 
 ### EasyPlotPlots
 
-To specify the default Plots.jl plot rendering tool, add the following to your `.juliarc.jl` file:
+To specify the default Plots.jl plot rendering tool, add the following to your `~/.julia/config/startup.jl` file:
 
 	ENV["EASYPLOTPLOTS_RENDERINGTOOL"] = "gr"
 
@@ -59,7 +59,7 @@ See main [Plots.jl](https://github.com/tbreloff/Plots.jl) module for supported b
 
 By default, `EasyPlotGrace` renders inline plots at 75 dpi.  To specify a different value, set the `EASYPLOTGRACE_RENDERDPI` environment variable:
 
-The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `.juliarc.jl` with the following:
+The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `~/.julia/config/startup.jl` with the following:
 
 	ENV["EASYPLOTGRACE_RENDERDPI"] = "200"
 

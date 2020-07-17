@@ -1,10 +1,10 @@
-# EasyData.jl (+EasyDataHDF5 Output)
+# `CMDimData.EasyEasyData` Data/Plot &hArr; file (HDF5-based)
 
 ## Description
 
-The EasyData.jl module provides a simple interface to read/write datasets and plots to files.
+`CMDimData.EasyPlot` provides a simple interface to read/write datasets and plots to files.
 
-Examples of the EasyData.jl capabilities can be found under the [test directory](test/)
+Examples of the `CMDimData.EasyPlot` capabilities can be found under the [sample/EasyData](../sample/EasyData/)
 
 ### Major Highlight: EasyDataHDF5 Output
 
@@ -14,5 +14,5 @@ EasyData.jl makes it easy to write `CMDimData.EasyPlot.Plot` objects to HDF5 fil
 
  - The EasyDataHDF5 format is still in the experimental phase.  It is not yet stable, and prone to major re-structuring.
  - There is currently no versionning of EasyDataHDF5 files.
-  - Without versioning, EasyDataHDF5 files cannot easily be re-loaded - and therefore not the best choice for archival purposes.  That being said, with an HDF5 viewer, the format can probably be figured out with relative ease.
+  - Without versioning, EasyDataHDF5 files cannot easily be re-loaded if ever the format changes.  Consequently, it is not the best choice for archival purposes.  That being said, with an HDF5 viewer, the format can probably be figured out by simple inspection.
 
