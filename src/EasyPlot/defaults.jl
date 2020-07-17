@@ -3,7 +3,7 @@
 
 #=Design philosophy:
 Defaults are initialized from ENV[] variables, so that they can be set from
-.juliarc.jl without first loading the EasyPlot module.
+~/.julia/config/startup.jl without first loading the EasyPlot module.
 =#
 
 

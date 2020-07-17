@@ -44,7 +44,8 @@ Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
 	addwfrm(ax::AbstractAxes, ...) #
 	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
 	getcolor()
-	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay (typically through .juliarc)
+	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
+      (typically through ~/.julia/config/startup.jl)
 		=> Only to be used in interactive mode; conditionally importing a module is bad for precompile.
 
 	#Constants:
