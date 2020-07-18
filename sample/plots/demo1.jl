@@ -1,4 +1,4 @@
-#demo1: A simple plot
+#Demo 1: A simple plot
 #-------------------------------------------------------------------------------
 
 using CMDimData
@@ -40,5 +40,3 @@ subplot = add(plot, linlin, alabels, title = "Polynomial Equations")
 #==Return plot to user (call evalfile(...))
 ===============================================================================#
 plot
-
-#Last line

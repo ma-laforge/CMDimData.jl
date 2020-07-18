@@ -1,4 +1,4 @@
-#Run sample code
+#Test EasyPlot capabilities using sample/ plots
 #-------------------------------------------------------------------------------
 
 module CMDimData_SampleGenerator

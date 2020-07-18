@@ -1,13 +1,19 @@
-#Run sample code
+#Test EasyData's read/write capabilities using sample/ plots
 #-------------------------------------------------------------------------------
+#=
+Look for EasyData._write() & EasyData._read() near end of file.
+=#
+
 
 module CMDimData_SampleGenerator
 
 using CMDimData
 using CMDimData.EasyPlot
+CMDimData.@includepkg EasyData
 
 #Initialize display (must happen before defining specialized "getdemodisplay"):
 EasyPlot.@initbackend()
+
 
 #==Obtain plot rendering display:
 ===============================================================================#
@@ -28,6 +34,7 @@ function getdemodisplay(d::EasyPlotGrace.PlotDisplay)
 end
 end
 
+
 #==Helper functions
 ===============================================================================#
 printsep(title) = println("\n", title, "\n", repeat("-", 80))
@@ -37,14 +44,21 @@ printsep(title) = println("\n", title, "\n", repeat("-", 80))
 ===============================================================================#
 pdisp = getdemodisplay(EasyPlot.defaults.maindisplay)
 
-for i in 1:4
-	file = "./demo$i.jl"
-	outfile = joinpath("./", splitext(basename(file))[1] * ".png")
-	printsep("Executing $file...")
-	plotlist = evalfile(file)
-	for plot in plotlist
-		display(pdisp, plot)
-	end
+pathlist = EasyPlot.demofilelist()
+for filepath in pathlist
+	filename = basename(filepath)
+	savefile = joinpath("./", splitext(filename)[1] * ".hdf5")
+	printsep("Executing $filepath...")
+	plot = evalfile(filepath)
+	display(pdisp, plot)
+
+	#EasyData portion:
+	@info("Writing $savefile...")
+	EasyData._write(savefile, plot)
+	@info("Reading back $savefile...")
+	plot2 = EasyData._read(savefile, EasyPlot.Plot);
+	set(plot2, title = "Compare Results: " * plot.title)
+	display(pdisp, plot2)
 end
 
 end

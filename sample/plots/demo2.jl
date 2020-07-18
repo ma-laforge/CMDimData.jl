@@ -1,9 +1,10 @@
-#demo2: Symbol test
+#Demo 2: Symbol test
 #-------------------------------------------------------------------------------
 
 using CMDimData
 using CMDimData.EasyPlot
 using CMDimData.MDDatasets
+
 
 #==Constants
 ===============================================================================#
@@ -49,5 +50,3 @@ end
 #==Return plot to user (call evalfile(...))
 ===============================================================================#
 plot
-
-#Last line

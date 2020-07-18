@@ -1,10 +1,9 @@
-#Demo 2: Multi-dimensional datasets (advanced usage)
+#Demo 4: Multi-dimensional datasets (advanced usage)
 #-------------------------------------------------------------------------------
 
 using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyData
 import Printf: @sprintf
 
 
@@ -31,7 +30,7 @@ tmax = maximum(t)
 #Generate parameter sweeps:
 sweeplist = PSweep[
 	PSweep("period", [1,2,3]*tfund)
-	PSweep("slope", [-1,0,1]*(.5/tmax))
+	PSweep("slope", [-1,0,1]*(1/tmax))
 	PSweep("offset", [-.4, 0, .9])
 ]
 
@@ -45,25 +44,29 @@ for inds in subscripts(lines)
 end
 
 tones += lines #Create shifted dataset
+#Filter on 2T harmonic:
+tones_2T = getsubarray(tones, period=2tfund)
+#Filter on 3T harmonic:
+tones_3T = getsubarray(tones, period=3tfund)
+#Filter on increasing slope (3rd index):
+tones_incm = getsubarray(tones, :,3,:)
 
 #==Generate plot
 ===============================================================================#
 strns(T) = @sprintf("%.1f ns", T/1e-9)
-plot=EasyPlot.new(title="Mulit-Dataset Tests")
+plot=EasyPlot.new(title="Mulit-Dataset Tests: Subarrays")
 	plot.displaylegend=false #Too busy with GracePlot
-s = add(plot, vvst, title="Tones")
+s = add(plot, vvst, title="Tones") #Create subplot
 	add(s, tones, id="")
-#Filter 2nd harmonic:
 s = add(plot, vvst, title="Tones ($(strns(2tfund)))")
-	add(s, getsubarray(tones, period=2tfund), id="")
+	add(s, tones_2T, id="")
 s = add(plot, vvst, title="Tones ($(strns(3tfund)))")
-	add(s, getsubarray(tones, period=3tfund), id="")
-#Filter slope:
+	add(s, tones_3T, id="")
 s = add(plot, vvst, title="Tones (increasing slope)")
-	add(s, getsubarray(tones, :,3,:), id="")
-#throw("STOP")
-
-#==Show results
-===============================================================================#
+	add(s, tones_incm, id="")
 plot.ncolumns = 1
-[plot]
+
+
+#==Return plot to user (call evalfile(...))
+===============================================================================#
+plot

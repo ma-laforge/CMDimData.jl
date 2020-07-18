@@ -1,10 +1,9 @@
-#Demo 1: Saving/loading multi-dimensional datasets
+#Demo 3: Plotting multi-dimensional datasets
 #-------------------------------------------------------------------------------
 
 using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyData
 
 
 #==Constants
@@ -30,7 +29,7 @@ tmax = maximum(t)
 #Generate parameter sweeps:
 sweeplist = PSweep[
 	PSweep("period", [1,2,3]*tfund)
-	PSweep("slope", [-1,0,1]*(.5/tmax))
+	PSweep("slope", [-1,0,1]*(1/tmax))
 	PSweep("offset", [-.4, 0, .9])
 ]
 
@@ -58,13 +57,7 @@ s = add(plot, vvst, title="Tones")
 s = add(plot, vvst, title="Sum")
 	add(s, lines+tones, id="")
 
-#throw("STOP")
-filepath ="./sampleplot1.hdf5"
-EasyData._write(filepath, plot)
-plot2 = EasyData._read(filepath, EasyPlot.Plot);
-set(plot2, title="Compare results")
 
-#==Show results
+#==Return plot to user (call evalfile(...))
 ===============================================================================#
-plot.ncolumns = plot2.ncolumns = 1
-[plot, plot2]
+plot

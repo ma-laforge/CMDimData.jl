@@ -1,10 +1,9 @@
-#Demo 3: Saving/loading DataRS/DataHR
+#Demo 5: Generating DataRS & DataHR Datsets
 #-------------------------------------------------------------------------------
 
 using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyData
 
 
 #==Constants
@@ -42,21 +41,15 @@ tonesRS = DataRS(tonesHR)
 
 #==Generate plot
 ===============================================================================#
-plot=EasyPlot.new(title="Tests Reading/Writing DataHR/DataMD")
+plot=EasyPlot.new(title="DataHR & DataMD")
 	plot.displaylegend=true #Too busy with GracePlot
 s = add(plot, vvst, title="DataHR")
 	add(s, tonesHR, id="tones")
 s = add(plot, vvst, title="DataRS")
 	add(s, tonesRS, id="tones")
-
-#throw("STOP")
-filepath ="./sampleplot3.hdf5"
-EasyData._write(filepath, plot)
-plot2 = EasyData._read(filepath, EasyPlot.Plot);
-set(plot2, title="Compare results")
+plot.ncolumns = 1
 
 
-#==Show results
+#==Return plot to user (call evalfile(...))
 ===============================================================================#
-plot.ncolumns = plot2.ncolumns = 1
-[plot, plot2]
+plot

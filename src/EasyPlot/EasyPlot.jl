@@ -5,7 +5,7 @@ module EasyPlot
 import ..CMDimData: rootpath
 
 demofilelist() =
-	[joinpath(rootpath, "sample", "EasyPlot", "demo$i.jl") for i in 1:2]
+	[joinpath(rootpath, "sample", "plots", "demo$i.jl") for i in 1:5]
 
 using Colors
 using MDDatasets
