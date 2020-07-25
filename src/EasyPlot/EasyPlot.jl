@@ -76,7 +76,6 @@ Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 #==Initialization
 ===============================================================================#
 function __init__()
-	@info "EasyPlot.__init__()"
 	global defaults
 	_initialize(defaults)
 	return

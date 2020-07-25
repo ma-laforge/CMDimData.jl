@@ -50,8 +50,6 @@ macro includepkg(pkgname::Symbol)
 end
 
 function __init__()
-	@info "CMDimData.__init__()"
-
 	return
 end
 
