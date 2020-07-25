@@ -18,7 +18,7 @@ color3 = line(color=4)
 ===============================================================================#
 tfund = 1e-9 #Fundamental
 osr = 20 #(fundamental) oversampling ratio
-nfund = 20 #cycles of the fundamenal
+nfund = 20 #cycles of the fundamental
 
 
 #==Computations

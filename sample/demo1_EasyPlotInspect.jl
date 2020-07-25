@@ -22,10 +22,6 @@ lstyle2 = line(color=:blue, width=3)
 x = DataF1(0:.1:20)
 #NOTE: Both x & y coordinates of "x" object initialized as y = x = [supplied range]
 
-tfund = 1e-9 #Fundamental
-osr = 20 #(fundamental) oversampling ratio
-nfund = 20 #cycles of the fundamenal
-
 
 #==Computations
 ===============================================================================#
