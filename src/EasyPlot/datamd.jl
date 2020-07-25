@@ -65,7 +65,7 @@ end
 #Add collection of DataRS{Number} results:
 function _addwfrm(ax::AbstractAxes, d::DataRS{T}, crnid::String,
 	id::String, la::LineAttributes, ga::GlyphAttributes, pidx::Int) where T<:Number
-	cur_id = (""==crnid) ? id : "$id; $curcrnid"
+	cur_id = (""==crnid) ? id : "$id; $crnid"
 	return _addwfrm(ax, DataF1(d.sweep.v, d.elem), cur_id, la, ga, pidx)
 end
 
