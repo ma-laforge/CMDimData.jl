@@ -6,12 +6,10 @@ using CMDimData.MDDatasets
 using CMDimData.EasyPlot
 
 
-#==Constants
+#==Attributes
 ===============================================================================#
-vvst = paxes(xlabel="Time (s)", ylabel="Amplitude (V)")
-color1 = line(color=2)
-color2 = line(color=3)
-color3 = line(color=4)
+vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (V)"))
+lcolor1 = cons(:a, line = set(color=2)) #Example: ordinal color selection
 
 
 #==Input data
@@ -45,19 +43,24 @@ end
 
 #==Generate plot
 ===============================================================================#
-plot=EasyPlot.new(title="Mulit-Dataset Tests")
-	plot.displaylegend=false #Too busy with GracePlot
-s = add(plot, vvst, title="Lines")
-	add(s, lines, id="")
+plot1 = push!(cons(:plot, vvst, title="Lines"),
+	cons(:wfrm, lines, label=""),
+)
 #Plot reduced dataset:
-s = add(plot, vvst, title="maximum(Lines)")
-	add(s, maximum(lines), line(style=:solid), glyph(shape=:o), id="")
-s = add(plot, vvst, title="Tones")
-	add(s, tones, id="")
-s = add(plot, vvst, title="Sum")
-	add(s, lines+tones, id="")
+plot2 = push!(cons(:plot, vvst, title="maximum(Lines)"),
+	cons(:wfrm, maximum(lines), line=set(style=:solid), glyph=set(shape=:o), label=""),
+)
+plot3 = push!(cons(:plot, vvst, title="Tones"),
+	cons(:wfrm, tones, label=""),
+)
+plot4 = push!(cons(:plot, vvst, title="Sum"),
+	cons(:wfrm, lines+tones, label=""),
+)
+
+pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests"), plot1, plot2, plot3, plot4)
+	pcoll.displaylegend=false #Too busy with GracePlot
 
 
-#==Return plot to user (call evalfile(...))
+#==Return pcoll to user (call evalfile(...))
 ===============================================================================#
-plot
+pcoll

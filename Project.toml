@@ -1,6 +1,6 @@
 name = "CMDimData"
 uuid = "70385e83-f223-47f4-874b-539892411e49"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"

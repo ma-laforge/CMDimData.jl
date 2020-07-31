@@ -4,20 +4,21 @@
 
 #==Types
 ===============================================================================#
-const ColorRef = Union{Symbol, Int, Colorant}
+#Different from the one in base.jl (used only in WfrmAttributes)
+const ColorRef_WFA = Union{Symbol, Int, Colorant}
 
 #Low-level waveform attributes (compared to LineAttributes & GlyphAttributes)
 #NOTE: line & glyph values are "untangled" here.
 mutable struct WfrmAttributes
 	linestyle::Symbol
 	linewidth::Float64 #[0, 10]
-	linecolor::ColorRef
+	linecolor::ColorRef_WFA
 
 	glyphshape::Symbol
 	glyphsize::Float64 #[0, 10]
-	glyphlinecolor::ColorRef
+	glyphlinecolor::ColorRef_WFA
 	#glyphlinewidth::Float64 #Use linewidth
-	glyphfillcolor::ColorRef
+	glyphfillcolor::ColorRef_WFA
 end
 
 
@@ -32,6 +33,11 @@ getcolor(::Nothing, v) = getcolor(COLORSCHEME_DEFAULT, v) #If no theme selected
 #=TODO
 Probably more efficient to run through this algorithm *before* calling
 EasyPlot.addwfrm.  So the _addwfrm algorithms should use WfrmAttributes
+
+Problem?:
+Cannot mirror glyph.color from line.color when glyph.color==nothing
+because we assign line.color AFTER we split up a mulit-dim waveform into multiple
+waveforms.
 =#
 
 #Compute final attributes, given the theme:
@@ -41,7 +47,7 @@ function WfrmAttributes(t::Theme, la::LineAttributes, ga::GlyphAttributes;
 	resolvecolors::Bool = true)
 	local linestyle, glyphlinecolor
 	haslinestyle = (la.style != nothing)
-	hasglyph = (ga.shape != nothing)
+	hasglyph = ga.shape != :none #Alt w/nothing: (ga.shape != nothing)
 	hasglyphcolor = (ga.color != nothing)
 
 	linewidth = (nothing == la.width) ? (1) : la.width

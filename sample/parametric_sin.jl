@@ -12,13 +12,13 @@ pdisp = EasyPlotInspect.PlotDisplay()
 #==Constants
 ===============================================================================#
 const π = MathConstants.π
-avst = paxes(xlabel="Time (s)", ylabel="Amplitude (m)")
-rvst = paxes(xlabel="Time (s)", ylabel="Rate (m/s)")
-pvst = paxes(xlabel="Time (s)", ylabel="Position (m)")
-lstylesweep = line(style=:solid, width=2) #Default is a bit thin
-lstyle1 = line(color=:red, width=2, style=:solid)
-lstyle2 = line(color=:blue, width=2)
-dfltglyph = glyph(shape=:o, size=1.5)
+vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (m)"))
+rvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Rate (m/s)"))
+pvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Position (m)"))
+lstylesweep = cons(:a, line = set(style=:solid, width=2)) #Default is a bit thin
+lstyle1 = cons(:a, line = set(color=:red, width=2, style=:solid))
+lstyle2 = cons(:a, line = set(color=:blue, width=2))
+dfltglyph = cons(:a, glyph = set(shape=:o, size=1.5))
 
 
 #==Emulate reading in simulated data file
@@ -51,9 +51,9 @@ end; end; end
 
 #==Helper functions
 ===============================================================================#
-function savepng(pdisp, plot, filepath::String)
+function savepng(pdisp, pcoll, filepath::String)
 	#render() instead of display(), thus allowing settings to be tweaked
-	rplot = render(pdisp, plot) #rendered plot
+	rplot = render(pdisp, pcoll)
 	rplot.layout[:halloc_plot] = rplot.layout[:halloc_plot] * 1.5
 	rplot.layout[:valloc_plot] = rplot.layout[:halloc_plot] * .3
 		for sp in rplot.subplots
@@ -104,42 +104,57 @@ fallx_at4kphi0 = value(fallx_at4k, x=0)
 
 #==Generate plots
 ===============================================================================#
-plot=EasyPlot.new(title="Parametric sin() - Results #1")
-	plot.displaylegend=true
-s = add(plot, pvst, title="Sinusoidal response") #Subplot
-	add(s, signal, lstylesweep, id="signal")
-s = add(plot, pvst, title="Normalized response") #Subplot
-	add(s, signal_norm, lstylesweep, id="signal_norm")
-s = add(plot, rvst, title="Rate of change") #Subplot
-	add(s, rate, lstylesweep, id="rate")
-plot.ncolumns = 1
-display(pdisp, plot)
-	savepng(pdisp, plot, "parametric_sin_1.png")
+plot1 = push!(cons(:plot, pvst, title="Sinusoidal response"),
+	cons(:wfrm, signal, lstylesweep, label="signal"),
+)
+plot2 = push!(cons(:plot, pvst, title="Normalized response"),
+	cons(:wfrm, signal_norm, lstylesweep, label="signal_norm"),
+)
+plot3 = push!(cons(:plot, rvst, title="Rate of change"),
+	cons(:wfrm, rate, lstylesweep, label="rate"),
+)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #1"), plot1, plot2, plot3)
+	pcoll.displaylegend=true
+	pcoll.ncolumns = 1
+display(pdisp, pcoll)
+	savepng(pdisp, pcoll, "parametric_sin_1.png")
 
-plot=EasyPlot.new(title="Parametric sin() - Results #2")
-	plot.displaylegend=true
-s = add(plot, title="Maximum Rate of Signal") #Subplot
-	set(s, paxes(xlabel=xparam, ylabel="Rate (m/s)"))
-	add(s, maxrate, lstylesweep, dfltglyph, id="maxrate")
-s = add(plot, title="Time to first falling crossing") #Subplot
-	set(s, paxes(xlabel=xparam, ylabel="Time (s)"))
-	add(s, fallx, lstylesweep, dfltglyph, id="fallx")
-plot.ncolumns = 1
-display(pdisp, plot)
-	savepng(pdisp, plot, "parametric_sin_2.png")
 
-plot=EasyPlot.new(title="Parametric sin() - Results #3")
-	plot.displaylegend=true
-s = add(plot, title="Time to first falling crossing (f=4kHz)") #Subplot
-	set(s, paxes(xlabel=xparam_reduce1, ylabel="Time (s)"))
-	add(s, fallx_at4k, lstylesweep, dfltglyph, id="fallx@4k")
-s = add(plot, title="Time to first falling crossing (f=4kHz, phi=0)") #Subplot
-	set(s, paxes(xlabel=xparam_reduce2, ylabel="Time (s)"))
-	add(s, fallx_at4kphi0, lstylesweep, dfltglyph, id="fallx@4kphi0")
-	set(s, paxes(ymin=0, ymax=150e-6)) #Circumvent bug with InspectDR when ymin==ymax
-plot.ncolumns = 1
-display(pdisp, plot)
-	savepng(pdisp, plot, "parametric_sin_3.png")
+plot1 = cons(:plot, title="Maximum Rate of Signal",
+	labels = set(xaxis=xparam, yaxis="Rate (m/s)"),
+)
+push!(plot1,
+	cons(:wfrm, maxrate, lstylesweep, dfltglyph, label="maxrate"),
+)
+plot2 = cons(:plot, title="Time to first falling crossing",
+	labels = set(xaxis=xparam, yaxis="Time (s)"),
+)
+push!(plot2,
+	cons(:wfrm, fallx, lstylesweep, dfltglyph, label="fallx"),
+)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #2"), plot1, plot2)
+	pcoll.displaylegend=true
+	pcoll.ncolumns = 1
+display(pdisp, pcoll)
+	savepng(pdisp, pcoll, "parametric_sin_2.png")
 
-	return
+
+plot1 = cons(:plot, title="Time to first falling crossing (f=4kHz)",
+	labels = set(xaxis=xparam_reduce1, yaxis="Time (s)"),
+)
+push!(plot1,
+	cons(:wfrm, fallx_at4k, lstylesweep, dfltglyph, label="fallx@4k"),
+)
+plot2 = cons(:plot, title="Time to first falling crossing (f=4kHz, phi=0)",
+	xyaxes = set(ymin=0, ymax=150e-6), #Circumvent bug with InspectDR when ymin==ymax
+	labels = set(xaxis=xparam_reduce2, yaxis="Time (s)"),
+)
+push!(plot2,
+	cons(:wfrm, fallx_at4kphi0, lstylesweep, dfltglyph, label="fallx@4kphi0"),
+)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #3"), plot1, plot2)
+	pcoll.displaylegend=true
+	pcoll.ncolumns = 1
+display(pdisp, pcoll)
+	savepng(pdisp, pcoll, "parametric_sin_3.png")
 end

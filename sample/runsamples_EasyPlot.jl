@@ -7,7 +7,8 @@ module CMDimData_SampleGenerator
 ===============================================================================#
 #List of backends to test:
 #const BACKENDLIST = [:EasyPlotInspect, :EasyPlotGrace, :EasyPlotMPL]
-const BACKENDLIST = [:EasyPlotGrace] #Grace is faster, if installed.
+#const BACKENDLIST = [:EasyPlotGrace] #Grace is faster, if installed.
+const BACKENDLIST = [:EasyPlotInspect]
 
 #List of backends where SVG file is not to be saved:
 const NOSVG = [:EasyPlotGrace]
@@ -63,9 +64,9 @@ function run_samples(filelist, bk::Symbol)
 	nosvg = in(bk, NOSVG)
 
 	#Write an EasyPlot to file
-	plot = evalfile(filelist[1])
-		EasyPlot.write_png("image_$bk.png", plot, pdisp)
-		!nosvg && EasyPlot.write_svg("image_$bk.svg", plot, pdisp)
+	pcoll = evalfile(filelist[1])
+		EasyPlot.write_png("image_$bk.png", pcoll, pdisp)
+		!nosvg && EasyPlot.write_svg("image_$bk.svg", pcoll, pdisp)
 
 	pdisp = getdisplay(bk)
 
@@ -73,8 +74,8 @@ function run_samples(filelist, bk::Symbol)
 	for demofile in filelist
 		fileshort = basename(demofile)
 		printsep("Rendering $fileshort with $bk...")
-		plot = evalfile(demofile)
-		display(pdisp, plot)
+		pcoll = evalfile(demofile)
+		display(pdisp, pcoll)
 	end
 end
 

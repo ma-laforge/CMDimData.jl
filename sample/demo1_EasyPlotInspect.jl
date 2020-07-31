@@ -6,15 +6,15 @@ using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
 CMDimData.@includepkg EasyPlotInspect
-CMDimData.@includepkg EasyData
+#CMDimData.@includepkg EasyData
 
 
 #==Constants
 ===============================================================================#
-pvst = paxes(xlabel="Time (s)", ylabel="Position (m)")
-lstylesweep = line(width=3)
-lstyle1 = line(color=:red, width=3, style=:solid)
-lstyle2 = line(color=:blue, width=3)
+pvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Position (m)"))
+lstylesweep = cons(:a, line = set(width=3))
+lstyle1 = cons(:a, line = set(color=:red, width=3, style=:solid))
+lstyle2 = cons(:a, line = set(color=:blue, width=3))
 
 
 #==Input data
@@ -52,26 +52,32 @@ c_sin = r_sin - midval
 
 #==Generate plot
 ===============================================================================#
-plot=EasyPlot.new(title="Demo 1 EasyPlot (InspectDR)")
-	plot.displaylegend=true
-s = add(plot, pvst, title="Subplot: Building blocks")
-	add(s, unity_ramp, lstyle1, id="Unity Ramp")
-	add(s, sinx, lstyle2, id="sin(x)")
-s = add(plot, pvst, title="Subplot: Ramp with swept \"slope\"")
-	add(s, ramp, lstylesweep, id="swept ramp")
-s = add(plot, pvst, title="Subplot: sin(x) + ramp")
-	add(s, r_sin, lstylesweep, id="r_sin")
-s = add(plot, pvst, title="Subplot: sin(x) + ramp - midval")
-	add(s, c_sin, lstylesweep, id="r_sin")
-plot.ncolumns = 1
+pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
+	pcoll.displaylegend=true
 
-	#Save plot for later use:
+plt1 = push!(cons(:plot, pvst, title="Plot: Building blocks"),
+	cons(:wfrm, unity_ramp, lstyle1, label="Unity Ramp"),
+	cons(:wfrm, sinx, lstyle2, label="sin(x)"),
+)
+plt2 = push!(cons(:plot, pvst, title="Plot: Ramp with swept \"slope\""),
+	cons(:wfrm, ramp, lstylesweep, label="swept ramp"),
+)
+plt3 = push!(cons(:plot, pvst, title="Plot: sin(x) + ramp"),
+	cons(:wfrm, r_sin, lstylesweep, label="r_sin"),
+)
+plt4 = push!(cons(:plot, pvst, title="Plot: sin(x) + ramp - midval"),
+	cons(:wfrm, c_sin, lstylesweep, label="r_sin"),
+)
+
+push!(pcoll, plt1, plt2, plt3, plt4)
+
+	#Save pcoll for later use:
 	filename = basename(@__FILE__)
 	savefile = joinpath("./", splitext(filename)[1] * ".hdf5")
-	EasyData._write(savefile, plot)
+@warn("RESTORE EasyData._write")
+#	EasyData._write(savefile, pcoll)
 
-	#Display plot:
+	#Display pcoll:
 	pdisp = EasyPlotInspect.PlotDisplay()
-	display(pdisp, plot)
-	return plot
+	display(pdisp, pcoll)
 end

@@ -6,15 +6,12 @@ using CMDimData.EasyPlot
 using CMDimData.MDDatasets
 
 
-#==Constants
+#==Attributes
 ===============================================================================#
-const linlin = paxes(xscale = :lin, yscale = :lin)
-const alabels = paxes(xlabel="X-Axis Label", ylabel="X-Axis Label")
-
-#Defaults
-#-------------------------------------------------------------------------------
-dfltline = line(style=:solid, color=:red)
-dfltglyph = glyph(shape=:square, size=3)
+linlin = cons(:a, xyaxes=set(xscale=:lin, yscale=:lin))
+alabels = cons(:a, labels=set(xaxis="X-Axis Label", yaxis="Y-Axis Label"))
+dfltline = cons(:a, line=set(style=:solid, color=:red))
+dfltglyph = cons(:a, glyph=set(shape=:square, size=3))
 
 
 #==Input data
@@ -28,15 +25,20 @@ end
 
 #==Generate EasyPlot
 ===============================================================================#
-plot = EasyPlot.new(title = "Sample Plot")
-subplot = add(plot, linlin, alabels, title = "Polynomial Equations")
-	add(subplot, graph[1], id="Constant")
-	add(subplot, graph[2], id="Linear")
-	add(subplot, graph[3], id="Quadratic")
-	wfrm = add(subplot, graph[4], id="Cubic")
-		set(wfrm, dfltline, dfltglyph)
+plot = push!(cons(:plot, linlin, alabels, title = "Polynomial Equations"),
+	cons(:wfrm, graph[1], label="Constant"),
+	cons(:wfrm, graph[2], label="Linear"),
+	cons(:wfrm, graph[3], label="Quadratic"),
+)
+
+#Create individual waveform, and set parameters later:
+wfrm = cons(:wfrm, graph[4], label="Cubic")
+	set(wfrm, dfltline, dfltglyph)
+push!(plot, wfrm) #Now add it to the list of plots
+
+pcoll = push!(cons(:plot_collection, title="Sample Plot"), plot)
 
 
-#==Return plot to user (call evalfile(...))
+#==Return pcoll to user (call evalfile(...))
 ===============================================================================#
-plot
+pcoll

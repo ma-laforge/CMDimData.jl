@@ -8,6 +8,9 @@
 const scalemap = Dict{Symbol, Symbol}(
 	:lin => :lin,
 	:log => :log10,
+	:log10 => :log10,
+	:dB10 => :dB10,
+	:dB20 => :dB20,
 )
 
 const linestylemap = Dict{Symbol, Symbol}(
@@ -30,21 +33,19 @@ const glyphmap = Dict{Symbol, Symbol}(
 	:star      => :star, :* => :*,
 )
 
-struct FlagType{T}; end
-const NOTFOUND = FlagType{:NOTFOUND}()
+struct NotFound; end
+const NOTFOUND = NotFound()
 
 
 #==Base types
 ===============================================================================#
 const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
-mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct Builder <: EasyPlot.AbstractBuilder
 	ref::InspectDR.Plot2D #Plot reference
 	theme::EasyPlot.Theme
-	eye::NullOr{EasyPlot.EyeAttributes}
+	fold::NullOr{EasyPlot.FoldedAxis}
 end
-Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
-	Axes{style}(ref, theme, eye)
 
 mutable struct WfrmAttributes
 	label
@@ -111,8 +112,9 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 end
 
 
-#==Rendering functions
+#==AbstractBuilder implementation
 ===============================================================================#
+EasyPlot.needsfold(b::Builder) = b.fold
 
 #Add DataF1 results:
 function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes)
@@ -124,60 +126,62 @@ function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
-	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
+	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	inspectattr = WfrmAttributes(id, attr) #Attributes understood by InspectDR
-	_addwfrm(ax.ref, d, inspectattr)
+	_addwfrm(b.ref, d, inspectattr)
 end
 
-function generatesubplot(subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
+
+#==Plot building functions
+===============================================================================#
+
+function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	iplot = InspectDR.Plot2D()
-	strip = iplot.strips[1]
+	fold = isa(plot.xaxis, EasyPlot.FoldedAxis) ? plot.xaxis : nothing
 
-	#TODO Ugly: setting defaults like this should be done in EasyPlot
-	ep = nothing
-	if :eye == subplot.style
-		ep = subplot.eye
-		if nothing == ep.teye; ep.teye = ep.tbit; end
+	builder = Builder(iplot, theme, fold)
+
+	for (i, wfrm) in enumerate(plot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
 	end
 
-	axes = Axes(subplot.style, iplot, theme, ep)
+	#x-axis properties:
+	iplot.xext_full = InspectDR.PExtents1D(plot.xext.min, plot.xext.max)
+	iplot.xscale = InspectDR.AxisScale(scalemap[Symbol(plot.xaxis)])
 
-	for (i, wfrm) in enumerate(subplot.wfrmlist)
-		EasyPlot.addwfrm(axes, wfrm, i)
+	#Want more resolution on y-axis than default:
+	#TODO: is there a better way???
+	_yaxisscale(s::Symbol) = InspectDR.AxisScale(s, tgtmajor=8, tgtminor=2)
+
+	#y-strip properties:
+	iplot.strips = [] #Reset
+	for srcstrip in plot.ystriplist
+		strip = InspectDR.GraphStrip()
+		push!(iplot.strips, strip)
+		strip.yscale = _yaxisscale(scalemap[srcstrip.scale])
+		strip.yext_full = InspectDR.PExtents1D(srcstrip.ext.min, srcstrip.ext.max)
 	end
 
-	srca = subplot.axes
-
-	#Update axis limits:
-	_getlim(v::Nothing) = NaN
-	_getlim(v::Real) = Float64(v)
-	iplot.xext_full = InspectDR.PExtents1D(_getlim(srca.xmin), _getlim(srca.xmax))
-	strip.yext_full = InspectDR.PExtents1D(_getlim(srca.ymin), _getlim(srca.ymax))
-
-	#Apply x/y scales:
-	iplot.xscale = InspectDR.AxisScale(scalemap[srca.xscale])
-	strip.yscale = InspectDR.AxisScale(scalemap[srca.yscale], tgtmajor=8, tgtminor=2)
-	
 	#Apply x/y labels:
-	stringlabel(s) = (s isa String) ? s : ""
 	a = iplot.annotation
-	a.title = subplot.title
-	a.xlabel = stringlabel(srca.xlabel)
-	a.ylabels = [stringlabel(srca.ylabel)]
+	a.title = plot.title
+	a.xlabel = plot.xlabel
+	a.ylabels = String[strip.axislabel for strip in plot.ystriplist]
+	
 	return iplot
 end
 
-function render(mplot::InspectDR.Multiplot, eplot::EasyPlot.Plot, lyt::InspectDR.PlotLayout)
-	mplot.layout[:ncolumns] = eplot.ncolumns
-	mplot.title = eplot.title
+function render(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollection, lyt::InspectDR.PlotLayout)
+	mplot.layout[:ncolumns] = ecoll.ncolumns
+	mplot.title = ecoll.title
 
-	for s in eplot.subplots
-		plot = generatesubplot(s, eplot.theme)
+	for p in ecoll.plotlist
+		plot = generateplot(p, ecoll.theme)
 		plot.layout.values = lyt
 		add(mplot, plot)
-		plot.layout[:enable_legend] = eplot.displaylegend
+		plot.layout[:enable_legend] = ecoll.displaylegend
 	end
 
 	return mplot

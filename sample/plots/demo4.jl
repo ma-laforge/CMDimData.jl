@@ -7,12 +7,9 @@ using CMDimData.EasyPlot
 import Printf: @sprintf
 
 
-#==Constants
+#==Attributes
 ===============================================================================#
-vvst = paxes(xlabel="Time (s)", ylabel="Amplitude (V)")
-color1 = line(color=2)
-color2 = line(color=3)
-color3 = line(color=4)
+vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (V)"))
 
 
 #==Input data
@@ -51,22 +48,29 @@ tones_3T = getsubarray(tones, period=3tfund)
 #Filter on increasing slope (3rd index):
 tones_incm = getsubarray(tones, :,3,:)
 
+
 #==Generate plot
 ===============================================================================#
 strns(T) = @sprintf("%.1f ns", T/1e-9)
-plot=EasyPlot.new(title="Mulit-Dataset Tests: Subarrays")
-	plot.displaylegend=false #Too busy with GracePlot
-s = add(plot, vvst, title="Tones") #Create subplot
-	add(s, tones, id="")
-s = add(plot, vvst, title="Tones ($(strns(2tfund)))")
-	add(s, tones_2T, id="")
-s = add(plot, vvst, title="Tones ($(strns(3tfund)))")
-	add(s, tones_3T, id="")
-s = add(plot, vvst, title="Tones (increasing slope)")
-	add(s, tones_incm, id="")
-plot.ncolumns = 1
+
+plot1 = push!(cons(:plot, vvst, title="Tones"),
+	cons(:wfrm, tones, label=""),
+)
+plot2 = push!(cons(:plot, vvst, title="Tones ($(strns(2tfund)))"),
+	cons(:wfrm, tones_2T, label=""),
+)
+plot3 = push!(cons(:plot, vvst, title="Tones ($(strns(3tfund)))"),
+	cons(:wfrm, tones_3T, label=""),
+)
+plot4 = push!(cons(:plot, vvst, title="Tones (increasing slope)"),
+	cons(:wfrm, tones_incm, label=""),
+)
+
+pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests: Subarrays"), plot1, plot2, plot3, plot4)
+	pcoll.displaylegend=false #Too busy with GracePlot
+	pcoll.ncolumns=1
 
 
-#==Return plot to user (call evalfile(...))
+#==Return pcoll to user (call evalfile(...))
 ===============================================================================#
-plot
+pcoll

@@ -10,43 +10,68 @@ demofilelist() =
 using Colors
 using MDDatasets
 
-include("codegen.jl")
+
+#Type used to dispatch on a symbol & minimize namespace pollution:
+#-------------------------------------------------------------------------------
+struct DS{T}; end; #Dispatchable symbol
+DS(v::Symbol) = DS{v}()
+
+#Real values for plot coordinates, etc:
+const PReal = Float64
+const PNaN = PReal(NaN)
+
+include("attributes.jl")
 include("colors.jl")
 include("base.jl")
-include("plotmanip.jl")
 include("eyediag.jl")
 include("datamd.jl")
 include("themes.jl")
 include("display.jl")
 include("defaults.jl")
+include("show.jl")
 include("init.jl")
+include("doc.jl")
 
 
-#==Interface
+#==Construct interface to minimize namespace pollution
 ===============================================================================#
-export line, glyph #Waveform attributes
-export eyeparam #Eye diagram parameters
-export add #Add new plot/subplot/waveform/...
-export set #Set Plot/Subplot/Waveform/... attributes
-export paxes #Plot axes attributes (Bad idea to extend Base.axes: when defining zero-argument signature)
+function cons(::DS{T}, args...; kwargs...) where T
+	mlist = string(methods(cons, (DS,)))
+msg = """
+Cannot construct object of type :$T.
+Supported methods are:\n
+"""
+	throw(ArgumentError(msg * mlist))
+end
+cons(s::Symbol, args...; kwargs...) = cons(DS(s), args...; kwargs...)
 
-#
+
+#==Exported interface
+===============================================================================#
+export cons #Construct objects (minimize namespace pollution)
+export set #Set PlotCollection/Plot/Waveform/... attributes
 export render #render will not display (if possible).  "display()" shows plot.
 
-#==Already exported functions:
-Base.display(backend::Symbol, plot::Plot, args...; kwargs...)
+
+#==Extensions
+================================================================================
+Base.display(backend::Symbol, pcoll::PlotCollection, args...; kwargs...)
 ==#
 
-#==Unexported tools available to rendering modules:
+
+#==Unexported tools available to users:
 ================================================================================
-	AbstractAxes #Type: Provides advanced functionality to rendering modules.
-	AbstractAxes{:eye}: Expects .eye::EyeAttributes
-	addwfrm(ax::AbstractAxes, ...) #
-	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
-	getcolor()
 	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
       (typically through ~/.julia/config/startup.jl)
 		=> Only to be used in interactive mode; conditionally importing a module is bad for precompile.
+==#
+
+
+#==Unexported tools available to backend-interfacing modules:
+================================================================================
+	addwfrm(ax::AbstractBuilder, ...) #
+	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
+	getcolor()
 
 	#Constants:
 	COLORSCHEME[{:default/}] #List of color schemes
@@ -67,7 +92,7 @@ Subtype EasyPlotDisplay, for example:
 	EasyPlot.getdisplay(::Type{EasyPlotDisplay{:NEWPLOTID}}) 
 		=> return NEWPLOTDisplay object
 
-EasyPlot.render{T<:Symbol}(::Backend{T}, plot::EasyPlot.Plot, args...; kwargs...)
+EasyPlot.render{T<:Symbol}(::Backend{T}, pcoll::EasyPlot.PlotCollection, args...; kwargs...)
 	=> returns YOUR_MODULE_PLOT object
 Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
 ==#

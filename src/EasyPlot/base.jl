@@ -5,10 +5,10 @@
 #==Useful constants
 ===============================================================================#
 
-const VALID_AXISSCALES = Set([:lin, :log, :reciprocal])
-#TODO: should we support :db20, :db10?
+#=Not used! Informative at the moment.
 
-const VALID_LINESTYLES = Set([:none, :solid, :dash, :dot, :dashdot])
+#const VALID_AXISSCALES = Set([:lin, :log, :dB10, :dB20, :reciprocal])
+#const VALID_LINESTYLES = Set([:none, :solid, :dash, :dot, :dashdot])
 
 #In case specified glyph (symbol/marker) not supported...
 #implementations should provide default (hopefully not none).
@@ -18,58 +18,21 @@ const VALID_GLYPHS = Set([:none,
 	:cross, :+, :diagcross, :x,
 	:circle, :o, :star, :*,
 ])
+=#
 
-const VALID_SUBPLOTSTYLES = Set([:xy, :strip, :eye, :stripeye])
 
-#==Plot/subplot/waveform attributes
+#==Main types
 ===============================================================================#
 
+#TODO: Rename??
 const NullOr{T} = Union{Nothing, T}
 
-#-------------------------------------------------------------------------------
-mutable struct LineAttributes <: AttributeList
-	style
-	width #[0, 10]
-	color
-end
+#ColorRef that can also reference another
+#Int: Pick specific color from theme/ColorScheme
+#Nothing: Pick appropriate color from theme/ColorScheme (Varies with sweep value)
+const ColorRef = Union{Nothing, Colorant, Int}
 
-#"line" constructor:
-eval(genexpr_attriblistbuilder(:line, LineAttributes, reqfieldcnt=0))
-
-#-------------------------------------------------------------------------------
-mutable struct GlyphAttributes <: AttributeList #Don't use "Symbol" - name used by Julia
-#==IMPORTANT:
-Edge width & color taken from LineAttributes
-==#
-	shape #because "type" is reserved
-	size #of glyph.  edge width taken from LineAttributes
-	color #Fill color.  Do not set to leave unfilled.
-end
-
-#"glyph" constructor:
-eval(genexpr_attriblistbuilder(:glyph, GlyphAttributes, reqfieldcnt=0))
-
-mutable struct AxesAttributes <: AttributeList
-	xlabel; ylabel
-	xmin; xmax; ymin; ymax
-	xscale; yscale #VALID_AXISSCALES
-end
-
-#"paxes" constructor:
-eval(genexpr_attriblistbuilder(:paxes, AxesAttributes, reqfieldcnt=0))
-
-mutable struct EyeAttributes <: AttributeList
-	tbit
-	teye
-	tstart
-end
-
-#"eyeparam" constructor:
-eval(genexpr_attriblistbuilder(:eyeparam, EyeAttributes, reqfieldcnt=1))
-
-#Plot theme.
-#Thought: Renering function can also be passed a theme when plot does not
-#specify values.
+#A plot theme.
 mutable struct Theme
 	colorscheme::NullOr{ColorScheme}
 
@@ -85,104 +48,232 @@ mutable struct Theme
 end
 Theme() = Theme(nothing)
 
-#==Main data structures
-===============================================================================#
-#Provides advanced functionality to rendering modules.
-abstract type AbstractAxes{T} end #One of VALID_SUBPLOTSTYLES (symbol)
+abstract type AbstractAxis; end
 
-#-------------------------------------------------------------------------------
-mutable struct Waveform
+struct Axis{ID} <: AbstractAxis
+	#TODO: Ensure valid id values
+end
+Axis(id::Symbol) = Axis{id}()
+
+"""
+    struct FoldedAxis
+
+Describe how a folded axis is to be displayed.
+"""
+struct FoldedAxis <: AbstractAxis
+	foldinterval::PReal #Interval with which to start overlaying data
+	xstart::PReal #Discard data before this point
+	xmin::PReal
+	xmax::PReal
+end
+FoldedAxis(foldinterval; xstart=0, xmin=0, xmax=foldinterval) =
+	FoldedAxis(foldinterval, xstart, xmin, xmax)
+
+struct Extents1D
+	min::PReal
+	max::PReal
+end
+_Extents1D() = Extents1D(PNaN, PNaN)
+
+struct LineAttributes
+	style #::Symbol #will be none if set to nothing while a glyph.shape exists
+	width::PReal #[0, 10]
+	color::ColorRef
+end
+LineAttributes(;style=nothing, width=1, color=nothing) = LineAttributes(style, width, color)
+
+struct GlyphAttributes
+#==IMPORTANT:
+Edge width & color taken from LineAttributes
+==#
+	shape::Symbol #because "type" is reserved
+	size::PReal #of glyph. Edge width taken from LineAttributes
+	color::ColorRef #glyph linecolor. = nothing to match line.color
+	fillcolor::ColorRef
+end
+GlyphAttributes(;shape=:none, size=1, color=nothing, fillcolor=nothing) =
+	GlyphAttributes(shape, size, color, fillcolor)
+
+mutable struct Waveform <: AbstractAttributeReceiver
 	data::DataMD
-	id::String
+	label::String
 	line::LineAttributes
 	glyph::GlyphAttributes
+	strip::Int
 end
-Waveform(data::DataMD) = Waveform(data, "", line(), glyph())
+_Waveform(data::DataMD, label::String, strip::Int) =
+	Waveform(data, label, LineAttributes(), GlyphAttributes(), strip)
+Waveform(data::DataMD, args...; label::String="", strip=1, kwargs...) =
+	_apply(_Waveform(data, label, strip), args, kwargs)
 
-#-------------------------------------------------------------------------------
-#TODO: Find a better way to deal with different subplot types
-mutable struct Subplot
+mutable struct YStrip
+	scale::Symbol
+	striplabel::String
+	axislabel::String
+	ext::Extents1D
+end
+_YStrip() = YStrip(:lin, "", "", _Extents1D())
+
+mutable struct Plot <: AbstractAttributeReceiver
 	title::String
-	style::Symbol
+	xlabel::String
+	xaxis::AbstractAxis
+	xext::Extents1D
+	ystriplist::Vector{YStrip}
 	wfrmlist::Vector{Waveform}
-	axes::AxesAttributes
-	eye::EyeAttributes #TODO: should not be available in all plot types
 end
-Subplot() = Subplot("", :xy, Waveform[], paxes(xscale=:lin, yscale=:lin), eyeparam(1, tstart=0))
+_Plot(title::String) = Plot(title, "", Axis(:lin), _Extents1D(), YStrip[], Waveform[])
+Plot(args...; title::String="", kwargs...) =
+	_apply(_Plot(title), args, kwargs)
 
-
-#-------------------------------------------------------------------------------
-mutable struct Plot
+mutable struct PlotCollection <: AbstractAttributeReceiver
 	title::String
-	ncolumns::Int #TODO: Create a more flexible
-	subplots::Vector{Subplot}
+	ncolumns::Int #TODO: Create a more flexible system
+	plotlist::Vector{Plot}
 	displaylegend::Bool
 	theme::Theme
 end
-Plot() = Plot("", 1, Subplot[], true, Theme())
+_PlotCollection(title::String, ncolumns::Int) = PlotCollection(title, ncolumns, Plot[], true, Theme())
+PlotCollection(args...; title::String="", ncolumns::Int=1, kwargs...) =
+	_apply(_PlotCollection(title, ncolumns), args, kwargs)
 
 
-#==Main data constructors
+#==Register constructors with cons() interface
 ===============================================================================#
-function new(args...; kwargs...)
-	plot = Plot()
-	set(plot, args...; kwargs...)
-	return plot
-end
-
-function add(p::Plot, args...; kwargs...)
-	subplot = Subplot()
-	set(subplot, args...; kwargs...)
-	push!(p.subplots, subplot)
-	return subplot
-end
-
-function add(s::Subplot, wfrm::Waveform, args...; kwargs...)
-	set(wfrm, args...; kwargs...)
-	push!(s.wfrmlist, wfrm)
-	return wfrm
-end
-
-function add(s::Subplot, data::DataMD, args...; kwargs...)
-	return add(s, Waveform(data), args...; kwargs...)
-end
+cons(::DS{:plot_collection}, args...; kwargs...) = PlotCollection(args...; kwargs...)
+cons(::DS{:plotcoll}, args...; kwargs...) = PlotCollection(args...; kwargs...)
+cons(::DS{:plot}, args...; kwargs...) = Plot(args...; kwargs...)
+cons(::DS{:wfrm}, args...; kwargs...) = Waveform(args...; kwargs...)
+cons(::DS{:fldaxis}, args...; kwargs...) = FoldedAxis(args...; kwargs...)
 
 
-#==Generate friendly show functions
+#==Accessors
 ===============================================================================#
-const SHOW_INDENTSTR = "   "
-const SHOW_DEFAULTSTR = "default"
+Base.Symbol(a::Axis{T}) where T = Symbol(T)
+Base.Symbol(a::FoldedAxis) = :lin
 
-function string_scales(axes::AxesAttributes)
-	xscale = nothing==axes.xscale ? SHOW_DEFAULTSTR : string(axes.xscale)
-	yscale = nothing==axes.yscale ? SHOW_DEFAULTSTR : string(axes.yscale)
-	return "$xscale/$yscale"
+
+#==Helper functions
+===============================================================================#
+#Create a new Extents1D with conditionally overwritten min/max values.
+function _new_overwrite(srcext::Extents1D, _min, _max)
+	newmin = srcext.min; newmax = srcext.max
+	NoOverwrite(_min) || (newmin = _min)
+	NoOverwrite(_max) || (newmax = _max)
+	return Extents1D(newmin, newmax)
 end
 
-function showshorthand(io::IO, wfrm::Waveform)
-	typestr = string(typeof(wfrm.data))
-	id = wfrm.id
-	print(io, "Waveform(\"$id\", $typestr)")
+
+#==Methods to resolve user-supplied values
+===============================================================================#
+_resolve_xaxis(xscale::Symbol) = Axis(xscale)
+_resolve_xaxis(a::FoldedAxis) = a
+
+#_resolve_colorant(c::Symbol) = COLOR_NAMED[c]
+#_resolve_colorant(c::Colorant) = c
+
+#Resolve to appropriate ColorRef value:
+_resolve_ColorRef(c::Nothing) = c
+_resolve_ColorRef(c::Symbol) = COLOR_NAMED[c]
+_resolve_ColorRef(c::Int) = c
+_resolve_ColorRef(c::Colorant) = c
+
+
+#==Implement _apply() methods
+===============================================================================#
+function _apply(w::Waveform, ::DS{:line}; style=nooverwrite, width=nooverwrite, color=nooverwrite)
+	_style = w.line.style; _width = w.line.width; _color = w.line.color
+	NoOverwrite(style) || (_style = style)
+	NoOverwrite(width) || (_width = width)
+	NoOverwrite(color) || (_color = _resolve_ColorRef(color))
+	w.line = LineAttributes(style=_style, width=_width, color=_color)
+	return w
 end
 
-function Base.show(io::IO, s::Subplot; indent="")
-	title = s.title
-	axes = string_scales(s.axes)
-	print(io, "$(indent)Subplot(\"$title\", $axes)[\n")
-	wfrmindent = indent * SHOW_INDENTSTR
-	for wfrm in s.wfrmlist
-		print(io, wfrmindent); showshorthand(io, wfrm); println(io)
+function _apply(w::Waveform, ::DS{:glyph}; shape=nooverwrite, size=nooverwrite,
+	color=nooverwrite, fillcolor=nooverwrite)
+	g=w.glyph; _shape=g.shape; _size=g.size; _color=g.color; _fillcolor=g.fillcolor
+	NoOverwrite(shape) || (_shape = shape)
+	NoOverwrite(size) || (_size = size)
+	NoOverwrite(color) || (_color = _resolve_ColorRef(color))
+	NoOverwrite(color) || (_fillcolor = _resolve_ColorRef(fillcolor))
+	w.glyph = GlyphAttributes(shape=_shape, size=_size, color=_color, fillcolor=_fillcolor)
+	return w
+end
+
+#Configure Plot with x/y axes (single y-strip) and change scales:
+function _apply(p::Plot, ::DS{:xyaxes}; xscale=nooverwrite, yscale=nooverwrite,
+	xmin=nooverwrite, xmax=nooverwrite, ymin=nooverwrite, ymax=nooverwrite)
+	if length(p.ystriplist) > 0
+		resize!(p.ystriplist, 1)
+	else
+		push!(p.ystriplist, _YStrip())
 	end
-	print(io, "$(indent)]")
+	strip = p.ystriplist[1]
+	NoOverwrite(xscale) || (p.xaxis = _resolve_xaxis(xscale))
+	NoOverwrite(yscale) || (strip.scale = yscale)
+	p.xext = _new_overwrite(p.xext, xmin, xmax)
+	strip.ext = _new_overwrite(strip.ext, ymin, ymax)
+	return p
 end
 
-function Base.show(io::IO, p::Plot)
-	title = p.title
-	print(io, "Plot(\"$title\")[\n")
-	for s in p.subplots
-		show(io, s, indent=SHOW_INDENTSTR); println(io)
+#Change plot labels:
+function _apply(p::Plot, ::DS{:labels}; title=nooverwrite,
+	xaxis=nooverwrite, yaxis=nooverwrite)
+	if !NoOverwrite(yaxis) && length(p.ystriplist) < 1
+		push!(p.ystriplist, _YStrip())
 	end
-	print(io, "]")
+	NoOverwrite(title) || (p.title = title)
+	NoOverwrite(xaxis) || (p.xlabel = xaxis)
+	NoOverwrite(yaxis) || (p.ystriplist[1].axislabel = yaxis)
+end
+
+#Change x-axis parameters of a plot:
+function _apply(p::Plot, ::DS{:xaxis}; scale=nooverwrite, min=nooverwrite, max=nooverwrite)
+	NoOverwrite(scale) || (p.xaxis = _resolve_xaxis(scale))
+	p.xext = _new_overwrite(p.xext, min, max)
+end
+
+#Change number of y-strips in a plot:
+function _apply(p::Plot, ::DS{:nstrips}, nstrips::Int)
+	if length(p.ystriplist) > nstrips
+		resize!(p.ystriplist, 1)
+	else
+		newstrips = nstrips - length(p.ystriplist)
+		for i in 1:newstrips
+			push!(p.ystriplist, _YStrip())
+		end
+	end
+end
+
+#Change misc. strip properties:
+function _apply(p::Plot, ::DS{:ystrip}, istrip::Int;
+	min=nooverwrite, max=nooverwrite, scale=nooverwrite,
+	axislabel=nooverwrite, striplabel=nooverwrite
+)
+	nstrips = length(p.ystriplist)
+	if istrip < 1 || istrip > nstrips
+		throw(ArgumentError("set(`::Plot`, ystrip=...): strip index=$istrip, but strip count=$nstrips"))
+	end
+	strip = p.ystriplist[istrip]
+	strip.ext = _new_overwrite(strip.ext, min, max)
+	NoOverwrite(scale) || (strip.scale = scale)
+	NoOverwrite(axislabel) || (strip.axislabel = axislabel)
+	NoOverwrite(striplabel) || (strip.striplabel = striplabel)
+end
+
+
+#==push! interface
+===============================================================================#
+function Base.push!(c::PlotCollection, p::Plot, args...)
+	push!(c.plotlist, p)
+	if length(args)>0; push!(c, args...); end
+	return c
+end
+function Base.push!(p::Plot, w::Waveform, args...)
+	push!(p.wfrmlist, w)
+	if length(args)>0; push!(p, args...); end
+	return p
 end
 
 #Last line

@@ -6,15 +6,16 @@ using CMDimData.EasyPlot
 using CMDimData.MDDatasets
 
 
-#==Constants
+#==Attributes
 ===============================================================================#
-const linlin = paxes(xscale = :lin, yscale = :lin)
-const alabels = paxes(xlabel="X-Axis Label", ylabel="X-Axis Label")
-
-#Defaults
-#-------------------------------------------------------------------------------
-dfltline = line(style=:solid, color=:red)
-dfltglyph = glyph(shape=:square, size=3)
+infoaxes = cons(:attribute_list,
+	xyaxes = set(xscale=:lin, yscale=:lin),
+	labels = set(xaxis="X-Axis Label", yaxis="Y-Axis Label")
+)
+dfltwattr = cons(:attribute_list, #Default waveform attributes
+	line = set(style=:solid, color=:red),
+	glyph = set(shape=:square, size=3),
+)
 
 
 #==Input data
@@ -25,13 +26,12 @@ x = DataF1(x, 1*x)
 
 #==Generate EasyPlot
 ===============================================================================#
-plot = EasyPlot.new(title = "Sample Plot")
-subplot = add(plot, linlin, alabels, title = "Symbol Test")
+plot = cons(:plot, infoaxes, title = "Symbol Test")
 let xoffset=0, yoffset=0
 for sz in [1, 3, 5]
 	for w in [1, 2, 3]
-		wfrm = add(subplot, xshift(x+yoffset, xoffset), id="sz=$sz, w=$w")
-		set(wfrm, line(style=:solid, color=:red, width=w), glyph(shape=:square, size=sz))
+		overw = cons(:a, line=set(color=:blue, width=w), glyph=set(size=sz))
+		wfrm = push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
 		xoffset += .5; yoffset += 10
 	end
 end
@@ -39,14 +39,16 @@ end
 xoffset=0; #yoffset=0
 for sz in [1, 2]
 	for w in [1, 5, 10]
-		wfrm = add(subplot, xshift(x+yoffset, xoffset), id="sz=$sz, w=$w")
-		set(wfrm, line(style=:solid, color=:blue, width=w), glyph(shape=:square, size=sz))
+		overw = cons(:a, line=set(width=w), glyph=set(size=sz))
+		wfrm = push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
 		xoffset += .5; yoffset += 10
 	end
 end
 end
 
+pcoll = push!(cons(:plot_collection, title="Sample Plot"), plot)
 
-#==Return plot to user (call evalfile(...))
+
+#==Return pcoll to user (call evalfile(...))
 ===============================================================================#
-plot
+pcoll

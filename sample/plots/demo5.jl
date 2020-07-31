@@ -6,12 +6,9 @@ using CMDimData.MDDatasets
 using CMDimData.EasyPlot
 
 
-#==Constants
+#==Attributes
 ===============================================================================#
-vvst = paxes(xlabel="Time (s)", ylabel="Amplitude (V)")
-color1 = line(color=2)
-color2 = line(color=3)
-color3 = line(color=4)
+vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (V)"))
 
 
 #==Input data
@@ -41,15 +38,18 @@ tonesRS = DataRS(tonesHR)
 
 #==Generate plot
 ===============================================================================#
-plot=EasyPlot.new(title="DataHR & DataMD")
-	plot.displaylegend=true #Too busy with GracePlot
-s = add(plot, vvst, title="DataHR")
-	add(s, tonesHR, id="tones")
-s = add(plot, vvst, title="DataRS")
-	add(s, tonesRS, id="tones")
-plot.ncolumns = 1
+plot1 = push!(cons(:plot, vvst, title="DataHR"),
+	cons(:wfrm, tonesHR, label="tones"),
+)
+plot2 = push!(cons(:plot, vvst, title="DataRS"),
+	cons(:wfrm, tonesRS, label="tones"),
+)
+
+pcoll = push!(cons(:plot_collection, title="DataHR & DataMD"), plot1, plot2)
+	pcoll.displaylegend = true
+	pcoll.ncolumns = 1
 
 
-#==Return plot to user (call evalfile(...))
+#==Return pcoll to user (call evalfile(...))
 ===============================================================================#
-plot
+pcoll

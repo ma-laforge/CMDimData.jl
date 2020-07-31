@@ -24,16 +24,16 @@ function EasyPlot._display(mplot::InspectDR.Multiplot)
 	nothing
 end
 
-function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
+function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
 	mplot = InspectDR.Multiplot() #d.kwargs...
 	layout = InspectDR.StyleType(InspectDR.defaults.plotlayout)
 	layout[:halloc_data] = d.wdata
 	layout[:valloc_data] = d.hdata
-	render(mplot, eplot, layout.values)
+	render(mplot, ecoll, layout.values)
 	return mplot
 end
 
-Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME, ecoll::EasyPlot.PlotCollection, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), InspectDR.Multiplot))
 
 #Last line
