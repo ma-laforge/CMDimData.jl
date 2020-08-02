@@ -1,18 +1,11 @@
-#Save/load DataMD datasets to/from HDF5
+#Read/write DataMD datasets to/from HDF5
 #-------------------------------------------------------------------------------
+
 
 #==Useful constants
 ===============================================================================#
 
-#High-level data types that can be written:
-const MAP_STR2TDATA = Dict{String, Type}(
-	"DataF1" => DataF1,
-	"DataHR" => DataHR,
-	"DataRS" => DataRS,
-)
-const MAP_TDATA2STR = Dict{Type, String}(v=>k for (k,v) in MAP_STR2TDATA)
-
-#Possible element types of high-level data types:
+#Possible T element types of DataHR{T} & DataRS{T}:
 const MAP_STR2TELEM = Dict{String, Type}(
 	"DataRS" => DataRS,
 	"DataF1" => DataF1,
@@ -30,27 +23,47 @@ const MAP_TELEM2STR = Dict{Type, String}(v=>k for (k,v) in MAP_STR2TELEM)
 
 #Read/write dataset subtype:
 #-------------------------------------------------------------------------------
-writesubtype(grp::HDF5Group, ::Type{DataHR{T}}) where T = a_write(grp, "subtype", MAP_TELEM2STR[T])
-writesubtype(grp::HDF5Group, ::Type{DataRS{T}}) where T = a_write(grp, "subtype", MAP_TELEM2STR[T])
+_write_elemtype_attr(grp::HDF5Group, ::DataHR{T}) where T = HDF5.a_write(grp, "ELEMTYPE", MAP_TELEM2STR[T])
+_write_elemtype_attr(grp::HDF5Group, ::DataRS{T}) where T = HDF5.a_write(grp, "ELEMTYPE", MAP_TELEM2STR[T])
 
-readsubtype(grp::HDF5Group, ::Type{T}) where T = T
-readsubtype(grp::HDF5Group, ::Type{DataHR}) = DataHR{MAP_STR2TELEM[a_read(grp, "subtype")]}
-readsubtype(grp::HDF5Group, ::Type{DataRS}) = DataRS{MAP_STR2TELEM[a_read(grp, "subtype")]}
+_write_datatype_attr(grp::HDF5Group, d::DataF1) = _write_datatype_attr(grp, DataF1)
+function _write_datatype_attr(grp::HDF5Group, d::DataHR)
+	_write_datatype_attr(grp, DataHR)
+	_write_elemtype_attr(grp, d)
+end
+function _write_datatype_attr(grp::HDF5Group, d::DataRS)
+	_write_datatype_attr(grp, DataRS)
+	_write_elemtype_attr(grp, d)
+end
 
-#Read/write PSweep:
+#Read DataMD datatype, as required
+function _read_mddatatype_attr(grp::HDF5Group)
+	basetype = _read_datatype_attr(grp)
+	if !(basetype <: DataMD)
+		path = HDF5.name(grp)
+		throw(Meta.ParseError("Expected T<:DataMD, got $basetype:\n$path"))
+	elseif (basetype <: DataHR) || (basetype <: DataRS)
+		elemtype = MAP_STR2TELEM[HDF5.a_read(grp, "ELEMTYPE")]
+		return basetype{elemtype}
+	end
+	return basetype
+end
+
+
+#Read/write PSweep (DataHR):
 #-------------------------------------------------------------------------------
 function writepsweep(grp::HDF5Group, sweeps::Vector{PSweep})
-	a_write(grp, "sweepnames", names(sweeps))
+	HDF5.a_write(grp, "sweepnames", names(sweeps))
 	for i in 1:length(sweeps)
-		a_write(grp, "sweep$i", sweeps[i].v)
+		HDF5.a_write(grp, "sweep$i", sweeps[i].v)
 	end
 end
 
 function readpsweep(grp::HDF5Group)
-	sweepnames = a_read(grp, "sweepnames")
+	sweepnames = HDF5.a_read(grp, "sweepnames")
 	result = PSweep[]
 	for i in 1:length(sweepnames)
-		push!(result, PSweep(sweepnames[i], a_read(grp, "sweep$i")))
+		push!(result, PSweep(sweepnames[i], HDF5.a_read(grp, "sweep$i")))
 	end
 	return result
 end
@@ -61,79 +74,69 @@ end
 
 #Read/write DataF1:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataF1)
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataF1])
+function _write_typed(grp::HDF5Group, d::DataF1)
+	_write_datatype_attr(grp, d)
 	grp["x"] = d.x
 	grp["y"] = d.y
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataF1})
-	grp = opengrp(r, path)
-	return DataF1(d_read(grp, "x"), d_read(grp, "y"))
+function __read(::Type{DataF1}, grp::HDF5Group)
+	return DataF1(HDF5.d_read(grp, "x"), HDF5.d_read(grp, "y"))
 end
 
 #Read/write DataRS{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataRS{T}) where T<:Number
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataRS])
-	writesubtype(grp, typeof(d))
-	writepsweep(grp, Sweep[d.sweep])
+function _write_typed(grp::HDF5Group, d::DataRS{T}) where T<:Number
+	_write_datatype_attr(grp, d)
 	grp["data"] = d.elem
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{T}}) where T<:Number
-	grp = opengrp(r, path)
+function __read(::Type{DataRS{T}}, grp::HDF5Group) where T<:Number
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
+		path = HDF5.name(grp)
 		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
 	end
-	data = d_read(grp, "data")
+	data = grp["data"]
 	return DataRS{T}(sweeps[1], data)
 end
 
 #Read/write DataHR{T<:Number}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataHR{T}) where T<:Number
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataHR])
-	writesubtype(grp, typeof(d))
+function _write_typed(grp::HDF5Group, d::DataHR{T}) where T<:Number
+	_write_datatype_attr(grp, d)
 	writepsweep(grp, d.sweeps)
 	grp["data"] = d.elem
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataHR{T}}) where T<:Number
-	grp = opengrp(r, path)
+function __read(::Type{DataHR{T}}, grp::HDF5Group) where T<:Number
 	sweeps = readpsweep(grp)
-	data = d_read(grp, "data")
+	data = HDF5.d_read(grp, "data")
 	return DataHR{T}(sweeps, data)
 end
 
 
 #Read/write DataRS{DataF1}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataRS{DataF1})
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataRS])
-	writesubtype(grp, typeof(d))
+function _write_typed(grp::HDF5Group, d::DataRS{DataF1})
+	_write_datatype_attr(grp, d)
 	writepsweep(grp, PSweep[d.sweep])
 
 	for i in 1:length(d.elem)
-		write(w, "$path/$i", d.elem[i])
+		_write_typed(grp, "$i", d.elem[i])
 	end
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataF1}})
-	grp = opengrp(r, path)
+function __read(::Type{DataRS{DataF1}}, grp::HDF5Group)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
+		path = HDF5.name(grp)
 		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
 	end
 	data = DataRS{DataF1}(sweeps[1])
 
 	for i in 1:length(data.elem)
-		data.elem[i] = read(r, "$path/$i", DataF1)
+		data.elem[i] = _read_datamd(grp, "$i")
 	end
 
 	return data
@@ -141,26 +144,23 @@ end
 
 #Read/write DataHR{DataF1}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataHR{DataF1})
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataHR])
-	writesubtype(grp, typeof(d))
+function _write_typed(grp::HDF5Group, d::DataHR{DataF1})
+	_write_datatype_attr(grp, d)
 	writepsweep(grp, d.sweeps)
 
 	for inds in subscripts(d)
 		subpath = join(inds, "/")
-		write(w, "$path/$subpath", d.elem[inds...])
+		_write_typed(grp, subpath, d.elem[inds...])
 	end
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataHR{DataF1}})
-	grp = opengrp(r, path)
+function __read(::Type{DataHR{DataF1}}, grp::HDF5Group)
 	sweeps = readpsweep(grp)
 	data = DataHR{DataF1}(sweeps)
 
 	for inds in subscripts(data)
 		subpath = join(inds, "/")
-		data.elem[inds...] = read(r, "$path/$subpath", DataF1)
+		data.elem[inds...] = _read_datamd(grp, "$subpath")
 	end
 
 	return data
@@ -168,29 +168,16 @@ end
 
 #Read/write DataRS{DataRS}:
 #-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, path::String, d::DataRS{DataRS})
-	grp = creategrp(w, path)
-	a_write(grp, "type", MAP_TDATA2STR[DataRS])
-	writesubtype(grp, typeof(d))
+function _write_typed(grp::HDF5Group, d::DataRS{DataRS})
+	_write_datatype_attr(grp, d)
 	writepsweep(grp, PSweep[d.sweep])
 
 	for i in 1:length(d.elem)
-		write(w, "$path/$i", d.elem[i])
+		_write_typed(grp, "$i", d.elem[i])
 	end
 end
 
-function Base.read(r::EasyDataReader, path::String, ::Type{DataRS})
-	grp = opengrp(r, path)
-	dtype = MAP_STR2TDATA[a_read(grp, "type")]
-	if dtype != DataRS
-		throw(Meta.ParseError("Expecting DataRS node:\n$path"))
-	end
-	dtype = readsubtype(grp, dtype)
-	return read(r, path, dtype) #Read appropriate data structure
-end
-
-function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataRS}})
-	grp = opengrp(r, path)
+function __read(::Type{DataRS{DataRS}}, grp::HDF5Group)
 	sweeps = readpsweep(grp)
 	if length(sweeps) != 1
 		throw(Meta.ParseError("Each DataRS node must have exactly one sweep:\n$path"))
@@ -198,27 +185,50 @@ function Base.read(r::EasyDataReader, path::String, ::Type{DataRS{DataRS}})
 	data = DataRS{DataRS}(sweeps[1])
 
 	for i in 1:length(data.elem)
-		data.elem[i] = read(r, "$path/$i", DataRS)
+		data.elem[i] = _read_datamd(grp, "$i")
 	end
 
 	return data
 end
 
-#Read/write DataMD:
+
+#Catch-all for _write_typed() interface:
 #-------------------------------------------------------------------------------
-function Base.read(r::EasyDataReader, path::String, ::Type{DataMD})
-	grp = opengrp(r, path)
-	dtype = MAP_STR2TDATA[a_read(grp, "type")]
-	dtype = readsubtype(grp, dtype)
-	return read(r, path, dtype) #Read appropriate data structure
+function _write_typed(grp::HDF5Group, name::String, d::DataMD)
+	objgrp = creategrp(grp, name)
+	_write_typed(objgrp, d)
 end
 
-#NOTE: Base.write signatures above will trap appropriate DataMD subtypes.
+#Traps for typed _read_typed() function (because we need element type for DataRS & DataHR):
+#-------------------------------------------------------------------------------
+function __read(::Union{Type{DataHR},Type{DataRS}}, grp::HDF5Group)
+	dtype = _read_mddatatype_attr(grp)
+		path = HDF5.name(grp)
+	return __read(dtype, grp) #Call more specific version
+end
+
+#Read DataMD types (start point):
+#(Slightly more direct than calling _read_typed(grp, name) because it knows
+#to look for element type as well)
+#-------------------------------------------------------------------------------
+function _read_datamd(grp::HDF5Group, name::String)
+	dgrp = opengrp(grp, name)
+	dtype = _read_mddatatype_attr(dgrp)
+	return __read(dtype, dgrp) #Read appropriate data structure
+end
 
 
-#==Exported (user-level) functions:
+#==User-level interface:
 ===============================================================================#
 
-#NOTE: Most user-level read/write operations are already exported (above)
+function Base.write(w::EasyDataWriter, d::DataMD, name::String)
+	grp = opengrp(w, hdf5dataroot)
+	return _write_typed(grp, name, d)
+end
+function readdata(r::EasyDataReader, name::String) #Avoids specifying ::Type{DataMD}
+	grp = opengrp(r, hdf5dataroot)
+	return _read_datamd(grp, name)
+end
+Base.read(::Type{DataMD}, r::EasyDataReader, name::String) = readdata(r, name)
 
 #Last Line

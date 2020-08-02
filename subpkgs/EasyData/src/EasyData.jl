@@ -7,14 +7,18 @@ module EasyData
 import CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
-using HDF5
+using Colors
+import HDF5
 
-import CMDimData.EasyPlot: AttributeList
-import CMDimData.EasyPlot: Plot, Subplot, Waveform
-import HDF5: HDF5Group
+import CMDimData.EasyPlot: PlotCollection, Plot, YStrip
+import CMDimData.EasyPlot: Waveform, LineAttributes, GlyphAttributes
+import CMDimData.EasyPlot: Extents1D, Axis, FoldedAxis
+
+import HDF5: HDF5Group, HDF5Dataset
 
 include("base.jl")
-include("hdf5data.jl")
+include("hdf5typed.jl")
+include("hdf5datamd.jl")
 include("hdf5plots.jl")
 
 
@@ -25,18 +29,24 @@ function __init__()
 end
 
 
-#==Already exported functions:
-==#
-
-#==Un-exported public interface: _read/_write
+#==Un-exported public interface to read/write data.
 ================================================================================
-#Using _read/_write interface ensures EasyData module handles operation.
-	_read(path::String, Vector{Plot})
-		_write(path::String, v::Vector{Plot})
-	_read(path::String, Plot)
-		_write(path::String, p::Plot, idx=[Int])
+	openwriter(path::String)
+	openreader(path::String)
+	Base.close(w::EasyDataWriter)
+	Base.close(r::EasyDataReader)
 
-#TODO: provide _open interface as well
+	Base.write(w::EasyDataWriter, d::DataMD, name::String)
+	Base.write(w::EasyDataWriter, pcoll::PlotCollection, name::String)
+
+	Base.read(::Type{DataMD}, r::EasyDataReader, name::String)
+	Base.read(::Type{PlotCollection}, r::EasyDataReader, name::String)
+	readdata(r::EasyDataReader, name::String) #Avoids specifying ::Type{DataMD}
+	readplot(r::EasyDataReader, name::String) #Avoids specifying ::Type{PlotCollection}
+
+	#High-level open, read/write, close interface for plots:
+	writeplot(filepath::String, pcoll::PlotCollection; name::String="_unnamed")
+	readplot(filepath::String; name::String="_unnamed")
 ==#
 
 end #EasyData

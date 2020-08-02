@@ -1,192 +1,131 @@
-#Save/load EasyPlot plots to/from HDF5
+#Read/write EasyPlot plots to/from HDF5
 #-------------------------------------------------------------------------------
+
 
 #==Useful constants
 ===============================================================================#
-const hdf5plotroot = "plots"
-const hdf5dataroot = "data"
 
 
-#==Helper functions
+#==Axis read/write functions
+===============================================================================#
+#(Axis is a bit strange to write out)
+
+function _write_typed(grp::HDF5Group, name::String, v::Axis{T}) where T
+	grp[name] = String(T)
+	_write_datatype_attr(grp[name], Axis)
+end
+
+function __read(::Type{Axis}, ds::HDF5Dataset)
+	scale = Symbol(HDF5.read(ds))
+	return Axis(scale)
+end
+
+
+#==Plot read/write functions
 ===============================================================================#
 
-plotelempath(subpath::String) = "$hdf5plotroot/$subpath"
-datapath(subpath::String) = "$hdf5dataroot/$subpath"
+function _writeplot(grp::HDF5Group, plot::Plot)
+	_write_typed(grp, "title", plot.title)
+	_write_typed(grp, "xlabel", plot.xlabel)
+	_write_typed(grp, "xaxis", plot.xaxis)
+	_write_typed(grp, "xext", plot.xext)
 
-#Write AttributeList to their own HDF5 group:
-function writeattr(w::EasyDataWriter, alist::AttributeList, elem::String)
-	grp = creategrp(w, plotelempath(elem))
-
-	for attrib in fieldnames(typeof(alist))
-		v = getfield(alist, attrib)
-
-		#Write out only AttributeList attributes that are not "nothing":
-		if v != nothing
-			writeattr(grp, string(attrib), v)
-		end
-	end
-end
-
-#Read AttributeList from an HDF5 group (using initialized AttributeList):
-function readattr(r::EasyDataReader, alist::AttributeList, elem::String)
-	grp = opengrp(r, plotelempath(elem))
-
-	for attrib in names(attrs(grp))
-		asymb = Symbol(attrib)
-		v = readattr(grp, attrib)
-		setfield!(alist, asymb, v)
+	grpslist = creategrp(grp, "ystriplist")
+	_write_length_attr(grpslist, plot.ystriplist)
+	for (i, strip) in enumerate(plot.ystriplist)
+		_write_typed(grpslist, "strip$i", strip)
 	end
 
-	return alist
+	grpwlist = creategrp(grp, "wfrmlist")
+	_write_length_attr(grpwlist, plot.wfrmlist)
+	for (i, wfrm) in enumerate(plot.wfrmlist)
+		_write_typed(grpwlist, "wfrm$i", wfrm)
+	end
+	return
+end
+
+function _readplot(grp::HDF5Group)
+	plot = Plot(title=_read_typed(grp, "title"))
+	plot.xlabel = _read_typed(grp, "xlabel")
+	plot.xaxis = _read_typed(grp, "xaxis")
+	plot.xext = _read_typed(grp, "xext")
+
+	grpslist = opengrp(grp, "ystriplist")
+	_len = _read_length_attr(Vector, grpslist)
+	for i in 1:_len
+		strip = _read_typed(grpslist, "strip$i")
+		push!(plot.ystriplist, strip)
+	end
+
+	grpwlist = opengrp(grp, "wfrmlist")
+	_len = _read_length_attr(Vector, grpwlist)
+	for i in 1:_len
+		wfrm = _read_typed(grpwlist, "wfrm$i")
+		push!(plot, wfrm)
+	end
+
+	return plot
 end
 
 
-#==Main EasyDataHDF5 plot read/write functions
+#==PlotCollection read/write functions
+===============================================================================#
+function _writepcoll(grp::HDF5Group, pcoll::PlotCollection)
+	_write_typed(grp, "title", pcoll.title)
+	_write_typed(grp, "ncolumns", pcoll.ncolumns)
+	_write_typed(grp, "displaylegend", pcoll.displaylegend)
+
+	grpplist = creategrp(grp, "plotlist")
+	_write_length_attr(grpplist, pcoll.plotlist)
+	for (i, plot) in enumerate(pcoll.plotlist)
+		grpplot = creategrp(grpplist, "plot$i")
+		_writeplot(grpplot, plot)
+	end
+	return
+end
+
+function _readpcoll(grp::HDF5Group)
+	pcoll = PlotCollection(title=_read_typed(grp, "title"))
+	pcoll.ncolumns = _read_typed(grp, "ncolumns")
+	pcoll.displaylegend = _read_typed(grp, "displaylegend")
+
+	grpplist = opengrp(grp, "plotlist")
+	_len = _read_length_attr(Vector, grpplist)
+	for i in 1:_len
+		grpplot = opengrp(grpplist, "plot$i")
+		plot = _readplot(grpplot)
+		push!(pcoll, plot)
+	end
+
+	return pcoll
+end
+
+
+#==User-level interface:
 ===============================================================================#
 
-#EasyDataHDF5 - read/write Waveform:
+function Base.write(w::EasyDataWriter, pcoll::PlotCollection, name::String)
+	grp = creategrp(w, "$hdf5plotcollroot/$name")
+	return _writepcoll(grp, pcoll)
+end
+function readplot(r::EasyDataReader, name::String) #Avoids specifying ::Type{PlotCollection}
+	grp = opengrp(r, "$hdf5plotcollroot/$name")
+	return _readpcoll(grp)
+end
+Base.read(::Type{PlotCollection}, r::EasyDataReader, name::String) = readplot(r, name)
+
+#Interface to read/write by filepath:
 #-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, wfrm::Waveform, elem::String)
-	grp = creategrp(w, plotelempath(elem))
-	a_write(grp, "id", wfrm.id)
-#	line::LineAttributes
-#	glyph::GlyphAttributes
-	write(w, datapath(elem), wfrm.data)
-end
-
-function __read(s::Subplot, r::EasyDataReader, elem::String)
-	grp = opengrp(r, plotelempath(elem))
-	data = read(r, datapath(elem), DataMD)
-#	line::LineAttributes
-#	glyph::GlyphAttributes
-	return add(s, data, id = a_read(grp, "id"))
-end
-
-#EasyDataHDF5 - read/write Subplot:
-#-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, s::Subplot, elem::String)
-	grp = creategrp(w, plotelempath(elem))
-	a_write(grp, "title", s.title)
-	wfrmidx = 1
-
-	for wfrm in s.wfrmlist
-		__write(w, wfrm, "$elem/wfrm$wfrmidx")
-		wfrmidx += 1
-	end
-
-	writeattr(w, s.axes, "$elem/axes")
-	a_write(grp, "wfrmcount", length(s.wfrmlist))
-
-end
-
-function __read(p::Plot, r::EasyDataReader, elem::String)
-	grp = opengrp(r, plotelempath(elem))
-	wfrmcount = a_read(grp, "wfrmcount")
-	subplot = add(p, title = a_read(grp, "title"))
-
-	for wfrmidx in 1:wfrmcount
-		__read(subplot, r, "$elem/wfrm$wfrmidx")
-	end
-
-	set(subplot, readattr(r, EasyPlot.paxes(), "$elem/axes"))
-	return subplot
-end
-
-#EasyDataHDF5 - read/write Plot:
-#-------------------------------------------------------------------------------
-function __write(w::EasyDataWriter, p::Plot, elem::String)
-	grp = creategrp(w, plotelempath(elem))
-	subplotidx = 1
-
-	for s in p.subplots
-		__write(w, s, "$elem/subplot$subplotidx")
-		subplotidx += 1
-	end
-
-	a_write(grp, "title", p.title)
-	a_write(grp, "subplotcount", length(p.subplots))
-end
-
-function __read(r::EasyDataReader, ::Type{Plot}, elem::String)
-	grp = opengrp(r, plotelempath(elem))
-	subplotcount = a_read(grp, "subplotcount")
-	result = EasyPlot.new(title = a_read(grp, "title"))
-
-	for subplotidx in 1:subplotcount
-		__read(result, r, "$elem/subplot$subplotidx")
-	end
-
-	return result
-end
-
-
-#==Exported (user-level) functions:
-===============================================================================#
-
-#TODO: Think of a better high-level read/write interface.
-
-#Read/write from EasyDataReader/EasyDataWriter:
-#-------------------------------------------------------------------------------
-function Base.write(w::EasyDataWriter, plotlist::Vector{Plot})
-	grp = creategrp(w, hdf5plotroot)
-
-	for i in 1:length(plotlist)
-		__write(w, plotlist[i], "plot$i")
-	end
-
-	a_write(grp, "plotcount", length(plotlist))
-end
-Base.write(w::EasyDataWriter, plot::Plot) = write(w, [plot])
-
-function Base.read(r::EasyDataReader, ::Type{Vector{Plot}})
-	result = Plot[]
-	grp = opengrp(r, hdf5plotroot)
-	plotcount = a_read(grp, "plotcount")
-
-	for i in 1:plotcount
-		push!(result, __read(r, Plot, "plot$i"))
-	end
-
-	return result
-end
-Base.read(r::EasyDataReader, ::Type{Plot}; idx::Int=1) =
-	__read(r, Plot, "plot$idx")
-
-#Read/write from files directly:
-#-------------------------------------------------------------------------------
-function Base.write(::Type{EasyDataWriter}, path::String, plotlist::Vector{Plot})
-	open(EasyDataWriter, path) do w
-		write(w, plotlist)
+function writeplot(filepath::String, pcoll::PlotCollection; name::String="_unnamed")
+	openwriter(filepath) do w
+		write(w, pcoll, name)
 	end
 end
-Base.write(::Type{EasyDataWriter}, path::String, plot::Plot) =
-	write(EasyDataWriter, path, [plot])
 
-function Base.read(::Type{EasyDataReader}, path::String, T::Type{Vector{Plot}})
-	open(EasyDataReader, path) do r
-		read(r, T)
+function readplot(filepath::String; name::String="_unnamed")
+	openreader(filepath) do r
+		readplot(r, name)
 	end
 end
-function Base.read(::Type{EasyDataReader}, path::String, T::Type{Plot}; idx::Int=1)
-	open(EasyDataReader, path) do r
-		read(r, T, idx=idx)
-	end
-end
-	
-
-#==Un-"Exported", user-level functions:
-===============================================================================#
-
-#Explicit module-level read/write functions:
-#-------------------------------------------------------------------------------
-_write(path::String, plotlist::Vector{Plot}) =
-	write(EasyDataWriter, path, plotlist)
-_write(path::String, plot::Plot) =
-	write(EasyDataWriter, path, plot)
-
-_read(path::String, T::Type{Vector{Plot}}) =
-	read(EasyDataReader, path, T)
-_read(path::String, T::Type{Plot}; idx::Int = 1) =
-	read(EasyDataReader, path, T, idx=idx)
 
 #Last Line
