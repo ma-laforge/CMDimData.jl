@@ -10,9 +10,7 @@ function show_testset_description()
 end
 
 @testset "CMDimData tests" begin
-	@warn("RESTORE EasyData.jl")
-	#testfiles = ["EasyPlot.jl", "EasyData.jl"]
-	testfiles = ["EasyPlot.jl"]
+	testfiles = ["EasyPlot.jl", "EasyData.jl"]
 
 	for testfile in testfiles
 		include(testfile)

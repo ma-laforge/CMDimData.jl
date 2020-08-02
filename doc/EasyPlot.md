@@ -8,16 +8,16 @@ The goal of the `CMDimData.EasyPlot` interface is to let the user focus on analy
 
 That being said, the `CMDimData.EasyPlot` interface is relatively generic and should be adequate for many scientific fields.
 
-## Plotting with EasyPlot
+## Plotting Steps
 
 There are two steps to plotting with EasyPlot:
 
- 1. Create the `Plot` object
- 2. Display the `Plot` object
+ 1. Create the `Plot`/`PlotCollection` object
+ 2. Display the `Plot`/`PlotCollection` object
 
 Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a [plotting backend](EasyPlot_backends.md).
 
-### Displaying a Simple Plot
+## Example: Displaying a Simple Plot:
 
 Here is a simple example showing how to display a plot with EasyPlot:
 
@@ -29,15 +29,15 @@ Here is a simple example showing how to display a plot with EasyPlot:
 	#Create an object to tell EasyPlot how to render plots (with InspectDR backend)
 	pdisp = EasyPlotInspect.PlotDisplay() #<:EasyPlotDisplay
 
-	#Create a backend-agnositc EasyPlot.Plot object:
-	plot = EasyPlot.new(title = "Sample Plot")
+	#`cons`truct a backend-agnositc EasyPlot.Plot object:
+	plot = cons(:plot, title="Sample Plot")
 
 	#Display the plot on the selected backend:
 	display(pdisp, plot)
 
-### [Supported Backends (link)](EasyPlot_backends.md)
+## [Supported Backends (link)](EasyPlot_backends.md)
 
-### Important note on `@includepkg`
+## Important Note on `@includepkg`
 
 `@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
 
@@ -45,13 +45,15 @@ These modules will therefore only be accessible from within that scope.  Consequ
 
 	]add InspectDR
 
-### Sample Usage
+## Sample Usage
 
-More elaborate examples of creating `EasyPlot.Plot` objects can be found in the [sample/EasyPlot](../sample/EasyPlot/) folder.
+More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](../sample/plots/) folder.
 
-### Specifying an Active Backend
+More complete examples of using `CMDimData` & `EasyPlot` can be found in the [sample/](../sample/) folder.
 
-It is also possible to use the Julia display stack to specify an active backend for rendering plots. Simply push an instance of the desired backend's `EasyPlotDisplay` object to the top of Julia's display stack:
+## Julia Display Stack: Adding a Default Backend
+
+It is also possible to use the Julia display stack to specify an default backend for rendering plots. Simply push an instance of the desired backend's `EasyPlotDisplay` object to the top of Julia's display stack:
 
 	pushdisplay(EasyPlotInspect.PlotDisplay())
 
@@ -73,7 +75,7 @@ If SVG inline plots are undesired (ex: for performance reasons), they can be sup
 
 	EasyPlot.defaults.rendersvg = false
 
-### Initializing Defaults
+### Defaults & Backend Initialization
 
 Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `~/.julia/config/startup.jl` file.
 

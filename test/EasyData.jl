@@ -3,29 +3,49 @@ using CMDimData.EasyPlot
 CMDimData.@includepkg EasyData
 
 @testset "EasyData tests" begin #Scope for test data
+	show_testset_description()
 
-#No real test code yet... just run demos:
+	function _isequal(d1::DataF1, d2::DataF1)
+		Δ = abs(d2 - d1)
+		return maximum(Δ) == 0
+	end
 
-x = DataF1(1:100)
-data = sin(x)
-filepath = "./sampledata.hdf5"
-h5path = "my/sub/path"
-EasyData._write(filepath, h5path, data)
-dread = EasyData._read(filepath, h5path, DataMD)
-@show data - dread
+@testset "Write/Read DataF1 comparison" begin
+	show_testset_description()
+	tmpfilepath = "test_datafile.hdf5"
 
-filelist = EasyPlot.demofilelist()
+	x = DataF1(0:.1:2π)
+	s_sin = sin(x); s_cos = cos(x)
 
-#throw(:ERR)
-for i in 1:1
-	#Test high-level "File()" read/write interface:
-	filepath = "./sampleplot$i.hdf5"
-	printsep("")
-		@show p=evalfile(filelist[i]);
-		EasyData._write(filepath, p)
-	println("\n\nReloading...")
-		@show p=EasyData._read(filepath, EasyPlot.Plot);
+	EasyData.openwriter(tmpfilepath) do w
+		write(w, s_cos, "cos")
+		write(w, s_sin, "sin")
+	end
+
+	local d_sin, d_cos
+	EasyData.openreader(tmpfilepath) do r
+		d_sin = EasyData.readdata(r, "sin")
+		d_cos = EasyData.readdata(r, "cos")
+	end
+	@test _isequal(s_sin, d_sin)
+	@test _isequal(s_cos, d_cos)
 end
-#throw(:ERR)
+
+@testset "Write/Read demo plot comparison" begin
+	show_testset_description()
+	filelist = EasyPlot.demofilelist()
+	@warn("TODO: Check correspondance of all plot elements!!!")
+
+	for filepath in filelist
+		@info("Evaluating plots in $filepath...")
+		fname = splitext(basename(filepath))[1]
+		tmpfilepath = "test_$fname.hdf5"
+		src = evalfile(filepath)
+		EasyData.writeplot(tmpfilepath, src)
+		dest = EasyData.readplot(tmpfilepath)
+
+		@test src.title == dest.title
+	end
+end
 
 end

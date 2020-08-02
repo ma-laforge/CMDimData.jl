@@ -49,15 +49,15 @@ for filepath in pathlist
 	filename = basename(filepath)
 	savefile = joinpath("./", splitext(filename)[1] * ".hdf5")
 	printsep("Executing $filepath...")
-	plot = evalfile(filepath)
-	display(pdisp, plot)
+	pcoll = evalfile(filepath)
+	display(pdisp, pcoll)
 
 	#EasyData portion:
 	@info("Writing $savefile...")
-	EasyData._write(savefile, plot)
+	EasyData.writeplot(savefile, pcoll)
 	@info("Reading back $savefile...")
-	plot2 = EasyData._read(savefile, EasyPlot.Plot);
-	set(plot2, title = "Compare Results: " * plot.title)
+	plot2 = EasyData.readplot(savefile)
+	plot2.title = "Compare Results: " * pcoll.title
 	display(pdisp, plot2)
 end
 

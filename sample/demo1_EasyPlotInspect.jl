@@ -6,7 +6,7 @@ using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
 CMDimData.@includepkg EasyPlotInspect
-#CMDimData.@includepkg EasyData
+CMDimData.@includepkg EasyData
 
 
 #==Constants
@@ -74,8 +74,7 @@ push!(pcoll, plt1, plt2, plt3, plt4)
 	#Save pcoll for later use:
 	filename = basename(@__FILE__)
 	savefile = joinpath("./", splitext(filename)[1] * ".hdf5")
-@warn("RESTORE EasyData._write")
-#	EasyData._write(savefile, pcoll)
+	EasyData.writeplot(savefile, pcoll)
 
 	#Display pcoll:
 	pdisp = EasyPlotInspect.PlotDisplay()
