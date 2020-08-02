@@ -7,8 +7,8 @@
 const NCOLORS_GRACEDFLT = 15 #Number of colors expected to be defined by Grace.
 #NOTE: Assuming color 0 is white/background color (not to be used)
 
-struct FlagType{T}; end
-const NOTFOUND = FlagType{:NOTFOUND}()
+struct NotFound; end
+const NOTFOUND = NotFound()
 
 
 #==Base types
@@ -24,14 +24,12 @@ mutable struct ColorMgr
 end
 ColorMgr(p::GracePlot.Plot) = ColorMgr(p, Dict(), NCOLORS_GRACEDFLT+1)
 
-mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
+mutable struct Builder <: EasyPlot.AbstractBuilder
 	ref::GracePlot.GraphRef #Axes reference
 	theme::EasyPlot.Theme
 	colormgr::ColorMgr
-	eye::NullOr{EasyPlot.EyeAttributes}
+	fold::NullOr{EasyPlot.FoldedAxis}
 end
-Axes(style::Symbol, ref::GracePlot.GraphRef, theme::EasyPlot.Theme, colormgr::ColorMgr, eye=nothing) =
-	Axes{style}(ref, theme, colormgr, eye)
 
 
 #==Registering new colors
@@ -108,79 +106,107 @@ function _graceglyph(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
 end
 
 
-#==Rendering functions
+#==AbstractBuilder implementation
 ===============================================================================#
+EasyPlot.needsfold(b::Builder) = b.fold
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
-	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
-	_line = _graceline(attr, ax.colormgr)
-	_glyph = _graceglyph(attr, ax.colormgr)
-	add(ax.ref, d.x, d.y, _line, _glyph, id=id)
+	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
+	_line = _graceline(attr, b.colormgr)
+	_glyph = _graceglyph(attr, b.colormgr)
+	add(b.ref, d.x, d.y, _line, _glyph, id=id)
 end
 
-#Render a paraticular subplot:
-function _render(g::GracePlot.GraphRef, subplot::EasyPlot.Subplot,
+
+#==Plot building functions
+===============================================================================#
+
+#Render a particular EasyPlot.Plot:
+function build(g::GracePlot.GraphRef, eplot::EasyPlot.Plot,
 	theme::EasyPlot.Theme, colormgr::ColorMgr, displaylegend::Bool)
-	set(g, subtitle = subplot.title)
+	set(g, subtitle = eplot.title)
+	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
 
-	#TODO Ugly: setting defaults like this should be done in EasyPlot
-	ep = nothing
-	if :eye == subplot.style
-		ep = subplot.eye
-		if nothing == ep.teye; ep.teye = ep.tbit; end
-	end
+	builder = Builder(g, theme, colormgr, fold)
 
-	axes = Axes(subplot.style, g, theme, colormgr, ep)
-
-	for (i, wfrm) in enumerate(subplot.wfrmlist)
-		EasyPlot.addwfrm(axes, wfrm, i)
+	for (i, wfrm) in enumerate(eplot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
 	end
 
 	autofit(g)
-	srca = subplot.axes
+
+	#x-axis properties:
+	xmin = eplot.xext.min; xmax = eplot.xext.max
+	xscale = Symbol(eplot.xaxis)
+
+	ymin, ymax = (NaN, NaN)
+	yscale = :lin
+	ylabel = ""
+	if length(eplot.ystriplist) > 1
+		strip = eplot.ystriplist[1]
+		ymin = strip.ext.min; ymax = strip.ext.max
+		yscale = strip.scale
+		ylabel = strip.label
+	end
+
+	#Translate NaN -> nothing (supported by GracePlot).
+	isnan(xmin) && (xmin=nothing); isnan(xmax) && (xmax=nothing)
+	isnan(ymin) && (ymin=nothing); isnan(ymax) && (ymax=nothing)
+
+	#Apply axes & scale settings:
 	set(g, GracePlot.paxes(
-		xscale = srca.xscale, yscale = srca.yscale,
-		xmin = srca.xmin, xmax = srca.xmax,
-		ymin = srca.ymin, ymax = srca.ymax,
+		xscale = xscale, yscale = yscale,
+		xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
 	))
 	set(g, legend(display=displaylegend))
 
 	#Apply x/y labels
-	if srca.xlabel != nothing
-		set(g, xlabel=srca.xlabel)
+	if eplot.xlabel != nothing
+		set(g, xlabel=eplot.xlabel)
 	end
-	if srca.ylabel != nothing
-		set(g, ylabel=srca.ylabel)
+	if ylabel != nothing
+		set(g, ylabel=ylabel)
 	end
 
 	return g
 end
 
-function EasyPlot.render(gplot::GracePlot.Plot, eplot::EasyPlot.Plot)
-	ncols = eplot.ncolumns
-	nrows = div(length(eplot.subplots)-1, ncols)+1
+function build(gplot::GracePlot.Plot, ecoll::EasyPlot.PlotCollection)
+	ncols = ecoll.ncolumns
+	nrows = div(length(ecoll.plotlist)-1, ncols)+1
 	colormgr = ColorMgr(gplot)
 
 	#Arrange basically allocates all subplots (GracePlot.Plot):
 	arrange(gplot, (nrows, ncols))
 	graphidx = 0
 
-	for s in eplot.subplots
+	title = ecoll.title
+	for p in ecoll.plotlist
+msg = """
+EMULATION MODE: EasyPlotGrace does not natively support multi-strip plots found in:
+    PlotCollection(\"$title\")
+
+Emulation mode enabled (single plot in collection)
+"""
+#@info(msg)
+
 		g = graph(gplot, graphidx)
-		_render(g, s, eplot.theme, colormgr, eplot.displaylegend)
+		build(g, p, ecoll.theme, colormgr, ecoll.displaylegend)
 		graphidx += 1
 	end
 
-	if length(eplot.subplots) > 1
+	if length(ecoll.plotlist) > 1
+		#Grace has a centered title & subtitle for each subplot.
+		#Thus, if we want a centered title with a multi-plot output,
+		#we have to do it manually:
 		w = get(gplot, :wview); h = get(gplot, :hview)
 		vgap = 0.15 #Pick a reasonable value (cannot querry state)
-		title = GracePlot.text(eplot.title, loctype=:view, size=1.5, loc=(w/2,h-vgap/2.5), just=:centercenter)
+		title = GracePlot.text(ecoll.title, loctype=:view, size=1.5, loc=(w/2,h-vgap/2.5), just=:centercenter)
 		GracePlot.addannotation(gplot, title)
-#		info("EasyPlotGrace: Plot.title not supported for more than 1 subplot")
 	else
-		set(graph(gplot, 0), title = eplot.title)
+		set(graph(gplot, 0), title = ecoll.title)
 	end
 
 	redraw(gplot)

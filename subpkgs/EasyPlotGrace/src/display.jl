@@ -24,12 +24,12 @@ function EasyPlot._display(plot::GracePlot.Plot)
 	nothing
 end
 
-function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
+function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
 	plot = GracePlot.new(d.args...; guimode=d.guimode, dpi=d.dpi, d.kwargs...)
-	return render(plot, eplot)
+	return build(plot, ecoll)
 end
 
-Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
+Base.showable(mime::MIME, ecoll::EasyPlot.PlotCollection, d::PlotDisplay) =
 	method_exists(show, (IO, typeof(mime), GracePlot.Plot))
 
 

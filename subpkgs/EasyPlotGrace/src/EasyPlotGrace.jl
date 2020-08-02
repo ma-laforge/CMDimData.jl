@@ -8,7 +8,6 @@ using CMDimData.MDDatasets
 using CMDimData.Colors
 using GracePlot
 
-import CMDimData.EasyPlot: render
 import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")
