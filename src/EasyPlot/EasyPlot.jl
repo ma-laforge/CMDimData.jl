@@ -84,17 +84,17 @@ Base.display(backend::Symbol, pcoll::PlotCollection, args...; kwargs...)
 ==#
 
 
-#==Rendering modules should implement:
+#==Backend-interface modules should implement:
 ================================================================================
-Subtype EasyPlotDisplay, for example:
-	struct NEWPLOTDisplay <: EasyPlotDisplay{:NEWPLOTID}
+An <: EasyPlotDisplay subtype to dispatch calls to display():
+	struct MyBackendDisplay <: EasyPlot.EasyPlotDisplay; ...; end
 
-	EasyPlot.getdisplay(::Type{EasyPlotDisplay{:NEWPLOTID}}) 
-		=> return NEWPLOTDisplay object
+A render function to build plot on its plotting backend:
+	EasyPlot.render(::MyBackendDisplay, pcoll::EasyPlot.PlotCollection, args...; kwargs...)
+		=> returns MyBackendPlot object
 
-EasyPlot.render{T<:Symbol}(::Backend{T}, pcoll::EasyPlot.PlotCollection, args...; kwargs...)
-	=> returns YOUR_MODULE_PLOT object
-Base.display(plot::YOUR_MODULE_PLOT) #Displays the plot
+#Used by EasyPlot to display plots (without side-effects of Base.display):
+	EasyPlot._display(plot::MyBackendPlot) #Displays the plot
 ==#
 
 
