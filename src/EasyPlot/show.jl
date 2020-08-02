@@ -8,7 +8,7 @@ Base.show(io::IO, ::Axis{T}) where T = print(io, "Axis{$T}")
 showcompact_lengthinfo(io::IO, d) = print(io, typeof(d))
 showcompact_lengthinfo(io::IO, d::DataF1) = print(io, "DataF1: ", length(d), "pts")
 showcompact_lengthinfo(io::IO, d::DataRS) = print(io, "DataRS:", paramlist(d))
-showcompact_lengthinfo(io::IO, d::DataHR) = print(io, "DataHR:", String[s.id for s in d.sweeps])
+showcompact_lengthinfo(io::IO, d::DataHR) = print(io, "DataHR:", paramlist(d))
 
 function showshorthand(io::IO, wfrm::Waveform)
 	print(io, "Waveform(")
