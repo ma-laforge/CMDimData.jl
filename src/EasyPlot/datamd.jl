@@ -48,7 +48,7 @@ function _addwfrm_fold(b::AbstractBuilder, f::FoldedAxis, d::DataF1,
 	if f.xmin != 0
 		@warn("buildeye(): Does not currently support non-zero start time")
 	end
-	eye = buildeye(d, f.foldinterval, xspan, tstart=f.tstart)
+	eye = buildeye(d, f.foldinterval, xspan, tstart=f.xstart)
 
 	cur_id = id
 	for segment in eye.data

@@ -196,7 +196,7 @@ function _apply(w::Waveform, ::DS{:glyph}; shape=nooverwrite, size=nooverwrite,
 	NoOverwrite(shape) || (_shape = shape)
 	NoOverwrite(size) || (_size = size)
 	NoOverwrite(color) || (_color = _resolve_ColorRef(color))
-	NoOverwrite(color) || (_fillcolor = _resolve_ColorRef(fillcolor))
+	NoOverwrite(fillcolor) || (_fillcolor = _resolve_ColorRef(fillcolor))
 	w.glyph = GlyphAttributes(shape=_shape, size=_size, color=_color, fillcolor=_fillcolor)
 	return w
 end
@@ -260,6 +260,12 @@ function _apply(p::Plot, ::DS{:ystrip}, istrip::Int;
 	NoOverwrite(scale) || (strip.scale = scale)
 	NoOverwrite(axislabel) || (strip.axislabel = axislabel)
 	NoOverwrite(striplabel) || (strip.striplabel = striplabel)
+end
+
+function _apply(p::Plot, ::DS{:xfolded}, foldinterval::PReal;
+	xstart=0.0, xmin=0.0, xmax=foldinterval
+)
+	p.xaxis = FoldedAxis(foldinterval, xstart=xstart, xmin=xmin, xmax=xmax)
 end
 
 
