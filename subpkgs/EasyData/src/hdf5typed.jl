@@ -23,6 +23,8 @@ with type name in attributes.
 #==Useful constants
 ===============================================================================#
 
+const NOTHING_STRING = "nothing"
+
 #Data types that have read/write functions implemented:
 #NOTE: limit supported types so that not all concrete types need separate read/write functions
 const MAP_STR2TYPE = Dict{String, Type}(
@@ -80,7 +82,7 @@ function _write_typed(grp::HDF5Group, name::String, v::T) where T<:Types_HDF5Sup
 	return #No need to _write_datatype_attr
 end
 function _write_typed(grp::HDF5Group, name::String, v::Nothing)
-	grp[name] = string(nothing) #To verify that `nothing` is actually written
+	grp[name] = NOTHING_STRING #Redundancy check/easier to read HDF5 file
 	_write_datatype_attr(grp[name], Nothing)
 end
 function _write_typed(grp::HDF5Group, name::String, v::Symbol)
@@ -109,7 +111,7 @@ function __read(::Type{Type_HDF5AutoDetect}, ds::HDF5Dataset)
 end
 function __read(::Type{Nothing}, ds::HDF5Dataset)
 	v = HDF5.read(ds)
-	nstr = string(nothing)
+	nstr = NOTHING_STRING
 	if nstr != v
 		path = HDF5.name(ds)
 		throw(Meta.ParseError("__read(::Nothing, ::HDF5Group): Read $v != $nstr:\n$path"))
