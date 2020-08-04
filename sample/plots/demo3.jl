@@ -44,20 +44,20 @@ end
 #==Generate plot
 ===============================================================================#
 plot1 = push!(cons(:plot, vvst, title="Lines"),
-	cons(:wfrm, lines, label=""),
+	cons(:wfrm, lines),
 )
 #Plot reduced dataset:
 plot2 = push!(cons(:plot, vvst, title="maximum(Lines)"),
-	cons(:wfrm, maximum(lines), line=set(style=:solid), glyph=set(shape=:o), label=""),
+	cons(:wfrm, maximum(lines), line=set(style=:solid), glyph=set(shape=:o)),
 )
 plot3 = push!(cons(:plot, vvst, title="Tones"),
-	cons(:wfrm, tones, label=""),
+	cons(:wfrm, tones),
 )
 plot4 = push!(cons(:plot, vvst, title="Sum"),
-	cons(:wfrm, lines+tones, label=""),
+	cons(:wfrm, lines+tones),
 )
 
-pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests"), plot1, plot2, plot3, plot4)
+pcoll = push!(cons(:plot_collection, title="Multi-Dataset Tests"), plot1, plot2, plot3, plot4)
 	pcoll.displaylegend=false #Too busy with GracePlot
 
 

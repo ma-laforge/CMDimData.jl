@@ -9,7 +9,8 @@ import Printf: @sprintf
 
 #==Attributes
 ===============================================================================#
-vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (V)"))
+LBL_AXIS_TIME = "Time (s)"
+LBL_AXIS_AMPLITUDE = "Amplitude"
 
 
 #==Input data
@@ -51,22 +52,23 @@ tones_incm = getsubarray(tones, :,3,:)
 
 #==Generate plot
 ===============================================================================#
-strns(T) = @sprintf("%.1f ns", T/1e-9)
+strns(T) = @sprintf("%.1f ns", T/1e-9) #Generate string with # of ns from supplied value
 
-plot1 = push!(cons(:plot, vvst, title="Tones"),
-	cons(:wfrm, tones, label=""),
+plot = cons(:plot, nstrips=4,
+	ystrip1 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones"),
+	ystrip2 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones ($(strns(2tfund)))"),
+	ystrip3 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones ($(strns(3tfund)))"),
+	ystrip4 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones (increasing slope)"),
+	xaxis = set(label=LBL_AXIS_TIME),
 )
-plot2 = push!(cons(:plot, vvst, title="Tones ($(strns(2tfund)))"),
-	cons(:wfrm, tones_2T, label=""),
-)
-plot3 = push!(cons(:plot, vvst, title="Tones ($(strns(3tfund)))"),
-	cons(:wfrm, tones_3T, label=""),
-)
-plot4 = push!(cons(:plot, vvst, title="Tones (increasing slope)"),
-	cons(:wfrm, tones_incm, label=""),
+push!(plot,
+	cons(:wfrm, tones, strip=1),
+	cons(:wfrm, tones_2T, strip=2),
+	cons(:wfrm, tones_3T, strip=3),
+	cons(:wfrm, tones_incm, strip=4),
 )
 
-pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests: Subarrays"), plot1, plot2, plot3, plot4)
+pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests: Subarrays"), plot)
 	pcoll.displaylegend=false #Too busy with GracePlot
 	pcoll.ncolumns=1
 

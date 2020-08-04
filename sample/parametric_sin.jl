@@ -12,9 +12,12 @@ pdisp = EasyPlotInspect.PlotDisplay()
 #==Constants
 ===============================================================================#
 const π = MathConstants.π
-vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (m)"))
-rvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Rate (m/s)"))
+LBL_AXIS_TIME = "Time (s)"
+LBL_AXIS_POSITION = "Position (m)"
+LBL_AXIS_NORMPOSITION = "Normalized Pos (m/m)"
+LBL_AXIS_SPEED = "Speed (m/s)"
 pvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Position (m)"))
+rvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Rate (m/s)"))
 lstylesweep = cons(:a, line = set(style=:solid, width=2)) #Default is a bit thin
 lstyle1 = cons(:a, line = set(color=:red, width=2, style=:solid))
 lstyle2 = cons(:a, line = set(color=:blue, width=2))
@@ -98,61 +101,70 @@ println()
 @info("Evaluate `fallx_at4k` @ {4kHz, phi=0} (`fallx_at4kphi0`) to test parameter reduction:")
 #   fallx_at4k(A, 𝜙) -> fallx_at4kphi0(A):
 fallx_at4kphi0 = value(fallx_at4k, x=0)
+fallx_at4kphiπ_4 = value(fallx_at4k, x=(π/4))
 @show ndims(fallx_at4kphi0)
 @show xparam_reduce2 = paramlist(fallx_at4kphi0)[end]
 
 
 #==Generate plots
 ===============================================================================#
-plot1 = push!(cons(:plot, pvst, title="Sinusoidal response"),
-	cons(:wfrm, signal, lstylesweep, label="signal"),
+
+#1st plot set: Parametric sin(): Initial observations
+#-------------------------------------------------------------------------------
+plot = cons(:plot, nstrips = 3,
+	ystrip1 = set(axislabel=LBL_AXIS_POSITION, striplabel="Sinusoidal response"),
+	ystrip2 = set(axislabel=LBL_AXIS_NORMPOSITION, striplabel="Normalized response (All peaks should be ±1)"),
+	ystrip3 = set(axislabel=LBL_AXIS_SPEED, striplabel="Rate of change (should be larger for higher frequencies)"),
+	xaxis = set(label=LBL_AXIS_TIME)
 )
-plot2 = push!(cons(:plot, pvst, title="Normalized response"),
-	cons(:wfrm, signal_norm, lstylesweep, label="signal_norm"),
+push!(plot,
+	cons(:wfrm, signal, lstylesweep, label="signal", strip=1),
+	cons(:wfrm, signal_norm, lstylesweep, label="signal_norm", strip=2),
+	cons(:wfrm, rate, lstylesweep, label="rate", strip=3),
 )
-plot3 = push!(cons(:plot, rvst, title="Rate of change"),
-	cons(:wfrm, rate, lstylesweep, label="rate"),
-)
-pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #1"), plot1, plot2, plot3)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Initial Observations"), plot)
 	pcoll.displaylegend=true
-	pcoll.ncolumns = 1
 display(pdisp, pcoll)
 	savepng(pdisp, pcoll, "parametric_sin_1.png")
 
 
-plot1 = cons(:plot, title="Maximum Rate of Signal",
-	labels = set(xaxis=xparam, yaxis="Rate (m/s)"),
+#2nd plot set: Parametric sin(): Discovering Trends
+#-------------------------------------------------------------------------------
+plot = cons(:plot, nstrips = 2,
+	ystrip1 = set(axislabel=LBL_AXIS_SPEED, striplabel="Maximum rate of signal (should increase with $xparam)"),
+	ystrip2 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st falling crossing (should decrease with $xparam)"), #; yext_firstx...),
+	xaxis = set(label=xparam)
 )
-push!(plot1,
-	cons(:wfrm, maxrate, lstylesweep, dfltglyph, label="maxrate"),
+push!(plot,
+	cons(:wfrm, maxrate, lstylesweep, dfltglyph, label="maxrate", strip=1),
+	cons(:wfrm, fallx, lstylesweep, dfltglyph, label="fallx", strip=2),
 )
-plot2 = cons(:plot, title="Time to first falling crossing",
-	labels = set(xaxis=xparam, yaxis="Time (s)"),
-)
-push!(plot2,
-	cons(:wfrm, fallx, lstylesweep, dfltglyph, label="fallx"),
-)
-pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #2"), plot1, plot2)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Discovering Trends"), plot)
 	pcoll.displaylegend=true
-	pcoll.ncolumns = 1
 display(pdisp, pcoll)
 	savepng(pdisp, pcoll, "parametric_sin_2.png")
 
 
-plot1 = cons(:plot, title="Time to first falling crossing (f=4kHz)",
-	labels = set(xaxis=xparam_reduce1, yaxis="Time (s)"),
+#3rd plot set: Parametric sin(): Deeper Observations @ 4kHz
+#-------------------------------------------------------------------------------
+yext_firstx = (min=90e-6, max=130e-6) #Common y-axis extents to compare times @ first crossing
+
+plot1 = cons(:plot,
+	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st falling crossing @4kHz (should decrease with increasing 𝜑ₒ)"; yext_firstx...),
+	xaxis = set(label=xparam_reduce1),
 )
 push!(plot1,
-	cons(:wfrm, fallx_at4k, lstylesweep, dfltglyph, label="fallx@4k"),
+	cons(:wfrm, fallx_at4k, lstylesweep, dfltglyph, label="@4k"),
 )
-plot2 = cons(:plot, title="Time to first falling crossing (f=4kHz, phi=0)",
-	xyaxes = set(ymin=0, ymax=150e-6), #Circumvent bug with InspectDR when ymin==ymax
-	labels = set(xaxis=xparam_reduce2, yaxis="Time (s)"),
+plot2 = cons(:plot,
+	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st falling crossing @4kHz (should be indep. of $xparam_reduce2)"; yext_firstx...),
+	xaxis = set(label=xparam_reduce2),
 )
 push!(plot2,
-	cons(:wfrm, fallx_at4kphi0, lstylesweep, dfltglyph, label="fallx@4kphi0"),
+	cons(:wfrm, fallx_at4kphi0, lstylesweep, dfltglyph, label="𝜑ₒ=0π"),
+	cons(:wfrm, fallx_at4kphiπ_4, lstylesweep, dfltglyph, label="𝜑ₒ=π/4"),
 )
-pcoll = push!(cons(:plotcoll, title="Parametric sin() - Results #3"), plot1, plot2)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Deeper Observations @ 4kHz"), plot1, plot2)
 	pcoll.displaylegend=true
 	pcoll.ncolumns = 1
 display(pdisp, pcoll)

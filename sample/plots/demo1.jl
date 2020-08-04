@@ -31,7 +31,7 @@ plot = push!(cons(:plot, linlin, alabels, title = "Polynomial Equations"),
 	cons(:wfrm, graph[3], label="Quadratic"),
 )
 
-#Create individual waveform, and set parameters later:
+#Create individual waveform, and set parameters later, as an example (less readable):
 wfrm = cons(:wfrm, graph[4], label="Cubic")
 	set(wfrm, dfltline, dfltglyph)
 push!(plot, wfrm) #Now add it to the list of plots

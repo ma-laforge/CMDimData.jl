@@ -8,7 +8,8 @@ using CMDimData.EasyPlot
 
 #==Attributes
 ===============================================================================#
-vvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Amplitude (V)"))
+LBL_AXIS_TIME = "Time (s)"
+LBL_AXIS_AMPLITUDE = "Amplitude"
 
 
 #==Input data
@@ -38,14 +39,17 @@ tonesRS = DataRS(tonesHR)
 
 #==Generate plot
 ===============================================================================#
-plot1 = push!(cons(:plot, vvst, title="DataHR"),
-	cons(:wfrm, tonesHR, label="tones"),
+plot = cons(:plot, nstrips=2,
+	ystrip1 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="DataHR"),
+	ystrip2 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="DataRS"),
+	xaxis = set(label=LBL_AXIS_TIME),
 )
-plot2 = push!(cons(:plot, vvst, title="DataRS"),
-	cons(:wfrm, tonesRS, label="tones"),
+push!(plot,
+	cons(:wfrm, tonesHR, label="tones", strip=1),
+	cons(:wfrm, tonesRS, label="tones", strip=2),
 )
 
-pcoll = push!(cons(:plot_collection, title="DataHR & DataMD"), plot1, plot2)
+pcoll = push!(cons(:plot_collection, title="DataHR & DataMD"), plot)
 	pcoll.displaylegend = true
 	pcoll.ncolumns = 1
 

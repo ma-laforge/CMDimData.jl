@@ -28,22 +28,19 @@ x = DataF1(x, 1*x)
 ===============================================================================#
 plot = cons(:plot, infoaxes, title = "Symbol Test")
 let xoffset=0, yoffset=0
-for sz in [1, 3, 5]
-	for w in [1, 2, 3]
-		overw = cons(:a, line=set(color=:blue, width=w), glyph=set(size=sz))
-		wfrm = push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
-		xoffset += .5; yoffset += 10
-	end
-end
+for sz in [1, 3, 5]; for w in [1, 2, 3]
+	overw = cons(:a, line=set(color=:blue, width=w), glyph=set(size=sz))
+	push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
+	xoffset += .5; yoffset += 10
+end; end
+
 #Coarse width test
 xoffset=0; #yoffset=0
-for sz in [1, 2]
-	for w in [1, 5, 10]
-		overw = cons(:a, line=set(width=w), glyph=set(size=sz))
-		wfrm = push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
-		xoffset += .5; yoffset += 10
-	end
-end
+for sz in [1, 2]; for w in [1, 5, 10]
+	overw = cons(:a, line=set(width=w), glyph=set(size=sz))
+	push!(plot, cons(:wfrm, xshift(x+yoffset, xoffset), dfltwattr, overw, label="sz=$sz, w=$w"))
+	xoffset += .5; yoffset += 10
+end; end
 end
 
 pcoll = push!(cons(:plot_collection, title="Sample Plot"), plot)
