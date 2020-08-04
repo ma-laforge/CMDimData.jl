@@ -9,7 +9,11 @@ demofilelist() =
 
 using Colors
 using MDDatasets
+import NumericIO
 
+
+#==Core type declarations
+===============================================================================#
 
 #Type used to dispatch on a symbol & minimize namespace pollution:
 #-------------------------------------------------------------------------------
@@ -20,9 +24,15 @@ DS(v::Symbol) = DS{v}()
 const PReal = Float64
 const PNaN = PReal(NaN)
 
+
+#==Functions
+===============================================================================#
+SI(v; ndigits=3) = NumericIO.formatted(v, :SI, ndigits=ndigits)
+
 include("attributes.jl")
 include("colors.jl")
 include("base.jl")
+include("multistrip.jl")
 include("eyediag.jl")
 include("datamd.jl")
 include("themes.jl")

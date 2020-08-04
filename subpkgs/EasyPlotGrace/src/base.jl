@@ -112,7 +112,7 @@ EasyPlot.needsfold(b::Builder) = b.fold
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
 function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
-	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	_line = _graceline(attr, b.colormgr)
 	_glyph = _graceglyph(attr, b.colormgr)
@@ -144,11 +144,11 @@ function build(g::GracePlot.GraphRef, eplot::EasyPlot.Plot,
 	ymin, ymax = (NaN, NaN)
 	yscale = :lin
 	ylabel = ""
-	if length(eplot.ystriplist) > 1
+	if length(eplot.ystriplist) > 0
 		strip = eplot.ystriplist[1]
 		ymin = strip.ext.min; ymax = strip.ext.max
 		yscale = strip.scale
-		ylabel = strip.label
+		ylabel = strip.axislabel
 	end
 
 	#Translate NaN -> nothing (supported by GracePlot).
@@ -174,6 +174,7 @@ function build(g::GracePlot.GraphRef, eplot::EasyPlot.Plot,
 end
 
 function build(gplot::GracePlot.Plot, ecoll::EasyPlot.PlotCollection)
+	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotGrace") #Emulate multi-strip plots
 	ncols = ecoll.ncolumns
 	nrows = div(length(ecoll.plotlist)-1, ncols)+1
 	colormgr = ColorMgr(gplot)
@@ -184,14 +185,6 @@ function build(gplot::GracePlot.Plot, ecoll::EasyPlot.PlotCollection)
 
 	title = ecoll.title
 	for p in ecoll.plotlist
-msg = """
-EMULATION MODE: EasyPlotGrace does not natively support multi-strip plots found in:
-    PlotCollection(\"$title\")
-
-Emulation mode enabled (single plot in collection)
-"""
-#@info(msg)
-
 		g = graph(gplot, graphidx)
 		build(g, p, ecoll.theme, colormgr, ecoll.displaylegend)
 		graphidx += 1

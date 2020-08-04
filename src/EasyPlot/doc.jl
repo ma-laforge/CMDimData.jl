@@ -34,7 +34,7 @@ TODO: List valid scales
 logscale = attributes(xaxis = set(scale=:log))
 
 xattr = attributes(
-	xaxis = set(scale=:log, min=-1, max=4)
+	xaxis = set(scale=:log, min=-1, max=4, label="Frequency (Hz)")
 )
 ```
 
@@ -45,10 +45,18 @@ TODO: List valid scales
 ```julia-repl
 ystripattributes = attributes(
     nstrips = 3,
-    ystrip = set(1, min=0, max=.5, scale=:lin, axislabel="Voltage", striplabel="Strip 1 Label"),
+    ystrip1 = set(min=0, max=.5, scale=:lin, axislabel="Voltage", striplabel="Strip 1 Label"),
     #Leave defaults for strip #2
-    ystrip = set(3, min=1, max=1000, scale=:log, striplabel="Strip 3 Label"),
+    ystrip3 = set(min=1, max=1000, scale=:log, striplabel="Strip 3 Label"),
 )
+
+#=Note:
+kwargs `ystripi` are only supporte from i=1...9. To set properties for i>9, you
+can set the base `ystrip=` parameter (only 1 can be set per call to attributes()):
+=#
+ystripattributes2 = attributes(
+    nstrips = 15,
+    ystrip = set(12, min=0, max=.5, scale=:lin, axislabel="Voltage", striplabel="Strip 12 Label"),
 ```
 
 # Folded x-axis (`xfolded=`)
@@ -57,7 +65,7 @@ Folded x=axis overlays (folds) all x-data onto same x-values.
 
 The following example lists which folded x-axis attributes can be overwritten:
 ```julia-repl
-xaxis = attributes(
+foldedxaxis = attributes(
     xfolded = set(1e-9, xstart=5e-9, xmin=-1e9, xmax=1e-9)
 )
 ```

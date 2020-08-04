@@ -20,15 +20,15 @@ Provides:
  - `addwfrm(b::AbstractBuilder, wfrm::Waveform, wfrmidx::Int)`
 
 Requires:
- - addwfrm(b::T, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes) where T<:AbstractBuilder
+ - addwfrm(b::T, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) where T<:AbstractBuilder
  - needsfold(b::T) where T<:AbstractBuilder -> FoldedAxis() or nothing
 """
 abstract type AbstractBuilder; end
 
 
 #Register symbols that need to be implemented by backend interfacing code
-addwfrm(b::AbstractBuilder, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes) =
-	throw(MethodError(addwfrm, b, d, label, l, g))
+addwfrm(b::AbstractBuilder, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) =
+	throw(MethodError(addwfrm, b, d, label, l, g, strip))
 needsfold(b::AbstractBuilder) = throw(MethodError(needsfold, (b,)))
 
 
@@ -38,12 +38,18 @@ _addwfrm(b::AbstractBuilder, d::T, args...; kwargs...) where T<:DataMD =
 	throw(ArgumentError("Plotting if $T datasets is not supported."))
 
 
+#==Helper functions
+===============================================================================#
+_get_crnid(v::Integer) = string(v)
+_get_crnid(v::Real) = SI(v, ndigits=3) #Limit significant digits for readability
+
+
 #==Adding DataF1 waveforms
 ===============================================================================#
 
 #Builder requested to fold data on axis:
 function _addwfrm_fold(b::AbstractBuilder, f::FoldedAxis, d::DataF1,
-   id::String, l::LineAttributes, g::GlyphAttributes)
+   id::String, l::LineAttributes, g::GlyphAttributes, strip::Int)
 	xspan = f.xmax - f.xmin
 	if f.xmin != 0
 		@warn("buildeye(): Does not currently support non-zero start time")
@@ -52,14 +58,14 @@ function _addwfrm_fold(b::AbstractBuilder, f::FoldedAxis, d::DataF1,
 
 	cur_id = id
 	for segment in eye.data
-		addwfrm(b, segment, cur_id, l, g)
+		addwfrm(b, segment, cur_id, l, g, strip)
 		cur_id = "" #Should avoid clutter in legend
 	end
 end
 
 #Add a waveform to a typical plot:
 function _addwfrm(b::AbstractBuilder, d::DataF1,
-   id::String, l::LineAttributes, g::GlyphAttributes, iparam::Int)
+   id::String, l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	cur_id = l
 	if nothing == cur_id.color
 		cur_id = LineAttributes(l.style, l.width, iparam)
@@ -67,9 +73,9 @@ function _addwfrm(b::AbstractBuilder, d::DataF1,
 
 	faxis = needsfold(b)
 	if isnothing(faxis)
-		addwfrm(b, d, id, cur_id, g)
+		addwfrm(b, d, id, cur_id, g, strip)
 	else
-		_addwfrm_fold(b, faxis, d, id, cur_id, g)
+		_addwfrm_fold(b, faxis, d, id, cur_id, g, strip)
 	end
 end
 
@@ -78,49 +84,49 @@ end
 ===============================================================================#
 
 #Add collection of DataRS{DataF1} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{DataF1}, crnid::String,
-	id::String, l::LineAttributes, g::GlyphAttributes, iparam::Int)
+function _addwfrm(b::AbstractBuilder, d::DataRS{DataF1}, crnid::String, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
+		curcrnid = "$crnid$sweepname=" * _get_crnid(v)
 		cur_id = "$id; $curcrnid"
-		wfrm = _addwfrm(b, d.elem[i], cur_id, l, g, i)
+		wfrm = _addwfrm(b, d.elem[i], cur_id, l, g, strip, i)
 	end
 end
 
 #Add collection of DataRS{Number} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{T}, crnid::String,
-	id::String, l::LineAttributes, g::GlyphAttributes, iparam::Int) where T<:Number
+function _addwfrm(b::AbstractBuilder, d::DataRS{T}, crnid::String, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int) where T<:Number
 	cur_id = (""==crnid) ? id : "$id; $crnid"
-	return _addwfrm(b, DataF1(d.sweep.v, d.elem), cur_id, l, g, iparam)
+	return _addwfrm(b, DataF1(d.sweep.v, d.elem), cur_id, l, g, strip, iparam)
 end
 
 #Add collection of DataRS{DataRS} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{DataRS}, crnid::String,
-	id::String, l::LineAttributes, g::GlyphAttributes, iparam::Int)
+function _addwfrm(b::AbstractBuilder, d::DataRS{DataRS}, crnid::String, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
 	for i in 1:length(d.elem)
 		v = d.sweep.v[i]
-		curcrnid = "$crnid$sweepname=$v"
-		wfrm = _addwfrm(b, d.elem[i], curcrnid, id, l, g, i)
+		curcrnid = "$crnid$sweepname=" * _get_crnid(v)
+		wfrm = _addwfrm(b, d.elem[i], curcrnid, id, l, g, strip, i)
 	end
 end
 
 #If corner id !exists, use "" & relay call:
-_addwfrm(b::AbstractBuilder, d::DataRS,
-	id::String, l::LineAttributes, g::GlyphAttributes, iparam::Int) =
-	_addwfrm(b, d, "", id, l, g, iparam)
+_addwfrm(b::AbstractBuilder, d::DataRS, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int) =
+	_addwfrm(b, d, "", id, l, g, strip, iparam)
 
 
 #==Adding DataHR waveforms
 ===============================================================================#
 
 #Add waveforms from a collection of DataHR{DataF1}:
-function _addwfrm(b::AbstractBuilder, d::DataHR{DataF1},
-	id::String, l::LineAttributes, g::GlyphAttributes, wfrmidx::Int)
+function _addwfrm(b::AbstractBuilder, d::DataHR{DataF1}, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, wfrmidx::Int)
 	sweepnames = names(sweeps(d))
 
 	for inds in subscripts(d)
@@ -128,15 +134,15 @@ function _addwfrm(b::AbstractBuilder, d::DataHR{DataF1},
 		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
 		cur_id = "$id; $crnid"
 		cur_wfrmidx = inds[end]
-		wfrm = _addwfrm(b, d.elem[inds...], cur_id, l, g, cur_wfrmidx)
+		wfrm = _addwfrm(b, d.elem[inds...], cur_id, l, g, strip, cur_wfrmidx)
 	end
 end
 
 #Add waveforms from a collection of DataHR{DataF1}:
 #(Convert DataHR{Number} => DataHR{DataF1} & add):
-function _addwfrm(b::AbstractBuilder, d::DataHR{T},
-	id::String, l::LineAttributes, g::GlyphAttributes, wfrmidx::Int) where T<:Number
-	return _addwfrm(b, DataHR{DataF1}(d), id, l, g, wfrmidx)
+function _addwfrm(b::AbstractBuilder, d::DataHR{T}, id::String,
+	l::LineAttributes, g::GlyphAttributes, strip::Int, wfrmidx::Int) where T<:Number
+	return _addwfrm(b, DataHR{DataF1}(d), id, l, g, strip, wfrmidx)
 end
 
 #==External interface (for backend implementation)
@@ -157,6 +163,6 @@ needsfold(b::T) where T<:AbstractBuilder
  - `wfrmidx` might get reset to 1 for each subplot, or might be continuous across all plots.
 """
 addwfrm(b::AbstractBuilder, wfrm::Waveform, wfrmidx::Int) =
-	_addwfrm(b, wfrm.data, wfrm.label, wfrm.line, wfrm.glyph, wfrmidx)
+	_addwfrm(b, wfrm.data, wfrm.label, wfrm.line, wfrm.glyph, wfrm.strip, wfrmidx)
 
 #Last line

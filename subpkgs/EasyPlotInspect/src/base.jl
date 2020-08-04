@@ -117,8 +117,8 @@ end
 EasyPlot.needsfold(b::Builder) = b.fold
 
 #Add DataF1 results:
-function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes)
-	wfrm = add(plot, d.x, d.y, id=a.label)
+function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes, strip::Int)
+	wfrm = add(plot, d.x, d.y, id=a.label, strip=strip)
 	wfrm.line = line(color=a.linecolor, width=a.linewidth, style=a.linestyle)
 	wfrm.glyph = glyph(shape=a.glyphshape, size=a.glyphsize,
 		color=a.glyphcolor, fillcolor=a.glyphfillcolor
@@ -127,10 +127,10 @@ end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
 function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
-	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	inspectattr = WfrmAttributes(id, attr) #Attributes understood by InspectDR
-	_addwfrm(b.ref, d, inspectattr)
+	_addwfrm(b.ref, d, inspectattr, strip)
 end
 
 
@@ -140,12 +140,6 @@ end
 function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	iplot = InspectDR.Plot2D()
 	fold = isa(plot.xaxis, EasyPlot.FoldedAxis) ? plot.xaxis : nothing
-
-	builder = Builder(iplot, theme, fold)
-
-	for (i, wfrm) in enumerate(plot.wfrmlist)
-		EasyPlot.addwfrm(builder, wfrm, i)
-	end
 
 	#x-axis properties:
 	iplot.xext_full = InspectDR.PExtents1D(plot.xext.min, plot.xext.max)
@@ -169,6 +163,13 @@ function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	a.title = plot.title
 	a.xlabel = plot.xlabel
 	a.ylabels = String[strip.axislabel for strip in plot.ystriplist]
+	a.ystriplabels = String[strip.striplabel for strip in plot.ystriplist]
+
+	#Add data using EasyPlot.AbstractBuilder interface:
+	builder = Builder(iplot, theme, fold)
+	for (i, wfrm) in enumerate(plot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
+	end
 	
 	return iplot
 end

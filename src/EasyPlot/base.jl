@@ -122,7 +122,7 @@ mutable struct Plot <: AbstractAttributeReceiver
 	ystriplist::Vector{YStrip}
 	wfrmlist::Vector{Waveform}
 end
-_Plot(title::String) = Plot(title, "", Axis(:lin), _Extents1D(), YStrip[], Waveform[])
+_Plot(title::String) = Plot(title, "", Axis(:lin), _Extents1D(), YStrip[_YStrip()], Waveform[])
 Plot(args...; title::String="", kwargs...) =
 	_apply(_Plot(title), args, kwargs)
 
@@ -151,6 +151,12 @@ cons(::DS{:fldaxis}, args...; kwargs...) = FoldedAxis(args...; kwargs...)
 ===============================================================================#
 Base.Symbol(a::Axis{T}) where T = Symbol(T)
 Base.Symbol(a::FoldedAxis) = :lin
+
+
+#==Copy constructors
+===============================================================================#
+Base.copy(src::Waveform) =
+	Waveform(src.data, src.label, deepcopy(src.line), deepcopy(src.glyph), src.strip)
 
 
 #==Helper functions
@@ -229,8 +235,10 @@ function _apply(p::Plot, ::DS{:labels}; title=nooverwrite,
 end
 
 #Change x-axis parameters of a plot:
-function _apply(p::Plot, ::DS{:xaxis}; scale=nooverwrite, min=nooverwrite, max=nooverwrite)
+function _apply(p::Plot, ::DS{:xaxis}; scale=nooverwrite,
+	min=nooverwrite, max=nooverwrite, label=nooverwrite)
 	NoOverwrite(scale) || (p.xaxis = _resolve_xaxis(scale))
+	NoOverwrite(label) || (p.xlabel = label)
 	p.xext = _new_overwrite(p.xext, min, max)
 end
 
@@ -261,6 +269,16 @@ function _apply(p::Plot, ::DS{:ystrip}, istrip::Int;
 	NoOverwrite(axislabel) || (strip.axislabel = axislabel)
 	NoOverwrite(striplabel) || (strip.striplabel = striplabel)
 end
+#Strip aliases to avoid parameter name collisions (can only set ystrip=set(...) once):
+_apply(p::Plot, ::DS{:ystrip1}; kwargs...) = _apply(p, DS(:ystrip), 1; kwargs...)
+_apply(p::Plot, ::DS{:ystrip2}; kwargs...) = _apply(p, DS(:ystrip), 2; kwargs...)
+_apply(p::Plot, ::DS{:ystrip3}; kwargs...) = _apply(p, DS(:ystrip), 3; kwargs...)
+_apply(p::Plot, ::DS{:ystrip4}; kwargs...) = _apply(p, DS(:ystrip), 4; kwargs...)
+_apply(p::Plot, ::DS{:ystrip5}; kwargs...) = _apply(p, DS(:ystrip), 5; kwargs...)
+_apply(p::Plot, ::DS{:ystrip6}; kwargs...) = _apply(p, DS(:ystrip), 6; kwargs...)
+_apply(p::Plot, ::DS{:ystrip7}; kwargs...) = _apply(p, DS(:ystrip), 7; kwargs...)
+_apply(p::Plot, ::DS{:ystrip8}; kwargs...) = _apply(p, DS(:ystrip), 8; kwargs...)
+_apply(p::Plot, ::DS{:ystrip9}; kwargs...) = _apply(p, DS(:ystrip), 9; kwargs...)
 
 function _apply(p::Plot, ::DS{:xfolded}, foldinterval::PReal;
 	xstart=0.0, xmin=0.0, xmax=foldinterval

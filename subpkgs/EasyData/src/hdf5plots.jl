@@ -46,6 +46,7 @@ end
 
 function _readplot(grp::HDF5Group)
 	plot = Plot(title=_read_typed(grp, "title"))
+	plot.ystriplist = []
 	plot.xlabel = _read_typed(grp, "xlabel")
 	plot.xaxis = _read_typed(grp, "xaxis")
 	plot.xext = _read_typed(grp, "xext")
