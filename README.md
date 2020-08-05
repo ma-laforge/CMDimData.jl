@@ -1,7 +1,7 @@
-# CMDimData.jl: Parametric Analysis +Plotting +Continuous <math>f(x)</math>
+# CMDimData.jl: Parametric Analysis +Continuous <i>f(x)</i> +Plotting
 
- - ***"Focus the analysis itself, not how to manipulate data"***
- - ***"The hardest part of data analysis should be annotating the plots!"***
+&mdash; ***"Focus on the analysis itself, not on data manipulation"***
+&mdash; ***"The hardest part of data analysis should be annotating the plots!"***
 
 [![Build Status](https://travis-ci.org/ma-laforge/CMDimData.jl.svg?branch=master)](https://travis-ci.org/ma-laforge/CMDimData.jl)
 
