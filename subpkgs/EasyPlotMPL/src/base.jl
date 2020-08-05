@@ -38,13 +38,11 @@ const NOTFOUND = FlagType{:NOTFOUND}()
 ===============================================================================#
 const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
-mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
-	ref::PyCall.PyObject #Axes reference
+mutable struct Builder <: EasyPlot.AbstractBuilder
+	ref::PyCall.PyObject #"Axes" reference
 	theme::EasyPlot.Theme
-	eye::NullOr{EasyPlot.EyeAttributes}
+	fold::NullOr{EasyPlot.FoldedAxis}
 end
-Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
-	Axes{style}(ref, theme, eye)
 
 mutable struct WfrmAttributes
 	label
@@ -133,8 +131,9 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 end
 
 
-#==Rendering functions
+#==AbstractBuilder implementation
 ===============================================================================#
+EasyPlot.needsfold(b::Builder) = b.fold
 
 #Add DataF1 results:
 function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
@@ -151,65 +150,74 @@ function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
-	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
-	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
+function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
+	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	mplattr = WfrmAttributes(id, attr) #Attributes understood by MPL
-	_addwfrm(ax.ref, d, mplattr)
+	_addwfrm(b.ref, d, mplattr)
 end
 
-function rendersubplot(ax, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
-	ax.set_title(subplot.title)
 
-	#TODO Ugly: setting defaults like this should be done in EasyPlot
-	ep = nothing
-	if :eye == subplot.style
-		ep = subplot.eye
-		if nothing == ep.teye; ep.teye = ep.tbit; end
+#==Plot building functions
+===============================================================================#
+
+function build(ax, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
+	ax.set_title(eplot.title)
+	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
+
+	builder = Builder(ax, theme, fold)
+	for (i, wfrm) in enumerate(eplot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
 	end
 
-	axes = Axes(subplot.style, ax, theme, ep)
+	#x-axis properties:
+	xscale = Symbol(eplot.xaxis)
+	xmin = eplot.xext.min; xmax = eplot.xext.max
 
-	for (i, wfrm) in enumerate(subplot.wfrmlist)
-		EasyPlot.addwfrm(axes, wfrm, i)
+	#y-axis properties:
+	ylabel = ""
+	yscale = :lin
+	ymin, ymax = (NaN, NaN)
+	if length(eplot.ystriplist) > 0
+		strip = eplot.ystriplist[1]
+		ylabel = strip.axislabel
+		yscale = strip.scale
+		ymin = strip.ext.min; ymax = strip.ext.max
 	end
 
-	srca = subplot.axes
-
-	#Update axis limits:
-	(xmin, xmax) = ax.set_xlim()
-	if srca.xmin != nothing; xmin = srca.xmin; end
-	if srca.xmax != nothing; xmax = srca.xmax; end
-	(ymin, ymax) = ax.set_ylim()
-	if srca.xmin != nothing; xmin = srca.xmin; end
-	if srca.xmax != nothing; xmax = srca.xmax; end
-	ax.set_xlim(xmin, xmax)
-	ax.set_ylim(ymin, ymax)
+	#Apply x/y labels:
+	ax.set_xlabel(eplot.xlabel)
+	ax.set_ylabel(ylabel)
 
 	#Apply x/y scales:
-	ax.set_xscale(scalemap[srca.xscale])
-	ax.set_yscale(scalemap[srca.yscale])
-	
-	#Apply x/y labels:
-	if srca.xlabel != nothing; ax.set_xlabel(srca.xlabel); end
-	if srca.ylabel != nothing; ax.set_ylabel(srca.ylabel); end
+	ax.set_xscale(scalemap[xscale])
+	ax.set_yscale(scalemap[yscale])
+
+	#Apply x/y extents:
+	(c_xmin, c_xmax) = ax.set_xlim() #Read in current limits
+		isnan(xmin) && (xmin = c_xmin); isnan(xmax) && (xmax = c_xmax)
+		ax.set_xlim(xmin, xmax)
+	(c_ymin, c_ymax) = ax.set_ylim() #Read in current limits
+		isnan(ymin) && (ymin = c_ymin); isnan(ymax) && (ymax = c_ymax)
+		ax.set_ylim(ymin, ymax)
 
 	return ax
 end
 
-function render(fig::PyPlot.Figure, eplot::EasyPlot.Plot)
-	ncols = eplot.ncolumns
-	fig.suptitle(eplot.title)
-	nrows = div(length(eplot.subplots)-1, ncols)+1
-	subplotidx = 0
+function build(fig::PyPlot.Figure, ecoll::EasyPlot.PlotCollection)
+	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotGrace") #Emulate multi-strip plots
+	ncols = ecoll.ncolumns
+	fig.suptitle(ecoll.title)
+	nrows = div(length(ecoll.plotlist)-1, ncols)+1
+	iplot = 0
 
-	for s in eplot.subplots
-#		row = div(subplotidx, ncols) + 1
-#		col = mod(subplotidx, ncols) + 1
-		ax = fig.add_subplot(nrows, ncols, subplotidx+1)
-		rendersubplot(ax, s, eplot.theme)
-		if eplot.displaylegend; ax.legend(); end
-		subplotidx += 1
+	for plot in ecoll.plotlist
+#		row = div(iplot, ncols) + 1
+#		col = mod(iplot, ncols) + 1
+		ax = fig.add_subplot(nrows, ncols, iplot+1)
+		build(ax, plot, ecoll.theme)
+		if ecoll.displaylegend; ax.legend(); end
+		iplot += 1
 	end
 
 	fig.canvas.draw()

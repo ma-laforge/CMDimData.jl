@@ -33,12 +33,6 @@ MPLState(d::PlotDisplay) = MPLState(false, d.backend, d.guimode)
 
 #==Support functions
 ===============================================================================#
-#Do not overwrite Base.display... would circumvent display system.
-function EasyPlot._display(fig::PyPlot.Figure)
-	fig.show()
-	nothing
-end
-
 function _getstate()
 	return MPLState(
 		PyPlot.matplotlib.is_interactive(),
@@ -56,16 +50,23 @@ function _applystate(s::MPLState)
 end
 
 
-#==Top-level rendering functions
+#==Implement EasyPlot _display/render interface
 ===============================================================================#
-function render(d::PlotDisplay, eplot::EasyPlot.Plot)
+
+#Do not overwrite Base.display... would circumvent display system.
+function EasyPlot._display(fig::PyPlot.Figure)
+	fig.show()
+	nothing
+end
+
+function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
 	local fig
 	origstate = _getstate()
 	newstate = MPLState(d)
 	try
 		_applystate(newstate)
 		fig = PyPlot.figure(d.args...; d.kwargs...)
-		render(fig, eplot)
+		build(fig, ecoll)
 	finally
 		#Do not restore guimode... PyPlot will not display properly
 		origstate.guimode = newstate.guimode
@@ -74,7 +75,7 @@ function render(d::PlotDisplay, eplot::EasyPlot.Plot)
 	return fig
 end
 
-Base.showable(mime::MIME{T}, eplot::EasyPlot.Plot, d::PlotDisplay) where T =
+Base.showable(mime::MIME{T}, ecoll::EasyPlot.PlotCollection, d::PlotDisplay) where T =
 	in(string(T), SUPPORTED_MIMES)
 #method_exists(writemime, (IO, typeof(mime), PyPlot.Figure) #Apparently not enough
 

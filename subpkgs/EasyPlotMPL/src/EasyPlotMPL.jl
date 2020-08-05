@@ -9,8 +9,6 @@ using CMDimData.Colors
 using PyPlot
 import PyCall #Need to access some types
 
-import CMDimData.EasyPlot: render
-
 include("base.jl")
 include("display.jl")
 include("defaults.jl")
