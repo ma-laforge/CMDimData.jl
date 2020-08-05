@@ -131,7 +131,7 @@ function _addwfrm(b::AbstractBuilder, d::DataHR{DataF1}, id::String,
 
 	for inds in subscripts(d)
 		values = coordinates(d, inds)
-		crnid=join(["$k=$v" for (k,v) in zip(sweepnames,values)], " / ")
+		crnid=join(["$k="*_get_crnid(v) for (k,v) in zip(sweepnames,values)], " / ")
 		cur_id = "$id; $crnid"
 		cur_wfrmidx = inds[end]
 		wfrm = _addwfrm(b, d.elem[inds...], cur_id, l, g, strip, cur_wfrmidx)
