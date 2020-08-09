@@ -5,10 +5,11 @@ module EasyData
 
 
 import CMDimData
-using CMDimData.MDDatasets
 using CMDimData.EasyPlot
+using MDDatasets
 using Colors
 import HDF5
+import Pkg
 
 import CMDimData.EasyPlot: PlotCollection, Plot, YStrip
 import CMDimData.EasyPlot: Waveform, LineAttributes, GlyphAttributes

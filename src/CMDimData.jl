@@ -10,7 +10,7 @@ module CMDimData
 
 using Colors
 using MDDatasets
-using Pkg
+import Pkg
 
 const rootpath = realpath(joinpath(@__DIR__, ".."))
 
