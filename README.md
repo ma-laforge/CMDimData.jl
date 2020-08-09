@@ -5,6 +5,11 @@
 
 [![Build Status](https://travis-ci.org/ma-laforge/CMDimData.jl.svg?branch=master)](https://travis-ci.org/ma-laforge/CMDimData.jl)
 
+:art: [**Galleries (sample output)**](https://github.com/ma-laforge/FileRepo/blob/master/CMDimData) :art:
+
+| <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin_live/phi_all-A_all.png" width="850"> |
+| :---: |
+
 ## Description
 
 CMDimData.jl provides a high-level abstraction to manipulate multi-dimensional data, and automatically interpolate intermediate values as if it was a continuous function.
@@ -24,11 +29,26 @@ The goal is to provide analysis tools that lead to minimal code, written in a *n
 
 ## Table of Contents
 
- 1. [`CMDimData.EasyPlot` Plotting Interface](doc/EasyPlot.md)
-    1. [`CMDimData.EasyPlot` Backends](doc/EasyPlot_backends.md)
- 1. [`CMDimData.EasyData` {Data/Plot} &hArr; HDF5 file](doc/EasyData.md)
+ 1. [Plotting Interface](doc/EasyPlot.md)
+    1. [Plotting Backends](doc/EasyPlot_backends.md)
+ 1. [Saving/Loading {Data/Plot} &hArr; HDF5 file](doc/EasyData.md)
+ 1. [Sample Usage](#SampleUsage)
+    1. [Sample directory](sample)
+    1. [Live-Slice Examples](sample/LiveSlice)
+    1. [Parametric `sin()` "simulation](sample/parametric_sin.md)
  1. [Installation](#Installation)
  1. [Known Limitations](#KnownLimitations)
+
+<a name="SampleUsage"></a>
+## Sample Usage
+Examples of how to use CMDimData are provided in the [sample/](sample) subdirectory.
+
+A few examples are organized by function:
+ - Sample plots: [sample/plots/](sample/plots)
+ - "Live-Slice" examples: [sample/LiveSlice/](sample/plots)
+
+Detailed walthroughs:
+ - Parametric `sin()` "simulation": [sample/parametric\_sin.md](sample/parametric_sin.md)
 
 <a name="Installation"></a>
 ## Installation
