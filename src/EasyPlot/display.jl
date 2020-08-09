@@ -33,8 +33,7 @@ render(d::EasyPlotDisplay, pcoll::PlotCollection) = throw(MethodError(render, (d
 
 function Base.display(d::EasyPlotDisplay, pcoll::PlotCollection)
 	nativeplot = render(d, pcoll)
-	_display(nativeplot)
-	return nothing
+	return _display(nativeplot)
 end
 
 

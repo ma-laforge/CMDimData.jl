@@ -174,13 +174,13 @@ function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	return iplot
 end
 
-function render(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollection, lyt::InspectDR.PlotLayout)
+function EasyPlot.render(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollection)
 	mplot.layout[:ncolumns] = ecoll.ncolumns
 	mplot.title = ecoll.title
 
+	mplot.subplots=[] #Start fresh in case being overwritten
 	for p in ecoll.plotlist
 		plot = generateplot(p, ecoll.theme)
-		plot.layout.values = lyt
 		add(mplot, plot)
 		plot.layout[:enable_legend] = ecoll.displaylegend
 	end

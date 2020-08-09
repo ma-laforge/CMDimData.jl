@@ -8,7 +8,6 @@ using CMDimData.MDDatasets
 using CMDimData.Colors
 using InspectDR
 
-import CMDimData.EasyPlot: render
 import InspectDR: LineAttributes, GlyphAttributes
 
 include("base.jl")

@@ -6,8 +6,8 @@
 ===============================================================================#
 mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
 	#w/h of data area:
-	wdata::Float64
-	hdata::Float64
+	wdata::Float64; hdata::Float64 #Deprecate
+	#Add desired layout instead of wdata, hdata!
 	args::Tuple
 	kwargs::Base.Iterators.Pairs
 	PlotDisplay(args...;
@@ -19,17 +19,20 @@ end
 #==Top-level rendering functions
 ===============================================================================#
 #Do not overwrite Base.display... would circumvent display system.
-function EasyPlot._display(mplot::InspectDR.Multiplot)
-	gplot = display(InspectDR.GtkDisplay(), mplot)
-	nothing
-end
+EasyPlot._display(mplot::InspectDR.Multiplot) = display(InspectDR.GtkDisplay(), mplot)
 
 function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
 	mplot = InspectDR.Multiplot() #d.kwargs...
-	layout = InspectDR.StyleType(InspectDR.defaults.plotlayout)
-	layout[:halloc_data] = d.wdata
-	layout[:valloc_data] = d.hdata
-	render(mplot, ecoll, layout.values)
+	EasyPlot.render(mplot, ecoll)
+
+	#Update with preferred defaults:
+	for iplot in mplot.subplots
+		layout = iplot.layout
+		#Switch to overwriting style: setstyle!(layout, InspectDR.defaults.plotlayout, refresh=false)
+		layout[:halloc_data] = d.wdata
+		layout[:valloc_data] = d.hdata
+	end
+
 	return mplot
 end
 
