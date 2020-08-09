@@ -1,6 +1,6 @@
-# CMDimData.jl: Parametric Analysis +Continuous <i>f(x)</i> +Plotting
+# CMDimData.jl: Parametric Analysis +Continuous <var>f(x)</var> +Plotting
 
-&mdash; ***"Focus on the analysis itself, not on data manipulation"***
+&mdash; ***"Focus on the analysis itself, not on data manipulation"***<br>
 &mdash; ***"The hardest part of data analysis should be annotating the plots!"***
 
 [![Build Status](https://travis-ci.org/ma-laforge/CMDimData.jl.svg?branch=master)](https://travis-ci.org/ma-laforge/CMDimData.jl)
@@ -52,5 +52,3 @@ Extensive compatibility testing of CMDimData.jl has not been performed.  The mod
 ## Disclaimer
 
 The CMDimData.jl module is not yet mature.  Expect significant changes.
-
-This software is provided "as is", with no guarantee of correctness.  Use at own risk.
