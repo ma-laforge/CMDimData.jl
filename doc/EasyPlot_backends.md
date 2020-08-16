@@ -7,9 +7,21 @@ The following is a list of modules implementing the `EasyPlot` interface, along 
 
  - `EasyPlotInspect`: (InspectDR.jl)
  - `EasyPlotMPL`: (PyPlot.jl/Matplotlib)
- - BROKEN `EasyPlotPlots`: (Plots.jl)
- - BROKEN `EasyPlotQwt`: (Qwt.jl)
+ - `EasyPlotPlots`: (Plots.jl)
+ - BROKEN `EasyPlotQwt`: (PyCall.jl/`guiqwt` Python library)
  - `EasyPlotGrace`: (GracePlot.jl)
+
+## Choosing a Backend
+
+NOTE: The term "load time" is used loosely below to indicate time to first plot.
+
+ - **InspectDR.jl**: One of the fastest supported backends with the second shortest load times (second to `xmgrace`).  InspectDR provides good interactivity. Very responsive, even with moderately-sized (~200k points) datasets.
+   - Confirmed to handle 2GB datsets with reasonable speed on older desktop running Windows 10 (drag+pan of data area highly discouraged).
+ - **Grace/xmgrace**: Short load times and fast when dealing with small datasets.  GUI feels a bit dated and unfamiliar, but one can readily fine tune almost any visual element to generate publication-quality plots.
+ - **Matplotlib/PyPlot.jl**: Longer load times (connects to Python-based `matplotlib.pyplot` library).  Faster than Grace/xmgrace solution when dealing with moderately-sized datasets (~200k points).
+ - **Qwt/guiqwt**: Longer load times (connects to Python-based `guiqwt` library).  Faster than Matplotlib/PyPlot.jl solution when dealing with moderately-sized datasets (~200k points).
+   - Though efficient with moderately-sized datasets, `guiqwt` appears slow when plotting large a *number of traces* (ex: eye diagram of a long transient dataset split into many individual traces).
+ - **Plots.jl/(\*.jl)**: Uniform plotting interface supporting multiple backends.
 
 ## Importing Backends
 
@@ -51,7 +63,7 @@ To specify the default Plots.jl plot rendering tool, add the following to your `
 
 	ENV["EASYPLOTPLOTS_RENDERINGTOOL"] = "gr"
 
-See main [Plots.jl](https://github.com/tbreloff/Plots.jl) module for supported backends.
+See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/backends/) for more information on supported backends.
 
 ### EasyPlotQwt
 
@@ -65,12 +77,17 @@ The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `~/.julia/confi
 
 ## Additional Information: EasyPlotPlots
 
-### Supported Displays
-EasyPlotPlots.jl tries to support all plot rendering tools (backends) supported by Plots.jl itself.  A few tested backends are listed below:
+### Supported "sub"-backends
+EasyPlotPlots.jl should support all plot rendering tools (backends) supported by Plots.jl itself.
 
- - **:pyplot**: Through Plots.jl/[PyPlot.jl](https://github.com/JuliaPy/PyPlot.jl) (Matplotlib) libraries.
- - **:gadfly**: Through Plots.jl/[Gadfly.jl](https://github.com/GiovineItalia/Gadfly.jl) libraries.
- - **:gr**: Through Plots.jl/[GR.jl](https://github.com/jheinen/GR.jl) libraries.
+ - Backends without display capabilities: `:hdf5`
+ - Text/terminal-based backends: `:unicodeplots`
+ - Image-only backends: `:pgfplotsx`
+ - GUI-enabled backends: `:gr`, `:inspectdr`, `:pyplot`
+ - Python-based backends: `:pyplot`
+ - Browser-enabled? backends: `:plotly`, `:plotlyjs`
+
+See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/backends/) for more information on supported backends.
 
 ### Sample Usage
 
