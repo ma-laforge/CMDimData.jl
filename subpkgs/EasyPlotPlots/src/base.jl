@@ -54,21 +54,19 @@ const markermap = Dict{Symbol, Symbol}(
 #const NOMULTISUPPORT = Set([:gr]) #GR now supported using multiplot model.
 const NOMULTISUPPORT = Set([])
 
-struct FlagType{T}; end
-const NOTFOUND = FlagType{:NOTFOUND}()
+struct NotFound; end
+const NOTFOUND = NotFound()
 
 
 #==Base types
 ===============================================================================#
 const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
 
-mutable struct Axes{T} <: EasyPlot.AbstractAxes{T}
-	ref::Plots.Subplot #Axes reference
+mutable struct Builder <: EasyPlot.AbstractBuilder
+	subplot::Plots.Subplot #Axes reference
 	theme::EasyPlot.Theme
-	eye::NullOr{EasyPlot.EyeAttributes}
+	fold::NullOr{EasyPlot.FoldedAxis}
 end
-Axes(style::Symbol, ref, theme::EasyPlot.Theme, eye=nothing) =
-	Axes{style}(ref, theme, eye)
 
 
 #Top-level plot (which might contain subplots)
@@ -84,7 +82,7 @@ mutable struct FigureMulti <: Figure #For backends that support subplots
 	p::NullOr{Plots.Plot} #NullOr - So construction does not display anything.
 #	subplots::Vector{Plots.Subplot}
 end
-FigureMulti() = FigureMulti(nothing)
+FigureMulti() = FigureMulti(Plots.plot(overwrite_figure=false))
 
 Figure(toolid::Symbol) =
 	in(toolid, NOMULTISUPPORT) ? FigureSng() : FigureMulti()
@@ -102,10 +100,11 @@ mutable struct WfrmAttributes
 	markershape::Symbol
 	markersize::Float64
 	markercolor::Colorant #Fill color
-#	fillalpha::Float64 #Does nothing?
 	markeralpha::Float64 #Apperently entire marker
 	markerstrokewidth::Float64
 	markerstrokecolor::Colorant
+	markerstrokealpha::Float64
+	markerstrokestyle::Symbol
 end
 
 
@@ -119,7 +118,7 @@ function addsubplots(fig::FigureSng, ncols::Int, nsubplots::Int)
 end
 function addsubplots(fig::FigureMulti, ncols::Int, nsubplots::Int)
 	nrows = div(nsubplots-1, ncols) + 1
-	fig.p = Plots.plot(layout=(nrows, ncols))
+	fig.p = Plots.plot(layout=(nrows, ncols), overwrite_figure=true)
 	return fig
 end
 
@@ -168,12 +167,16 @@ mapmarkershape(::Nothing) = "" #default (no marker)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	linewidth = maplinewidth(attr.linewidth)
+
+	#Marker line
+	markerstrokecolor = attr.glyphlinecolor
+	markerstrokealpha = Colors.alpha(markerstrokecolor)
+
+	#Marker fill:
 	markercolor = attr.glyphfillcolor
-	markeralpha = 1.0
-	if	markercolor == EasyPlot.COLOR_TRANSPARENT
-		markeralpha = 0.0
-		markercolor = EasyPlot.COLOR_WHITE  #Use a solid color, just in case
-	end
+	markeralpha = Colors.alpha(markercolor)
+
+	#WARNING: In GR backend, markeralpha is applied to marker line!
 
 	return WfrmAttributes(id,
 		maplinetype(attr.linestyle),
@@ -185,8 +188,36 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 		mapmarkersize(attr.glyphsize),
 		markercolor, markeralpha,
 		linewidth,
-		attr.glyphlinecolor,
+		markerstrokecolor, markerstrokealpha,
+		:solid, #markerstrokestyle
 	)
+end
+
+
+#==AbstractBuilder implementation
+===============================================================================#
+EasyPlot.needsfold(b::Builder) = b.fold
+
+#Add DataF1 results:
+function _addwfrm(sp::Plots.Subplot, d::DataF1, a::WfrmAttributes)
+	kwargs = Any[]
+	for attrib in fieldnames(WfrmAttributes)
+		v = getfield(a,attrib)
+
+		if v != nothing
+			push!(kwargs, tuple(attrib, v))
+		end
+	end
+
+	wfrm = plot!(sp, d.x, d.y; kwargs...)
+end
+
+#Called by EasyPlot, for each individual DataF1 ∈ DataMD.
+function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
+	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
+	plotsattr = WfrmAttributes(id, attr) #Attributes understood by Plots.jl
+	_addwfrm(b.subplot, d, plotsattr)
 end
 
 
@@ -195,83 +226,53 @@ end
 displaylegend(fig::FigureSng, v::Bool) = nothing
 displaylegend(fig::FigureMulti, v::Bool) = Plots.plot!(fig.p, legend=v)
 
-#Add DataF1 results:
-function _addwfrm(ax::Plots.Subplot, d::DataF1, a::WfrmAttributes)
-	kwargs = Any[]
-	for attrib in fieldnames(typeof(a))
-		v = getfield(a,attrib)
+function rendersubplot(sp::Plots.Subplot, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
+	Plots.title!(sp, eplot.title)
+	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
 
-		if v != nothing
-			push!(kwargs, tuple(attrib, v))
-		end
+	builder = Builder(sp, theme, fold)
+	for (i, wfrm) in enumerate(eplot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
 	end
 
-	wfrm = plot!(ax, d.x, d.y; kwargs...)
-end
+	#x-axis properties:
+	xscale = Symbol(eplot.xaxis)
+	xmin = eplot.xext.min; xmax = eplot.xext.max
 
-#Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(ax::Axes, d::DataF1, id::String,
-	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes)
-	attr = EasyPlot.WfrmAttributes(ax.theme, la, ga) #Apply theme to attributes
-	plotsattr = WfrmAttributes(id, attr) #Attributes understood by Plots.jl
-	_addwfrm(ax.ref, d, plotsattr)
-end
-
-function rendersubplot(ax::Plots.Subplot, subplot::EasyPlot.Subplot, theme::EasyPlot.Theme)
-	Plots.title!(ax, subplot.title)
-
-
-	#TODO Ugly: setting defaults like this should be done in EasyPlot
-	ep = nothing
-	if :eye == subplot.style
-		ep = subplot.eye
-		if nothing == ep.teye; ep.teye = ep.tbit; end
+	#y-axis properties:
+	ylabel = ""
+	yscale = :lin
+	ymin, ymax = (NaN, NaN)
+	if length(eplot.ystriplist) > 0
+		strip = eplot.ystriplist[1]
+		ylabel = strip.axislabel
+		yscale = strip.scale
+		ymin = strip.ext.min; ymax = strip.ext.max
 	end
-
-	axes = Axes(subplot.style, ax, theme, ep)
-
-	for (i, wfrm) in enumerate(subplot.wfrmlist)
-		EasyPlot.addwfrm(axes, wfrm, i)
-	end
-
-	srca = subplot.axes
-#=
-	#Update axis limits:
-	(xmin, xmax) = ax[:set_xlim]()
-	if srca.xmin != nothing; xmin = srca.xmin; end
-	if srca.xmax != nothing; xmax = srca.xmax; end
-	(ymin, ymax) = ax[:set_ylim]()
-	if srca.xmin != nothing; xmin = srca.xmin; end
-	if srca.xmax != nothing; xmax = srca.xmax; end
-	ax[:set_xlim](xmin, xmax)
-	ax[:set_ylim](ymin, ymax)
-	#@show Plots.ylims!(1,5) #Cannot find way to read current limits
-=#	
-
-	#Apply x/y scales:
-	_xscale = scalemap[srca.xscale]
-	_yscale = scalemap[srca.yscale]
-	#Not working:
-#	Plots.xscale!(ax, scalemap[srca.xscale])
-#	Plots.yscale!(ax, scalemap[srca.yscale])
-	Plots.plot!(ax, xscale=_xscale, yscale=_yscale)
 
 	#Apply x/y labels:
-	if srca.xlabel != nothing; Plots.xlabel!(ax, srca.xlabel); end
-	if srca.ylabel != nothing; Plots.ylabel!(ax, srca.ylabel); end
+	Plots.xlabel!(sp, eplot.xlabel)
+	Plots.ylabel!(sp, ylabel)
 
-	return ax
+	#Apply x/y scales:
+	Plots.plot!(sp, xscale=scalemap[xscale], yscale=scalemap[yscale])
+
+	#Update axis limits:
+	xlims!(sp, (xmin, xmax))
+	ylims!(sp, (ymin, ymax))
+	return sp
 end
 
-function render(fig::Figure, eplot::EasyPlot.Plot)
-	ncols = eplot.ncolumns
-	nsubplots = length(eplot.subplots)
+function build(fig::Figure, ecoll::EasyPlot.PlotCollection)
+	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotPlots") #Emulate multi-strip plots
+	ncols = ecoll.ncolumns
+	nsubplots = length(ecoll.plotlist)
 	plt = addsubplots(fig, ncols, nsubplots)
-	displaylegend(fig, eplot.displaylegend)
+	displaylegend(fig, ecoll.displaylegend)
 
-	for (i, s) in enumerate(eplot.subplots)
-		ax = getsubplot(fig, i)
-		rendersubplot(ax, s, eplot.theme)
+	for (i, plot) in enumerate(ecoll.plotlist)
+		sp = getsubplot(fig, i)
+		rendersubplot(sp, plot, ecoll.theme)
 	end
 
 	return fig

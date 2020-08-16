@@ -10,22 +10,18 @@ It seems like this causes issues when EasyPlotPlots gets precompiled (even
 when __precompile__(false))... presumably because these functions are not
 defined yet... so they don't get "precompiled" into this module.
 =#
-#=
-TAGS:
-	#WANTCONST, HIDEWARN_0.7
-=#
 module EasyPlotPlots
 
-import EasyPlot #Import only - avoid collisions
-using Plots
-import PyCall #Need to access some types
+import CMDimData
+import CMDimData.EasyPlot #Import only - avoid collisions
 using MDDatasets
 using Colors
 
-import EasyPlot: render
+using Plots
 
 include("base.jl")
 include("display.jl")
+include("defaults.jl")
 
 #==Initialization
 ===============================================================================#

@@ -2,24 +2,6 @@
 #-------------------------------------------------------------------------------
 
 
-#==Constants
-===============================================================================#
-const DEFAULT_RENDERINGTOOL = :pyplot
-
-
-#==Defaults
-===============================================================================#
-mutable struct Defaults
-	renderingtool::Symbol
-end
-Defaults() = Defaults(DEFAULT_RENDERINGTOOL)
-
-
-#==Data
-===============================================================================#
-const global defaults = Defaults()
-
-
 #==Main Types
 ===============================================================================#
 mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
@@ -34,16 +16,6 @@ PlotDisplay(args...; kwargs...) =
 	PlotDisplay(defaults.renderingtool, args...; kwargs...)
 
 
-#==Initialization
-===============================================================================#
-function _initialize(dflt::Defaults)
-	dflttool = string(DEFAULT_RENDERINGTOOL)
-	envstr = "EASYPLOTPLOTS_RENDERINGTOOL"
-	val = get(ENV, envstr, dflttool)
-	dflt.renderingtool = Symbol(lowercase(val))
-	return
-end
-
 
 #==Top-level rendering functions
 ===============================================================================#
@@ -55,12 +27,12 @@ function EasyPlot._display(fig::FigureSng)
 	nothing
 end
 
-function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
+function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
 	local fig
 	try
 		bknd = Plots.backend(d.toolid) #Activate backend
 		fig = Figure(d.toolid)
-		render(fig, eplot)
+		build(fig, ecoll)
 	finally
 		#TODO: Restore state
 	end
@@ -68,9 +40,9 @@ function EasyPlot.render(d::PlotDisplay, eplot::EasyPlot.Plot)
 end
 
 #Module does not yet support other inline formats (must figure out how)
-Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) = false
+Base.showable(mime::MIME, ecoll::EasyPlot.PlotCollection, d::PlotDisplay) = false
 #Assume PNG is supported by all backends:
-Base.showable(mime::MIME"image/png", eplot::EasyPlot.Plot, d::PlotDisplay) = true
+Base.showable(mime::MIME"image/png", ecoll::EasyPlot.PlotCollection, d::PlotDisplay) = true
 
 #Maintain text/plain MIME support.
 Base.show(io::IO, ::MIME"text/plain", fig::Figure) = Base.show(io, fig)
