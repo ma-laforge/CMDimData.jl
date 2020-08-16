@@ -28,7 +28,7 @@ abstract type AbstractBuilder; end
 
 #Register symbols that need to be implemented by backend interfacing code
 addwfrm(b::AbstractBuilder, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) =
-	throw(MethodError(addwfrm, b, d, label, l, g, strip))
+	throw(MethodError(addwfrm, (b, d, label, l, g, strip)))
 needsfold(b::AbstractBuilder) = throw(MethodError(needsfold, (b,)))
 
 
