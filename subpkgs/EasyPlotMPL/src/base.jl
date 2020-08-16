@@ -30,8 +30,8 @@ const markermap = Dict{Symbol, String}(
 	:star      => "*", :* => "*",
 )
 
-struct FlagType{T}; end
-const NOTFOUND = FlagType{:NOTFOUND}()
+struct NotFound; end
+const NOTFOUND = NotFound()
 
 
 #==Base types
@@ -205,7 +205,7 @@ function build(ax, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
 end
 
 function build(fig::PyPlot.Figure, ecoll::EasyPlot.PlotCollection)
-	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotGrace") #Emulate multi-strip plots
+	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotMPL") #Emulate multi-strip plots
 	ncols = ecoll.ncolumns
 	fig.suptitle(ecoll.title)
 	nrows = div(length(ecoll.plotlist)-1, ncols)+1

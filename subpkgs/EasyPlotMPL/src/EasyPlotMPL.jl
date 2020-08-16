@@ -4,8 +4,8 @@ module EasyPlotMPL
 
 import CMDimData
 import CMDimData.EasyPlot #Import only - avoid collisions
-using CMDimData.MDDatasets
-using CMDimData.Colors
+using MDDatasets
+using Colors
 using PyPlot
 import PyCall #Need to access some types
 
