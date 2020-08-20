@@ -45,7 +45,7 @@ Examples of how to use CMDimData are provided in the [sample/](sample) subdirect
 
 A few examples are organized by function:
  - Sample plots: [sample/plots/](sample/plots)
- - "Live-Slice" examples: [sample/LiveSlice/](sample/plots)
+ - "Live-Slice" examples: [sample/LiveSlice/](sample/LiveSlice)
 
 Detailed walthroughs:
  - Parametric `sin()` "simulation": [sample/parametric\_sin.md](sample/parametric_sin.md)
