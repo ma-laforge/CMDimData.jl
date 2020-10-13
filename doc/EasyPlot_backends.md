@@ -1,7 +1,7 @@
-# `CMDimData.EasyPlot` Backends
+# `CMDimData.EasyPlot` backends
 
 <a name="SupportedBackends"></a>
-## Supported Backends
+## Supported backends
 
 The following is a list of modules implementing the `EasyPlot` interface, along with their corresponding plotting backends:
 
@@ -11,7 +11,7 @@ The following is a list of modules implementing the `EasyPlot` interface, along 
  - BROKEN `EasyPlotQwt`: (PyCall.jl/`guiqwt` Python library)
  - `EasyPlotGrace`: (GracePlot.jl)
 
-## Choosing a Backend
+## Choosing a backend
 
 NOTE: The term "load time" is used loosely below to indicate time to first plot.
 
@@ -23,7 +23,8 @@ NOTE: The term "load time" is used loosely below to indicate time to first plot.
    - Though efficient with moderately-sized datasets, `guiqwt` appears slow when plotting large a *number of traces* (ex: eye diagram of a long transient dataset split into many individual traces).
  - **Plots.jl/(\*.jl)**: Uniform plotting interface supporting multiple backends.
 
-## Importing Backends
+<a name="ImportingBackends"></a>
+## Importing backends
 
 Before importing any backend, `CMDimData.EasyPlot` must already be imported.
 
@@ -38,7 +39,7 @@ To import a specific interface module for a given plotting backend, as listed in
 
 	#Now ready to create `EasyPlotInspect.PlotDisplay()` objects to render plots.
 
-## Configuring Backends
+## Configuring backends
 
 ### EasyPlotInspect
 
@@ -75,7 +76,7 @@ The value of `EASYPLOTGRACE_RENDERDPI` can therefore be set from `~/.julia/confi
 
 	ENV["EASYPLOTGRACE_RENDERDPI"] = "200"
 
-## Additional Information: EasyPlotPlots
+## Additional information: EasyPlotPlots
 
 ### Supported "sub"-backends
 EasyPlotPlots.jl should support all plot rendering tools (backends) supported by Plots.jl itself.
@@ -87,9 +88,9 @@ EasyPlotPlots.jl should support all plot rendering tools (backends) supported by
  - Python-based backends: `:pyplot`
  - Browser-enabled? backends: `:plotly`, `:plotlyjs`
 
-See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/backends/) for more information on supported backends.
+See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/backends/) for more information on supported backends & how to install them.
 
-### Sample Usage
+### Sample usage
 
 The following returns a `T<:Display` object that can render `EasyPlot.Plot` objects:
 
@@ -101,11 +102,8 @@ A `plot::EasyPlot.Plot` object is therefore diplayed using:
 
 More sample code can be found [here](../sample/EasyPlotPlots).
 
-## Known Limitations
+## Known limitations
 
-EasyPlotPlots.jl will *not* auto-install "backend" modules.  The `EasyPlotPlots/Project.toml` file only registers the main Plots.jl module for installation.
+ - It appears the different backends of `EasyPlotPlots` do not all operate seamlessly.  Unsurprisingly, there appears to be varying levels of difficulty in getting the backends installed \& working properly.  Consequently, not all backends have been fully tested (if at all).
 
-It appears the different backends do not all operate seamlessly.  Unsurprisingly, there appears to be varying levels of difficulty in getting the backends installed \& working properly.
-
-Consequently, not all backends have been fully tested (if at all).  Please visit corresponding websites (above) for help installing the core libraries used as backends.
-
+ - `EasyPlotPlots` will *not* auto-install "backend" modules.  The `EasyPlotPlots/Project.toml` file only registers the main Plots.jl module for installation (or rather *will* do this, if ever it is converted to a proper package).

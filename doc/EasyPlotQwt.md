@@ -12,7 +12,7 @@ Instructions on how to install guiqwt and its dependencies can be found here:
 
  1. [Install guiqwt](https://github.com/ma-laforge/HowTo/tree/master/guiqwt/guiqwt_install.md#Py27Installation)
 
-## Points of Consideration
+## Points of consideration
 
 EasyPlotQwt.jl uses Python wrappers developped by Pierre Raybaut.  The principal dependency list is included below:
 
@@ -31,7 +31,7 @@ Would it be better to make use of the Qwt.jl library from Tom Breloff instead? T
 
 That being said, it would be preferable to create native Julia version of the Qwt backend.  Loading the Python environment requires a noticeable overhead in time.
 
-## Known Limitations
+## Known limitations
 
 ### Compatibility
 

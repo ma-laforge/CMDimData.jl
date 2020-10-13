@@ -1,4 +1,4 @@
-# `CMDimData.EasyPlot` Plotting Interface
+# `CMDimData.EasyPlot` Plotting interface
 
 ## Description
 
@@ -8,7 +8,7 @@ The goal of the `CMDimData.EasyPlot` interface is to let the user focus on analy
 
 That being said, the `CMDimData.EasyPlot` interface is relatively generic and should be adequate for many scientific fields.
 
-## Plotting Steps
+## Plotting steps
 
 There are two steps to plotting with EasyPlot:
 
@@ -17,7 +17,7 @@ There are two steps to plotting with EasyPlot:
 
 Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a [plotting backend](EasyPlot_backends.md).
 
-## Example: Displaying a Simple Plot:
+## Example: Displaying a simple plot:
 
 Here is a simple example showing how to display a plot with EasyPlot:
 
@@ -35,23 +35,25 @@ Here is a simple example showing how to display a plot with EasyPlot:
 	#Display the plot on the selected backend:
 	display(pdisp, plot)
 
-## [Supported Backends (link)](EasyPlot_backends.md)
+## [Supported backends (link)](EasyPlot_backends.md)
 
-## Important Note on `@includepkg`
+## Important note on `@includepkg`
 
 `@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
 
 These modules will therefore only be accessible from within that scope.  Consequently, your Julia environment must ensure it can resolve where the backend module resides.  This can be done by adding the backend module to the active julia "project".  For example, you can add the InspectDR backend to the active Julia project with the package add command:
 
-	]add InspectDR
+```julia
+]add InspectDR
+```
 
-## Sample Usage
+## Sample usage
 
 More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](../sample/plots/) folder.
 
 More complete examples of using `CMDimData` & `EasyPlot` can be found in the [sample/](../sample/) folder.
 
-## Julia Display Stack: Adding a Default Backend
+## Julia display stack: Adding a default backend
 
 It is also possible to use the Julia display stack to specify an default backend for rendering plots. Simply push an instance of the desired backend's `EasyPlotDisplay` object to the top of Julia's display stack:
 
@@ -65,7 +67,7 @@ With a `<:EasyPlotDisplay` object on Julia's display stack, it is no longer nece
 
 ## Configuration
 
-### Inline Plots/Defaults
+### Inline plots/defaults
 
 `EasyPlot.Plot` objects can be rendered inline (ex: IJulia notebooks) by configuring `defaults`:
 
@@ -75,7 +77,7 @@ If SVG inline plots are undesired (ex: for performance reasons), they can be sup
 
 	EasyPlot.defaults.rendersvg = false
 
-### Defaults & Backend Initialization
+### Defaults & backend initialization
 
 Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `~/.julia/config/startup.jl` file.
 
@@ -106,7 +108,7 @@ To dissallow SVG inline plots, following key before importing `CMDimData`:
 
 	ENV["EASYPLOT_RENDERSVG"] = "false"
 
-## Known Limitations
+## Known limitations
 
  - `EasyPlot` supports mostly x/y graphs & basic plot attributes at the moment.
  - `EasyPlot` does not support `DataTime` or `DataFreq`.

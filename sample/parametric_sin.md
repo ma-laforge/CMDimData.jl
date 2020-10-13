@@ -71,7 +71,7 @@ rate = deriv(signal)
 
 <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin/rate.png">
 
-## Reduction Example: Locate first fall-crossing point of `signal`: `fallx`
+## Reduction example: Locate first fall-crossing point of `signal`: `fallx`
 Which is automatically performed for *all* parametric combinations of `signal` *simultaneously*:
 ```julia
 fallx = xcross1(signal, xstart=0, allow=CrossType(:fall))
@@ -81,7 +81,7 @@ Note that `xcross1()` results in a dimensional reduction of `signal(𝜙, A, �
 
 <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin/fallx.png">
 
-## Reduction Example: Evaluate `fallx` @ `𝑓=4kHz`
+## Reduction example: Evaluate `fallx` @ `𝑓=4kHz`
 Which is automatically performed for *all* parametric combinations of `signal` *simultaneously*:
 ```julia
 fallx_red1 = value(fallx, x=4e3)
@@ -91,7 +91,7 @@ Here, `value()` results in a dimensional reduction of `fallx(𝜙, A, 𝑓)` &rA
 
 <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin/fallx_red1.png">
 
-## Reduction Example: Evaluate `fallx_red1` @ `A=0.002`
+## Reduction example: Evaluate `fallx_red1` @ `A=0.002`
 Which is automatically performed for *all* parametric combinations of `signal` *simultaneously*:
 ```julia
 fallx_red2 = value(fallx, x=.002)
@@ -101,7 +101,7 @@ Here, `value()` results in a dimensional reduction of `fallx_red1(𝜙, A)` &rAr
 
 <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin/fallx_red2.png">
 
-## Plotting Example
+## Plotting example
 Straightforward plotting of multidimensional datasets is provided by the `CMDimData/EasyPlot` module:
 ```julia
 using CMDimData

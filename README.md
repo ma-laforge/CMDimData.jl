@@ -1,24 +1,46 @@
+<!-- Reference-style links to make tables & lists more readable -->
+[Gallery]: <https://github.com/ma-laforge/FileRepo/blob/master/CMDimData>
+[GallerySProc]: <https://github.com/ma-laforge/FileRepo/tree/master/SignalProcessing/sampleplots/README.md>
+[GalleryInspectDR]: <https://github.com/ma-laforge/FileRepo/tree/master/InspectDR/sampleplots/README.md>
+[MDDatasetsJL]: <https://github.com/ma-laforge/MDDatasets.jl>
+
+
 # CMDimData.jl: Parametric Analysis +Continuous <var>f(x)</var> +Plotting
+**Galleries:** [:art: TODO: sample output][Gallery] / [:art: SignalProcessing module][GallerySProc] / [:art: InspectDR.jl package][GalleryInspectDR]
 
 &mdash; ***"Focus on the analysis itself, not on data manipulation"***<br>
 &mdash; ***"The hardest part of data analysis should be annotating the plots!"***
 
 [![Build Status](https://travis-ci.org/ma-laforge/CMDimData.jl.svg?branch=master)](https://travis-ci.org/ma-laforge/CMDimData.jl)
 
-:art: [**Galleries (sample output)**](https://github.com/ma-laforge/FileRepo/blob/master/CMDimData) :art:
-
 | <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin_live/phi_all-A_all.png" width="850"> |
 | :---: |
 
+## Table of contents
+
+ 1. [Description](#Description)
+    1. [Features/Highlights](#Highlights)
+ 1. [Installation](#Installation)
+ 1. [Plotting interface](doc/EasyPlot.md)
+    1. [Plotting backends](doc/EasyPlot_backends.md)
+ 1. [Saving/Loading {data/plot} &hArr; HDF5 file](doc/EasyData.md)
+ 1. [Sample usage](#SampleUsage)
+    1. [Sample directory](sample)
+    1. [Live-slice examples](sample/LiveSlice)
+    1. [Parametric `sin()` "simulation](sample/parametric_sin.md)
+ 1. [Known limitations](#KnownLimitations)
+
+<a name="Description"></a>
 ## Description
 
 CMDimData.jl provides a high-level abstraction to manipulate multi-dimensional data, and automatically interpolate intermediate values as if it was a continuous function.
 
 The goal is to provide analysis tools that lead to minimal code, written in a *natural*, and *readable* fashion.
 
+<a name="Highlights"></a>
 ### Features/Highlights
 
- 1. Seamlessly handle multi-dimensional datasets with [MDDatasets.jl](https://github.com/ma-laforge/MDDatasets.jl)
+ 1. Seamlessly handle multi-dimensional datasets with [MDDatasets.jl][MDDatasetsJL]
     - Perform the same operation on all elements (usually) without having to write explicit loops.
     - Results of data reductions (ex: `minimum()`, integrations, ...) are handled the same as any other data.
  1. Easily plot multi-dimensional results with [`EasyPlot` module](doc/EasyPlot.md).
@@ -27,21 +49,30 @@ The goal is to provide analysis tools that lead to minimal code, written in a *n
     - Generate eye diagrams (even for backends without native support).
  1. Read/write plots to HDF5 files with [`EasyData` module](doc/EasyData.md).
 
-## Table of Contents
+<a name="Installation"></a>
+## Installation
 
- 1. [Plotting Interface](doc/EasyPlot.md)
-    1. [Plotting Backends](doc/EasyPlot_backends.md)
- 1. [Saving/Loading {Data/Plot} &hArr; HDF5 file](doc/EasyData.md)
- 1. [Sample Usage](#SampleUsage)
-    1. [Sample directory](sample)
-    1. [Live-Slice Examples](sample/LiveSlice)
-    1. [Parametric `sin()` "simulation](sample/parametric_sin.md)
- 1. [Installation](#Installation)
- 1. [Known Limitations](#KnownLimitations)
+`CMDimData.jl` is registered with Julia's **General** registry.
+It can be installed using Julia's built-in package manager:
+
+```julia
+julia> ]
+pkg> add CMDimData
+pkg> add MDDatasets
+```
+
+Note that `MDDatasets.jl` will automatically be installed alongside `CMDimData.jl`.  However, `add`-ing it explicitly gives code from the active project/environment direct access to its features.
+
+Moreover, it is highly suggested to install `InspectDR.jl`. It is the most tested integration for plotting at the moment:
+
+```julia
+julia> ]
+pkg> add InspectDR
+```
 
 <a name="SampleUsage"></a>
-## Sample Usage
-Examples of how to use CMDimData are provided in the [sample/](sample) subdirectory.
+## Sample usage
+Examples of how to use `CMDimData` are provided in the [sample/](sample) subdirectory.
 
 A few examples are organized by function:
  - Sample plots: [sample/plots/](sample/plots)
@@ -50,16 +81,8 @@ A few examples are organized by function:
 Detailed walthroughs:
  - Parametric `sin()` "simulation": [sample/parametric\_sin.md](sample/parametric_sin.md)
 
-<a name="Installation"></a>
-## Installation
-
-CMDimData.jl is registered with Julia's **General** registry. It can be installed using Julia's built-in package manager:
-```
-]add CMDimData
-```
-
 <a name="KnownLimitations"></a>
-## Known Limitations
+## Known limitations
 
 ### [TODO](TODO.md)
 

@@ -1,6 +1,6 @@
-# Live-Slice
+# Live-slice
 
-The Live-Slice concept is simply the idea of exploring measured/modelled/simulated data
+The Live-slice concept is simply the idea of exploring measured/modelled/simulated data
 data in a *almost-live* fashion by sweeping through the different input parameters
 (i.e. conditions by which data was obtained).
 
