@@ -1,5 +1,21 @@
 # `CMDimData.EasyPlot` Plotting interface
 
+ 1. [Description](#Description)
+ 1. [Main plot objects](#Objects)
+     1. [Attributes & `AttributeChangeSpec`](#AttributeChangeSpec)
+     1. [Axis scale identifiers](#AxisScaleIdentifiers)
+     1. [Supported linestyles](#Linestyles)
+     1. [Supported glyphs](#Glyphs)
+ 1. [Creating plots](#CreatingPlots)
+ 1. [Supported backends](EasyPlot_backends.md)
+ 1. [Important note on `@includepkg`](#includepkg_Note)
+ 1. [Julia display stack: Adding a default backend](#DisplayAddBackend)
+ 1. [Configuration/defaults](EasyPlot_config.md)
+     1. [Inline plots/defaults](EasyPlot_config.md#InlinePlots)
+     1. [Defaults & backend initialization](EasyPlot_config.md#Defaults)
+ 1. [Known limitations](#KnownLimitations)
+
+
 ## Description
 
 `CMDimData.EasyPlot` provides a high-level abstraction to describe plots.  The interface is optimized to write compact extraction routines for investigative (circuit) design work.
@@ -8,7 +24,69 @@ The goal of the `CMDimData.EasyPlot` interface is to let the user focus on analy
 
 That being said, the `CMDimData.EasyPlot` interface is relatively generic and should be adequate for many scientific fields.
 
-## Plotting steps
+<a name="Objects"></a>
+## Main plot objects
+
+ - `EasyPlot.PlotCollection`: A collection of plots to display simultaneously.
+ - `EasyPlot.Plot`: A single plot.
+ - `EasyPlot.Waveform`: Stores input data and attributes specifying how do display.
+ - `EasyPlot.LineAttributes`: How to draw lines.
+ - `EasyPlot.GlyphAttributes`: How to display glyphs (aka markers/symbols).
+
+Note that objects are constructed using the `cons(...)` API to minimize namespace pollution (see [Creating Plots]()).
+
+<a name="AttributeChangeSpec"></a>
+### Attributes & `AttributeChangeSpec`
+To simultaneously set multiple object attributes in a single command, `EasyPlot` uses `AttributeChangeSpec` objects.  These objecs are created with the `attributes()` function, for example:
+```julia
+lin_log = EasyPlot.attributes(
+    xyaxes = set(xscale=:lin, yscale=:log)
+)
+```
+
+In practice however, users should call the `cons(:attribute_list, ...)` function or one of its aliases (`:a`, `:attr`) created to reduce namespace pollution (objects are not all `export`ed):
+```julia
+#Aliases:
+lin_log = cons(:a, xyaxes = set(xscale=:lin, yscale=:log) )
+lin_log = cons(:attr, xyaxes = set(xscale=:lin, yscale=:log) )
+lin_log = cons(:attribute_list, xyaxes = set(xscale=:lin, yscale=:log) )
+
+#Direct call:
+lin_log = EasyPlot.attributes( xyaxes = set(xscale=:lin, yscale=:log) )
+```
+
+Use Julia's help system for more examples on how to create `AttributeChangeSpec`s:
+
+```julia-repl
+help?> attributes
+
+```
+
+<a name="AxisScaleIdentifiers"></a>
+### Axis scale identifiers
+X/Y-axis scales are specified using one of the following `Symbols`:
+
+ - `:lin`
+ - `:log10`, `:log` (= `:log10`)
+ - `:ln`, `:log2` (not yet supported)
+ - `:dB20`, `:dB10`
+ - `:reciprocal`
+
+<a name="Linestyles"></a>
+### Supported linestyles
+ - `:none`, `:solid`, `:dash`, `:dot`, `:dashdot`
+
+<a name="Glyphs"></a>
+### Supported glyphs (aka markers/symbols)
+ - `:none`, `:square`, `:diamond`
+ - `:uarrow`, `:darrow`, `:larrow`, `:rarrow` (usually triangles)
+ - `:+`, `:cross`, `:x`, `:diagcross`
+ - `:o`, `:circle`, `:*`, `:star`
+
+TODO: :star4, :star5, ...??
+
+<a name="CreatingPlots"></a>
+## Creating plots
 
 There are two steps to plotting with EasyPlot:
 
@@ -17,26 +95,102 @@ There are two steps to plotting with EasyPlot:
 
 Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a [plotting backend](EasyPlot_backends.md).
 
-## Example: Displaying a simple plot:
+### Plot creation example: A simple plot
+The following illustrates how to create plots with EasyPlot:
 
-Here is a simple example showing how to display a plot with EasyPlot:
+```julia
+using CMDimData
+using MDDatasets #Create multi-dim data (DataF1)
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyPlotInspect #Display plots with InspectDR
 
-	#Import CMDimData/EasyPlot facilities
-	using CMDimData
-	using CMDimData.EasyPlot
-	CMDimData.@includepkg EasyPlotInspect #To render plots with InspectDR
+#Generate some data:
+x = DataF1(-2:.1:2)
 
-	#Create an object to tell EasyPlot how to render plots (with InspectDR backend)
-	pdisp = EasyPlotInspect.PlotDisplay() #<:EasyPlotDisplay
+#`cons`truct a backend-agnositc EasyPlot.Plot object:
+plot = cons(:plot, title="Simple plot", legend=true,
+    labels = set(xaxis="x-value", yaxis="y-value")
+)
+ 
+#Add some data:
+push!(plot,
+    cons(:wfrm, x^2, label="x^2"),
+    cons(:wfrm, x^2, label="x^3"),
+)
 
-	#`cons`truct a backend-agnositc EasyPlot.Plot object:
-	plot = cons(:plot, title="Sample Plot")
+#Display plot on selected backend:
+display(EasyPlotInspect.PlotDisplay(), plot)
+```
 
-	#Display the plot on the selected backend:
-	display(pdisp, plot)
+```julia
+xyaxes = set(xscale=:lin, yscale=:log, xmin=3, xmax=5, ymin=0, ymax=10)
+```
+
+### Plot creation example: A stacked, multi-*strip* plot
+`EasyPlot.Plot` supports "multi-strip" plots with a common x-axis and multiple stacked y-axes.
+"Multi-strip" plots are ideal for plotting data with wildly differing y-value ranges.
+
+```julia
+using CMDimData
+using MDDatasets #Create multi-dim data (DataF1)
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyPlotInspect #Display plots with InspectDR
+
+#Generate data with differing y-value ranges:
+T = 1/60; ΔT = T/20 #sec
+C = 480e-6 #F
+t = DataF1(0:ΔT:8T) #sec
+v = (120*sqrt(2)) * sin(t*(2π/T)) #V
+    dv_dt = (2π/T) * cos(t*(2π/T)) #Calculate (more exact)
+i = C * dv_dt
+
+#Create a multi-strip plot:
+plot = cons(:plot, nstrips=2, title="Multi-strip plot", legend=true,
+    ystrip1 = set(axislabel="Voltage [V]"),
+    ystrip2 = set(axislabel="Current [A]"),
+    xaxis = set(label="Time [s]"),
+)
+
+#Add some data:
+push!(plot,
+    cons(:wfrm, v, label="cap", strip=1),
+    cons(:wfrm, i, label="cap", strip=2),
+)
+
+#Display plot on selected backend:
+display(EasyPlotInspect.PlotDisplay(), plot)
+```
+
+### Plot creation example: Bode plot (Another multi-*strip* plot)
+```julia
+# ...
+
+#Create a multi-strip plot:
+plot = cons(:plot, nstrips=2, title="Bode plot", legend=true,
+    ystrip1 = set(axislabel="|G(s)| [dB]"),
+    ystrip2 = set(axislabel="∠G(s) [°]"),
+    xaxis = set(label="Frequency [Hz]"),
+)
+
+# ...
+```
+
+### Plot creation example: A multi-*plot* collection
+
+```julia
+pcoll = cons(:plot_collection, title="A multiplot object", ncolumns=2)
+
+push!(pcoll,
+    cons(:plot, title="1st plot"),
+    cons(:plot, title="2nd plot"),
+)
+
+display(EasyPlotInspect.PlotDisplay(), pcoll)
+```
 
 ## [Supported backends (link)](EasyPlot_backends.md)
 
+<a name="includepkg_Note"></a>
 ## Important note on `@includepkg`
 
 `@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
@@ -47,12 +201,7 @@ These modules will therefore only be accessible from within that scope.  Consequ
 ]add InspectDR
 ```
 
-## Sample usage
-
-More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](../sample/plots/) folder.
-
-More complete examples of using `CMDimData` & `EasyPlot` can be found in the [sample/](../sample/) folder.
-
+<a name="DisplayAddBackend"></a>
 ## Julia display stack: Adding a default backend
 
 It is also possible to use the Julia display stack to specify an default backend for rendering plots. Simply push an instance of the desired backend's `EasyPlotDisplay` object to the top of Julia's display stack:
@@ -65,49 +214,7 @@ With a `<:EasyPlotDisplay` object on Julia's display stack, it is no longer nece
 	#EasyPlotDisplay object:
 	display(plot)
 
-## Configuration
-
-### Inline plots/defaults
-
-`EasyPlot.Plot` objects can be rendered inline (ex: IJulia notebooks) by configuring `defaults`:
-
-	EasyPlot.defaults.renderdisplay = EasyPlotMPL.PlotDisplay(guimode=false)
-
-If SVG inline plots are undesired (ex: for performance reasons), they can be suppressed as follows:
-
-	EasyPlot.defaults.rendersvg = false
-
-### Defaults & backend initialization
-
-Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `~/.julia/config/startup.jl` file.
-
-To select the default `EasyPlot.Plot` display, add the following key before importing `CMDimData`:
-
-	ENV["EASYPLOT_DEFAULTDISPLAY"] = "EasyPlotInspect"
-
-To import and initialize said user-selected display module once `EasyPlot` is loaded, simply execute the following:
-
-	CMDimData.EasyPlot.@initbackend()
-
-Currently supported options for `EASYPLOT_DEFAULTDISPLAY` are:
- - `None`: Do not auto-initialize default displays.
- - `Any`: First `import`ed module is used as the default.
- - `EasyPlotInspect`: (InspectDR)
- - `EasyPlotGrace`: (GracePlot)
- - `EasyPlotMPL`: (PyPlot/Matplotlib)
- - `EasyPlotQwt`: (Qwt)
- - `EasyPlotPlots`: (Plots.jl)
-
-To display EasyPlot plots using inline graphics, add the following key before importing `CMDimData`:
-
-	ENV["EASYPLOT_RENDERONLY"] = "true"
-
-**IMPORTANT:** If `ENV["EASYPLOT_RENDERONLY"] != "true"`, `EasyPlot` will automatically push the default display onto Julia's display stack.
-
-To dissallow SVG inline plots, following key before importing `CMDimData`:
-
-	ENV["EASYPLOT_RENDERSVG"] = "false"
-
+<a name="KnownLimitations"></a>
 ## Known limitations
 
  - `EasyPlot` supports mostly x/y graphs & basic plot attributes at the moment.

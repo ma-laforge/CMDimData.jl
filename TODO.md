@@ -63,6 +63,5 @@ Grab info from EasyPlot.jl, etc.
 # Activate `VALID_*` values & perform validation
 
 # Questionable Naming
-`NullOr{T}`, ...
-
 Rename `buildeye()`/`eye*`. Should be `fold*`.
+Rename eye -> foldedaxis

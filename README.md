@@ -81,6 +81,9 @@ A few examples are organized by function:
 Detailed walthroughs:
  - Parametric `sin()` "simulation": [sample/parametric\_sin.md](sample/parametric_sin.md)
 
+### Sample plot construction
+More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](../sample/plots/) folder.
+
 <a name="KnownLimitations"></a>
 ## Known limitations
 
