@@ -36,6 +36,11 @@ function Base.display(d::EasyPlotDisplay, pcoll::PlotCollection)
 	return _display(nativeplot)
 end
 
+function Base.display(d::EasyPlotDisplay, plot::Plot)
+	pcoll = push!(cons(:plot_collection, ncolumns = 1), plot)
+	return display(d, pcoll)
+end
+
 
 #==Rendering functions
 ===============================================================================#
@@ -82,10 +87,6 @@ function _write(filepath::String, mime::MIME, pcoll::PlotCollection, d::EasyPlot
 end
 
 _write(filepath::String, mime::MIME, pcoll::PlotCollection) =_write(filepath, mime, pcoll, EasyPlot.defaults.renderdisplay)
-
-#TODO: Do forall mimes
-
-#write_png(filepath::String, pcoll::PlotCollection, args...) =_write(filepath, MIME"image/png"(), pcoll, args...)
 
 #Create write_png, write_svg, ... convenience functions:
 for (ext, mime) in EXT2MIME_MAP; fn=Symbol(:write_,ext); @eval begin #CODEGEN----------------------------------------
