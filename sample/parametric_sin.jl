@@ -105,7 +105,6 @@ push!(plot,
 	cons(:wfrm, rate, lstylesweep, label="", strip=3),
 )
 plotset1 = push!(cons(:plotcoll, title="Parametric sin() - Initial Observations"), plot)
-	plotset1.displaylegend=true
 display(pdisp, plotset1)
 	savepng(pdisp, plotset1, "parametric_sin_1.png")
 
@@ -132,9 +131,8 @@ p3 = cons(:plot,
 )
 push!(p3, cons(:wfrm, fallx_red2, lstylesweep, dfltglyph, label=""))
 
-plotset2 = push!(cons(:plotcoll, title="Parametric sin() - Diving into parameter values"), p1, p2, p3)
-	plotset2.displaylegend=true
-	plotset2.ncolumns = 1
+plotset2 = cons(:plotcoll, title="Parametric sin() - Diving into parameter values", ncolumns=1)
+	push!(plotset2, p1, p2, p3)
 display(pdisp, plotset2)
 	savepng(pdisp, plotset2, "parametric_sin_2.png")
 

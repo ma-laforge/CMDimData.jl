@@ -33,18 +33,13 @@ const glyphmap = Dict{Symbol, Symbol}(
 	:star      => :star, :* => :*,
 )
 
-struct NotFound; end
-const NOTFOUND = NotFound()
-
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
-
-mutable struct Builder <: EasyPlot.AbstractBuilder
+mutable struct WfrmBuilder <: EasyPlot.AbstractWfrmBuilder
 	ref::InspectDR.Plot2D #Plot reference
 	theme::EasyPlot.Theme
-	fold::NullOr{EasyPlot.FoldedAxis}
+	fold::Optional{EasyPlot.FoldedAxis}
 end
 
 mutable struct WfrmAttributes
@@ -80,8 +75,8 @@ mapglyphsize(sz) = 6*sz
 mapglyphsize(::Nothing) = mapglyphsize(1) #default
 
 function maplinestyle(v::Symbol)
-	result = get(linestylemap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(linestylemap, v, missing)
+	if ismissing(result)
 		@info("Line style not supported: :$v")
 		result = maplinestyle(nothing)
 	end
@@ -90,8 +85,8 @@ end
 maplinestyle(::Nothing) = "-" #default
 
 function mapglyphshape(v::Symbol)
-	result = get(glyphmap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(glyphmap, v, missing)
+	if ismissing(result)
 		@info("Glyph shape not supported: :$v")
 		result = :o #Use some supported glyph shape
 	end
@@ -112,9 +107,9 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 end
 
 
-#==AbstractBuilder implementation
+#==AbstractWfrmBuilder implementation
 ===============================================================================#
-EasyPlot.needsfold(b::Builder) = b.fold
+EasyPlot.needsfold(b::WfrmBuilder) = b.fold
 
 #Add DataF1 results:
 function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes, strip::Int)
@@ -126,7 +121,7 @@ function _addwfrm(plot::InspectDR.Plot2D, d::DataF1, a::WfrmAttributes, strip::I
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	inspectattr = WfrmAttributes(id, attr) #Attributes understood by InspectDR
@@ -165,10 +160,10 @@ function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	a.ylabels = String[strip.axislabel for strip in plot.ystriplist]
 	a.ystriplabels = String[strip.striplabel for strip in plot.ystriplist]
 
-	#Add data using EasyPlot.AbstractBuilder interface:
-	builder = Builder(iplot, theme, fold)
+	#Add data using EasyPlot.AbstractWfrmBuilder interface:
+	wfrmbuilder = WfrmBuilder(iplot, theme, fold)
 	for (i, wfrm) in enumerate(plot.wfrmlist)
-		EasyPlot.addwfrm(builder, wfrm, i)
+		EasyPlot.addwfrm(wfrmbuilder, wfrm, i)
 	end
 	
 	return iplot
@@ -182,7 +177,7 @@ function EasyPlot.render(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollect
 	for p in ecoll.plotlist
 		plot = generateplot(p, ecoll.theme)
 		add(mplot, plot)
-		plot.layout[:enable_legend] = ecoll.displaylegend
+		plot.layout[:enable_legend] = p.legend
 	end
 
 	return mplot

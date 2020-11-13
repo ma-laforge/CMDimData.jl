@@ -12,23 +12,43 @@ using MDDatasets
 import NumericIO
 
 
-#==Core type declarations
+#==Core type declarations/constants
 ===============================================================================#
+"`Optional{T} = Union{Nothing, T}`"
+const Optional{T} = Union{Nothing, T}
 
-#Type used to dispatch on a symbol & minimize namespace pollution:
-#-------------------------------------------------------------------------------
-struct DS{T}; end; #Dispatchable symbol
-DS(v::Symbol) = DS{v}()
+"""
+`Default`
+
+Type with no fields whose singleton instance `default` represents a default
+value.
+"""
+struct Default; end
+
+"""
+`default`
+
+Singleton instance of type `Default` representing a default value.
+"""
+const default = Default()
 
 #Real values for plot coordinates, etc:
 const PReal = Float64
 const PNaN = PReal(NaN)
+
+#Type used to dispatch on a symbol & minimize namespace pollution:
+#-------------------------------------------------------------------------------
+struct DS{T}; end #Dispatchable symbol
+DS(v::Symbol) = DS{v}()
 
 
 #==Functions
 ===============================================================================#
 SI(v; ndigits=3) = NumericIO.formatted(v, :SI, ndigits=ndigits)
 
+
+#==Implementation
+===============================================================================#
 include("attributes.jl")
 include("colors.jl")
 include("base.jl")
@@ -43,7 +63,7 @@ include("init.jl")
 include("doc.jl")
 
 
-#==Construct interface to minimize namespace pollution
+#==`cons`truct interface (minimize namespace pollution)
 ===============================================================================#
 function cons(::DS{T}, args...; kwargs...) where T
 	mlist = string(methods(cons, (DS,)))
@@ -63,34 +83,24 @@ export set #Set PlotCollection/Plot/Waveform/... attributes
 export render #render will not display (if possible).  "display()" shows plot.
 
 
-#==Extensions
-================================================================================
-Base.display(backend::Symbol, pcoll::PlotCollection, args...; kwargs...)
-==#
-
-
 #==Unexported tools available to users:
 ================================================================================
 	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
       (typically through ~/.julia/config/startup.jl)
 		=> Only to be used in interactive mode; conditionally importing a module is bad for precompile.
+
+TODO: Deprecate?
 ==#
 
 
 #==Unexported tools available to backend-interfacing modules:
 ================================================================================
-	addwfrm(ax::AbstractBuilder, ...) #
+	addwfrm(ax::AbstractWfrmBuilder, ...) #
 	buildeye() #Builds multi-dimensional DataEye objects from DataF1 Leaf elements.
 	getcolor()
 
 	#Constants:
 	COLORSCHEME[{:default/}] #List of color schemes
-	COLOR_NAMED[COLOR_SYMBOL]
-(Some COLOR_SYMBOLs:)
-		:black, :white, :grey85
-		:red, :green, :blue
-		:yellow, :cyan, :magenta
-		:brown, :orange, :indigo, :violet, :maroon, :turquoise
 ==#
 
 

@@ -43,22 +43,23 @@ end
 
 #==Generate plot
 ===============================================================================#
-plot1 = push!(cons(:plot, vvst, title="Lines"),
+_legend = false #Too busy with GracePlot
+plot1 = push!(cons(:plot, vvst, title="Lines", legend=_legend),
 	cons(:wfrm, lines),
 )
 #Plot reduced dataset:
-plot2 = push!(cons(:plot, vvst, title="maximum(Lines)"),
+plot2 = push!(cons(:plot, vvst, title="maximum(Lines)", legend=_legend),
 	cons(:wfrm, maximum(lines), line=set(style=:solid), glyph=set(shape=:o)),
 )
-plot3 = push!(cons(:plot, vvst, title="Tones"),
+plot3 = push!(cons(:plot, vvst, title="Tones", legend=_legend),
 	cons(:wfrm, tones),
 )
-plot4 = push!(cons(:plot, vvst, title="Sum"),
+plot4 = push!(cons(:plot, vvst, title="Sum", legend=_legend),
 	cons(:wfrm, lines+tones),
 )
 
-pcoll = push!(cons(:plot_collection, title="Multi-Dataset Tests"), plot1, plot2, plot3, plot4)
-	pcoll.displaylegend=false #Too busy with GracePlot
+pcoll = cons(:plot_collection, title="Multi-Dataset Tests")
+	push!(pcoll, plot1, plot2, plot3, plot4)
 
 
 #==Return pcoll to user (call evalfile(...))

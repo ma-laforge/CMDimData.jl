@@ -1,8 +1,8 @@
 using CMDimData.EasyPlot
 using CMDimData.MDDatasets
+using Colors
 
 @testset "EasyPlot tests" begin #Scope for test data
-	COLOR_NAMED = EasyPlot.COLOR_NAMED
 
 
 #==Basic Tests
@@ -36,7 +36,7 @@ using CMDimData.MDDatasets
 		@test issame(w.data, d1)
 		@test w.label == "v1"
 		@test w.line.style == :dash
-		@test w.line.color == COLOR_NAMED[:red]
+		@test w.line.color == colorant"red"
 		@test w.glyph.shape == :square
 		@test w.glyph.size == 3
 
@@ -54,7 +54,7 @@ using CMDimData.MDDatasets
 	w = plt1.wfrmlist[1]
 		@test w.label == "v1"
 		@test w.line.style == :dash
-		@test w.line.color == COLOR_NAMED[:red]
+		@test w.line.color == colorant"red"
 		@test w.glyph.shape == :square
 		@test w.glyph.size == 3
 	w = plt1.wfrmlist[2]

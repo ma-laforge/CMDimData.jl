@@ -2,12 +2,15 @@
 #-------------------------------------------------------------------------------
 module EasyPlotGrace
 
+#Hoping that environment of including module points to *correct* CMDimData:
 import CMDimData
-import CMDimData.EasyPlot #Import only - avoid collisions
+#Ensure *correct* modules are imported:
+import CMDimData.EasyPlot #Avoid name collisions
 using CMDimData.MDDatasets
 using CMDimData.Colors
 using GracePlot
 
+import CMDimData.EasyPlot: Optional
 import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")

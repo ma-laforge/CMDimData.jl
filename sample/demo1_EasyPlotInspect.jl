@@ -52,9 +52,6 @@ c_sin = r_sin - midval
 
 #==Generate plot
 ===============================================================================#
-pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
-	pcoll.displaylegend=true
-
 plt1 = push!(cons(:plot, pvst, title="Plot: Building blocks"),
 	cons(:wfrm, unity_ramp, lstyle1, label="Unity Ramp"),
 	cons(:wfrm, sinx, lstyle2, label="sin(x)"),
@@ -69,7 +66,8 @@ plt4 = push!(cons(:plot, pvst, title="Plot: sin(x) + ramp - midval"),
 	cons(:wfrm, c_sin, lstylesweep, label="r_sin"),
 )
 
-push!(pcoll, plt1, plt2, plt3, plt4)
+pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
+	push!(pcoll, plt1, plt2, plt3, plt4)
 
 	#Save pcoll for later use:
 	filename = basename(@__FILE__)

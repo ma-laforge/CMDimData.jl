@@ -12,12 +12,15 @@ defined yet... so they don't get "precompiled" into this module.
 =#
 module EasyPlotPlots
 
+#Hoping that environment of including module points to *correct* CMDimData:
 import CMDimData
-import CMDimData.EasyPlot #Import only - avoid collisions
-using MDDatasets
-using Colors
-
+#Ensure *correct* modules are imported:
+import CMDimData.EasyPlot #Avoid name collisions
+using CMDimData.MDDatasets
+using CMDimData.Colors
 using Plots
+
+import CMDimData.EasyPlot: Optional
 
 include("base.jl")
 include("display.jl")

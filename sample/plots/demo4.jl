@@ -54,7 +54,7 @@ tones_incm = getsubarray(tones, :,3,:)
 ===============================================================================#
 strns(T) = @sprintf("%.1f ns", T/1e-9) #Generate string with # of ns from supplied value
 
-plot = cons(:plot, nstrips=4,
+plot = cons(:plot, nstrips=4, legend=false, #Legend too busy with GracePlot
 	ystrip1 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones"),
 	ystrip2 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones ($(strns(2tfund)))"),
 	ystrip3 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="Tones ($(strns(3tfund)))"),
@@ -68,9 +68,8 @@ push!(plot,
 	cons(:wfrm, tones_incm, strip=4),
 )
 
-pcoll = push!(cons(:plot_collection, title="Mulit-Dataset Tests: Subarrays"), plot)
-	pcoll.displaylegend=false #Too busy with GracePlot
-	pcoll.ncolumns=1
+pcoll = cons(:plot_collection, title="Mulit-Dataset Tests: Subarrays", ncolumns=1)
+	push!(pcoll, plot)
 
 
 #==Return pcoll to user (call evalfile(...))

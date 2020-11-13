@@ -23,10 +23,6 @@ const VALID_GLYPHS = Set([:none,
 
 #==Main types
 ===============================================================================#
-
-#TODO: Rename??
-const NullOr{T} = Union{Nothing, T}
-
 #ColorRef that can also reference another
 #Int: Pick specific color from theme/ColorScheme
 #Nothing: Pick appropriate color from theme/ColorScheme (Varies with sweep value)
@@ -34,7 +30,7 @@ const ColorRef = Union{Nothing, Colorant, Int}
 
 #A plot theme.
 mutable struct Theme
-	colorscheme::NullOr{ColorScheme}
+	colorscheme::Optional{ColorScheme}
 
 #=Under consideration
 	axisline::LineAttributes
@@ -117,23 +113,25 @@ _YStrip() = YStrip(:lin, "", "", _Extents1D())
 mutable struct Plot <: AbstractAttributeReceiver
 	title::String
 	xlabel::String
+	legend::Bool
 	xaxis::AbstractAxis
 	xext::Extents1D
 	ystriplist::Vector{YStrip}
 	wfrmlist::Vector{Waveform}
 end
-_Plot(title::String) = Plot(title, "", Axis(:lin), _Extents1D(), YStrip[_YStrip()], Waveform[])
-Plot(args...; title::String="", kwargs...) =
-	_apply(_Plot(title), args, kwargs)
+_Plot(title::String, legend::Bool) =
+	Plot(title, "", legend, Axis(:lin), _Extents1D(), YStrip[_YStrip()], Waveform[])
+Plot(args...; title::String="", legend=true, kwargs...) =
+	_apply(_Plot(title, legend), args, kwargs)
 
 mutable struct PlotCollection <: AbstractAttributeReceiver
 	title::String
 	ncolumns::Int #TODO: Create a more flexible system
 	plotlist::Vector{Plot}
-	displaylegend::Bool
 	theme::Theme
 end
-_PlotCollection(title::String, ncolumns::Int) = PlotCollection(title, ncolumns, Plot[], true, Theme())
+_PlotCollection(title::String, ncolumns::Int) =
+	PlotCollection(title, ncolumns, Plot[], Theme())
 PlotCollection(args...; title::String="", ncolumns::Int=1, kwargs...) =
 	_apply(_PlotCollection(title, ncolumns), args, kwargs)
 
@@ -175,12 +173,12 @@ end
 _resolve_xaxis(xscale::Symbol) = Axis(xscale)
 _resolve_xaxis(a::FoldedAxis) = a
 
-#_resolve_colorant(c::Symbol) = COLOR_NAMED[c]
+#_resolve_colorant(c::Symbol) = getcolor(c)
 #_resolve_colorant(c::Colorant) = c
 
 #Resolve to appropriate ColorRef value:
 _resolve_ColorRef(c::Nothing) = c
-_resolve_ColorRef(c::Symbol) = COLOR_NAMED[c]
+_resolve_ColorRef(c::Symbol) = getcolor(c)
 _resolve_ColorRef(c::Int) = c
 _resolve_ColorRef(c::Colorant) = c
 

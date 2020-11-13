@@ -1,4 +1,4 @@
-#EasyPlot Utilities to handle multi-dimensional datasets
+#EasyPlot utilities to handle multi-dimensional datasets
 #-------------------------------------------------------------------------------
 
 #==NOTE:
@@ -14,27 +14,27 @@ not support multi-dimensional datasets directly.
 ===============================================================================#
 
 """
-    abstract type AbstractBuilder
+    abstract type AbstractWfrmBuilder
 
 Provides:
- - `addwfrm(b::AbstractBuilder, wfrm::Waveform, wfrmidx::Int)`
+ - `addwfrm(b::AbstractWfrmBuilder, wfrm::Waveform, wfrmidx::Int)`
 
 Requires:
- - addwfrm(b::T, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) where T<:AbstractBuilder
- - needsfold(b::T) where T<:AbstractBuilder -> FoldedAxis() or nothing
+ - addwfrm(b::T, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) where T<:AbstractWfrmBuilder
+ - needsfold(b::T) where T<:AbstractWfrmBuilder -> FoldedAxis() or nothing
 """
-abstract type AbstractBuilder; end
+abstract type AbstractWfrmBuilder; end
 
 
 #Register symbols that need to be implemented by backend interfacing code
-addwfrm(b::AbstractBuilder, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) =
+addwfrm(b::AbstractWfrmBuilder, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) =
 	throw(MethodError(addwfrm, (b, d, label, l, g, strip)))
-needsfold(b::AbstractBuilder) = throw(MethodError(needsfold, (b,)))
+needsfold(b::AbstractWfrmBuilder) = throw(MethodError(needsfold, (b,)))
 
 
 #==Catch missing implementations
 ===============================================================================#
-_addwfrm(b::AbstractBuilder, d::T, args...; kwargs...) where T<:DataMD =
+_addwfrm(b::AbstractWfrmBuilder, d::T, args...; kwargs...) where T<:DataMD =
 	throw(ArgumentError("Plotting if $T datasets is not supported."))
 
 
@@ -47,8 +47,8 @@ _get_crnid(v::Real) = SI(v, ndigits=3) #Limit significant digits for readability
 #==Adding DataF1 waveforms
 ===============================================================================#
 
-#Builder requested to fold data on axis:
-function _addwfrm_fold(b::AbstractBuilder, f::FoldedAxis, d::DataF1,
+#AbstractWfrmBuilder requested to fold data on axis:
+function _addwfrm_fold(b::AbstractWfrmBuilder, f::FoldedAxis, d::DataF1,
    id::String, l::LineAttributes, g::GlyphAttributes, strip::Int)
 	xspan = f.xmax - f.xmin
 	if f.xmin != 0
@@ -64,7 +64,7 @@ function _addwfrm_fold(b::AbstractBuilder, f::FoldedAxis, d::DataF1,
 end
 
 #Add a waveform to a typical plot:
-function _addwfrm(b::AbstractBuilder, d::DataF1,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataF1,
    id::String, l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	cur_id = l
 	if nothing == cur_id.color
@@ -84,7 +84,7 @@ end
 ===============================================================================#
 
 #Add collection of DataRS{DataF1} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{DataF1}, crnid::String, id::String,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataRS{DataF1}, crnid::String, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
@@ -97,14 +97,14 @@ function _addwfrm(b::AbstractBuilder, d::DataRS{DataF1}, crnid::String, id::Stri
 end
 
 #Add collection of DataRS{Number} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{T}, crnid::String, id::String,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataRS{T}, crnid::String, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int) where T<:Number
 	cur_id = (""==crnid) ? id : "$id; $crnid"
 	return _addwfrm(b, DataF1(d.sweep.v, d.elem), cur_id, l, g, strip, iparam)
 end
 
 #Add collection of DataRS{DataRS} results:
-function _addwfrm(b::AbstractBuilder, d::DataRS{DataRS}, crnid::String, id::String,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataRS{DataRS}, crnid::String, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int)
 	crnid = (""==crnid) ? crnid : "$crnid / "
 	sweepname = d.sweep.id
@@ -116,7 +116,7 @@ function _addwfrm(b::AbstractBuilder, d::DataRS{DataRS}, crnid::String, id::Stri
 end
 
 #If corner id !exists, use "" & relay call:
-_addwfrm(b::AbstractBuilder, d::DataRS, id::String,
+_addwfrm(b::AbstractWfrmBuilder, d::DataRS, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, iparam::Int) =
 	_addwfrm(b, d, "", id, l, g, strip, iparam)
 
@@ -125,7 +125,7 @@ _addwfrm(b::AbstractBuilder, d::DataRS, id::String,
 ===============================================================================#
 
 #Add waveforms from a collection of DataHR{DataF1}:
-function _addwfrm(b::AbstractBuilder, d::DataHR{DataF1}, id::String,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataHR{DataF1}, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, wfrmidx::Int)
 	sweepnames = names(sweeps(d))
 
@@ -140,7 +140,7 @@ end
 
 #Add waveforms from a collection of DataHR{DataF1}:
 #(Convert DataHR{Number} => DataHR{DataF1} & add):
-function _addwfrm(b::AbstractBuilder, d::DataHR{T}, id::String,
+function _addwfrm(b::AbstractWfrmBuilder, d::DataHR{T}, id::String,
 	l::LineAttributes, g::GlyphAttributes, strip::Int, wfrmidx::Int) where T<:Number
 	return _addwfrm(b, DataHR{DataF1}(d), id, l, g, strip, wfrmidx)
 end
@@ -148,21 +148,21 @@ end
 #==External interface (for backend implementation)
 ===============================================================================#
 """
-    addwfrm(b::AbstractBuilder, wfrm::Waveform, wfrmidx::Int)
+    addwfrm(b::AbstractWfrmBuilder, wfrm::Waveform, wfrmidx::Int)
 
 Have `EasyPlot` module break down a multi-dimensional `Waveform` into individual
-traces, and call upon `AbstractBuilder` at the end to add them one-by-one.
+traces, and call upon `AbstractWfrmBuilder` at the end to add them one-by-one.
 
 Also segment data again in order to emulate a folded x-axis if `::FoldedAxis`
 is returned by:
 ```julia-repl
-needsfold(b::T) where T<:AbstractBuilder
+needsfold(b::T) where T<:AbstractWfrmBuilder
 
 # Notes
  - `wfrmidx` identifies order of added waveform for color selection purposes.
  - `wfrmidx` might get reset to 1 for each subplot, or might be continuous across all plots.
 """
-addwfrm(b::AbstractBuilder, wfrm::Waveform, wfrmidx::Int) =
+addwfrm(b::AbstractWfrmBuilder, wfrm::Waveform, wfrmidx::Int) =
 	_addwfrm(b, wfrm.data, wfrm.label, wfrm.line, wfrm.glyph, wfrm.strip, wfrmidx)
 
 #Last line

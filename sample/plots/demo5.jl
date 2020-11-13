@@ -39,7 +39,7 @@ tonesRS = DataRS(tonesHR)
 
 #==Generate plot
 ===============================================================================#
-plot = cons(:plot, nstrips=2,
+plot = cons(:plot, nstrips=2, legend=true,
 	ystrip1 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="DataHR"),
 	ystrip2 = set(axislabel=LBL_AXIS_AMPLITUDE, striplabel="DataRS"),
 	xaxis = set(label=LBL_AXIS_TIME),
@@ -49,9 +49,8 @@ push!(plot,
 	cons(:wfrm, tonesRS, label="tones", strip=2),
 )
 
-pcoll = push!(cons(:plot_collection, title="DataHR & DataMD"), plot)
-	pcoll.displaylegend = true
-	pcoll.ncolumns = 1
+pcoll = cons(:plot_collection, title="DataHR & DataMD", ncolumns=1)
+	push!(pcoll, plot)
 
 
 #==Return pcoll to user (call evalfile(...))

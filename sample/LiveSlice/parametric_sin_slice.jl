@@ -73,7 +73,7 @@ push!(p1,
 
 #plot #2: Extracted parameter values: fallx, maxrate
 #-------------------------------------------------------------------------------
-p2 = cons(:plot, nstrips = 2,
+p2 = cons(:plot, nstrips = 2, legend=false,
 	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st fall-crossing"; yext_firstx...),
 	ystrip2 = set(axislabel=LBL_AXIS_SPEED, striplabel="Maximum signal rate"; yext_maxrate...),
 	xaxis = set(label=xred1),
@@ -85,9 +85,8 @@ push!(p2,
 
 println()
 @info("Displaying plot...")
-pcoll = push!(cons(:plotcoll, title="Parametric sin() - Live-Slice Results"), p1, p2)
-	pcoll.ncolumns=2
-	pcoll.displaylegend=false
+pcoll = cons(:plotcoll, title="Parametric sin() - Live-Slice Results", ncolumns=2)
+	push!(pcoll, p1, p2)
 gplot = display(pdisp, pcoll)
 
 #Activate Live-Slice GUI:

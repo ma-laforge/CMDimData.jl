@@ -2,12 +2,16 @@
 #-------------------------------------------------------------------------------
 module EasyPlotMPL
 
+#Hoping that environment of including module points to *correct* CMDimData:
 import CMDimData
-import CMDimData.EasyPlot #Import only - avoid collisions
-using MDDatasets
-using Colors
-using PyPlot
+#Ensure *correct* modules are imported:
+import CMDimData.EasyPlot #Avoid name collisions
+using CMDimData.MDDatasets
+using CMDimData.Colors
 import PyCall #Need to access some types
+using PyPlot
+
+import CMDimData.EasyPlot: Optional
 
 include("base.jl")
 include("display.jl")

@@ -22,13 +22,12 @@ end
 #==Main algorithm
 ===============================================================================#
 
-function _ms2pcoll(src::Plot; title=nooverwrite, displaylegend::Bool=true)
+function _ms2pcoll(src::Plot; title=nooverwrite)
 	NoOverwrite(title) && (title = src.title)
 	dcoll = PlotCollection(title=title, ncolumns=1)
-	dcoll.displaylegend = displaylegend
 
 	for srcy in src.ystriplist
-		dplot = Plot(title=srcy.striplabel)
+		dplot = Plot(title=srcy.striplabel, legend=src.legend)
 		desty = dplot.ystriplist[1]
 			desty.scale = srcy.scale
 			#desty.striplabel = srcy.striplabel #Use title instead
@@ -79,9 +78,7 @@ function condxfrm_multistrip(pcoll::PlotCollection, backendid::String="some code
 *EMULATION MODE ENABLED*: Breaking up (single) multi-strip plot into multi-plot collection."""
 	end
 
-	return _ms2pcoll(pcoll.plotlist[1],
-		title=pcoll.title, displaylegend=pcoll.displaylegend
-	)
+	return _ms2pcoll(pcoll.plotlist[1], title=pcoll.title)
 end
 
 multistrip2plotcoll(src::Plot; kwargs...) = _ms2pcoll(src; kwargs...)

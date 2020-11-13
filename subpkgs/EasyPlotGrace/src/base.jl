@@ -7,14 +7,9 @@
 const NCOLORS_GRACEDFLT = 15 #Number of colors expected to be defined by Grace.
 #NOTE: Assuming color 0 is white/background color (not to be used)
 
-struct NotFound; end
-const NOTFOUND = NotFound()
-
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
-
 #Manages additional colors (leaves default ones intact):
 #NOTE: 0 appears to be bkgnd color & 1: default frame color
 mutable struct ColorMgr
@@ -24,11 +19,11 @@ mutable struct ColorMgr
 end
 ColorMgr(p::GracePlot.Plot) = ColorMgr(p, Dict(), NCOLORS_GRACEDFLT+1)
 
-mutable struct Builder <: EasyPlot.AbstractBuilder
+mutable struct WfrmBuilder <: EasyPlot.AbstractWfrmBuilder
 	ref::GracePlot.GraphRef #Axes reference
 	theme::EasyPlot.Theme
 	colormgr::ColorMgr
-	fold::NullOr{EasyPlot.FoldedAxis}
+	fold::Optional{EasyPlot.FoldedAxis}
 end
 
 
@@ -59,8 +54,8 @@ function _getcoloridx(mgr::ColorMgr, v::Colorant)
 	v = convert(RGB24, v)
 	v = v.color
 	colorid = int2hexcolorstr(v)
-	idx = get(mgr.colormap, colorid, NOTFOUND)
-	if idx != NOTFOUND
+	idx = get(mgr.colormap, colorid, missing)
+	if !ismissing(idx)
 		return idx
 	end
 
@@ -94,8 +89,8 @@ function _graceline(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
 	           )
 end
 function _graceglyph(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
-	nofill = (EasyPlot.COLOR_TRANSPARENT == attr.glyphfillcolor)
-	glyphfillcolor = nofill ? EasyPlot.COLOR_WHITE : attr.glyphfillcolor
+	nofill = (colorant"transparent" == attr.glyphfillcolor)
+	glyphfillcolor = nofill ? colorant"white" : attr.glyphfillcolor
 	return glyph(shape=attr.glyphshape,
 	             size=mapglyphsize(attr.glyphsize),
 	             linewidth=maplinewidth(attr.linewidth),
@@ -106,12 +101,12 @@ function _graceglyph(attr::EasyPlot.WfrmAttributes, mgr::ColorMgr)
 end
 
 
-#==AbstractBuilder implementation
+#==AbstractWfrmBuilder implementation
 ===============================================================================#
-EasyPlot.needsfold(b::Builder) = b.fold
+EasyPlot.needsfold(b::WfrmBuilder) = b.fold
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	_line = _graceline(attr, b.colormgr)
@@ -125,11 +120,11 @@ end
 
 #Render a particular EasyPlot.Plot:
 function build(g::GracePlot.GraphRef, eplot::EasyPlot.Plot,
-	theme::EasyPlot.Theme, colormgr::ColorMgr, displaylegend::Bool)
+	theme::EasyPlot.Theme, colormgr::ColorMgr)
 	set(g, subtitle = eplot.title)
 	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
 
-	builder = Builder(g, theme, colormgr, fold)
+	builder = WfrmBuilder(g, theme, colormgr, fold)
 
 	for (i, wfrm) in enumerate(eplot.wfrmlist)
 		EasyPlot.addwfrm(builder, wfrm, i)
@@ -160,7 +155,7 @@ function build(g::GracePlot.GraphRef, eplot::EasyPlot.Plot,
 		xscale = xscale, yscale = yscale,
 		xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax,
 	))
-	set(g, legend(display=displaylegend))
+	set(g, legend(display=eplot.legend))
 
 	#Apply x/y labels
 	if eplot.xlabel != nothing
@@ -186,7 +181,7 @@ function build(gplot::GracePlot.Plot, ecoll::EasyPlot.PlotCollection)
 	title = ecoll.title
 	for p in ecoll.plotlist
 		g = graph(gplot, graphidx)
-		build(g, p, ecoll.theme, colormgr, ecoll.displaylegend)
+		build(g, p, ecoll.theme, colormgr)
 		graphidx += 1
 	end
 

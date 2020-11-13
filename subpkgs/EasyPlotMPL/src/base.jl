@@ -30,18 +30,13 @@ const markermap = Dict{Symbol, String}(
 	:star      => "*", :* => "*",
 )
 
-struct NotFound; end
-const NOTFOUND = NotFound()
-
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
-
-mutable struct Builder <: EasyPlot.AbstractBuilder
+mutable struct WfrmBuilder <: EasyPlot.AbstractWfrmBuilder
 	ref::PyCall.PyObject #"Axes" reference
 	theme::EasyPlot.Theme
-	fold::NullOr{EasyPlot.FoldedAxis}
+	fold::Optional{EasyPlot.FoldedAxis}
 end
 
 mutable struct WfrmAttributes
@@ -96,8 +91,8 @@ mapmarkersize(sz) = 5*sz
 mapmarkersize(::Nothing) = mapmarkersize(1)
 
 function maplinestyle(v::Symbol)
-	result = get(linestylemap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(linestylemap, v, missing)
+	if ismissing(result)
 		@info("Line style not supported")
 		result = maplinestyle(nothing)
 	end
@@ -106,8 +101,8 @@ end
 maplinestyle(::Nothing) = "-" #default
 
 function mapmarkershape(v::Symbol)
-	result = get(markermap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(markermap, v, missing)
+	if ismissing(result)
 		@info("Marker shape not supported")
 		result = "o" #Use some supported marker
 	end
@@ -116,7 +111,7 @@ end
 mapmarkershape(::Nothing) = "" #default (no marker)
 
 function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
-	markerfacecolor = attr.glyphfillcolor==EasyPlot.COLOR_TRANSPARENT ?
+	markerfacecolor = attr.glyphfillcolor==colorant"transparent" ?
 		nothing : mapfacecolor(attr.glyphfillcolor)
 
 	return WfrmAttributes(label=id,
@@ -131,9 +126,9 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 end
 
 
-#==AbstractBuilder implementation
+#==AbstractWfrmBuilder implementation
 ===============================================================================#
-EasyPlot.needsfold(b::Builder) = b.fold
+EasyPlot.needsfold(b::WfrmBuilder) = b.fold
 
 #Add DataF1 results:
 function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
@@ -150,7 +145,7 @@ function _addwfrm(ax, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	mplattr = WfrmAttributes(id, attr) #Attributes understood by MPL
@@ -165,7 +160,7 @@ function build(ax, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	ax.set_title(eplot.title)
 	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
 
-	builder = Builder(ax, theme, fold)
+	builder = WfrmBuilder(ax, theme, fold)
 	for (i, wfrm) in enumerate(eplot.wfrmlist)
 		EasyPlot.addwfrm(builder, wfrm, i)
 	end
@@ -216,7 +211,7 @@ function build(fig::PyPlot.Figure, ecoll::EasyPlot.PlotCollection)
 #		col = mod(iplot, ncols) + 1
 		ax = fig.add_subplot(nrows, ncols, iplot+1)
 		build(ax, plot, ecoll.theme)
-		if ecoll.displaylegend; ax.legend(); end
+		if plot.legend; ax.legend(); end
 		iplot += 1
 	end
 

@@ -27,6 +27,7 @@ end
 function _writeplot(grp::HDF5Group, plot::Plot)
 	_write_typed(grp, "title", plot.title)
 	_write_typed(grp, "xlabel", plot.xlabel)
+	_write_typed(grp, "legend", plot.legend)
 	_write_typed(grp, "xaxis", plot.xaxis)
 	_write_typed(grp, "xext", plot.xext)
 
@@ -48,6 +49,7 @@ function _readplot(grp::HDF5Group)
 	plot = Plot(title=_read_typed(grp, "title"))
 	plot.ystriplist = []
 	plot.xlabel = _read_typed(grp, "xlabel")
+	plot.legend = _read_typed(grp, "legend")
 	plot.xaxis = _read_typed(grp, "xaxis")
 	plot.xext = _read_typed(grp, "xext")
 
@@ -74,7 +76,6 @@ end
 function _writepcoll(grp::HDF5Group, pcoll::PlotCollection)
 	_write_typed(grp, "title", pcoll.title)
 	_write_typed(grp, "ncolumns", pcoll.ncolumns)
-	_write_typed(grp, "displaylegend", pcoll.displaylegend)
 
 	grpplist = creategrp(grp, "plotlist")
 	_write_length_attr(grpplist, pcoll.plotlist)
@@ -88,7 +89,6 @@ end
 function _readpcoll(grp::HDF5Group)
 	pcoll = PlotCollection(title=_read_typed(grp, "title"))
 	pcoll.ncolumns = _read_typed(grp, "ncolumns")
-	pcoll.displaylegend = _read_typed(grp, "displaylegend")
 
 	grpplist = opengrp(grp, "plotlist")
 	_len = _read_length_attr(Vector, grpplist)

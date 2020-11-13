@@ -54,18 +54,13 @@ const markermap = Dict{Symbol, Symbol}(
 #const NOMULTISUPPORT = Set([:gr]) #GR now supported using multiplot model.
 const NOMULTISUPPORT = Set([])
 
-struct NotFound; end
-const NOTFOUND = NotFound()
-
 
 #==Base types
 ===============================================================================#
-const NullOr{T} = Union{Nothing, T} #Simpler than Nullable
-
-mutable struct Builder <: EasyPlot.AbstractBuilder
+mutable struct WfrmBuilder <: EasyPlot.AbstractWfrmBuilder
 	subplot::Plots.Subplot #Axes reference
 	theme::EasyPlot.Theme
-	fold::NullOr{EasyPlot.FoldedAxis}
+	fold::Optional{EasyPlot.FoldedAxis}
 end
 
 
@@ -79,7 +74,7 @@ end
 FigureSng() = FigureSng(Plots.Plot[])
 
 mutable struct FigureMulti <: Figure #For backends that support subplots
-	p::NullOr{Plots.Plot} #NullOr - So construction does not display anything.
+	p::Optional{Plots.Plot} #Optional - So construction does not display anything.
 #	subplots::Vector{Plots.Subplot}
 end
 FigureMulti() = FigureMulti(Plots.plot(overwrite_figure=false))
@@ -89,7 +84,7 @@ Figure(toolid::Symbol) =
 
 #Immutable? would be on stack...
 mutable struct WfrmAttributes
-	label::NullOr{String}
+	label::Optional{String}
 
 	linetype::Symbol
 	linestyle::Symbol
@@ -146,8 +141,8 @@ end
 maplinetype(::Nothing) = :line #default
 
 function maplinestyle(v::Symbol)
-	result = get(linestylemap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(linestylemap, v, missing)
+	if ismissing(result)
 		@info("Line style not supported")
 		result = maplinestyle(nothing)
 	end
@@ -156,8 +151,8 @@ end
 maplinestyle(::Nothing) = :solid #default
 
 function mapmarkershape(v::Symbol)
-	result = get(markermap, v, NOTFOUND)
-	if NOTFOUND == result
+	result = get(markermap, v, missing)
+	if ismissing(result)
 		@info("Marker shape not supported")
 		result = "o" #Use some supported marker
 	end
@@ -194,9 +189,9 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 end
 
 
-#==AbstractBuilder implementation
+#==AbstractWfrmBuilder implementation
 ===============================================================================#
-EasyPlot.needsfold(b::Builder) = b.fold
+EasyPlot.needsfold(b::WfrmBuilder) = b.fold
 
 #Add DataF1 results:
 function _addwfrm(sp::Plots.Subplot, d::DataF1, a::WfrmAttributes)
@@ -213,7 +208,7 @@ function _addwfrm(sp::Plots.Subplot, d::DataF1, a::WfrmAttributes)
 end
 
 #Called by EasyPlot, for each individual DataF1 ∈ DataMD.
-function EasyPlot.addwfrm(b::Builder, d::DataF1, id::String,
+function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	la::EasyPlot.LineAttributes, ga::EasyPlot.GlyphAttributes, strip::Int)
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	plotsattr = WfrmAttributes(id, attr) #Attributes understood by Plots.jl
@@ -223,14 +218,12 @@ end
 
 #==Rendering functions
 ===============================================================================#
-displaylegend(fig::FigureSng, v::Bool) = nothing
-displaylegend(fig::FigureMulti, v::Bool) = Plots.plot!(fig.p, legend=v)
-
 function rendersubplot(sp::Plots.Subplot, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	Plots.title!(sp, eplot.title)
+	Plots.plot!(sp, legend=eplot.legend)
 	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
 
-	builder = Builder(sp, theme, fold)
+	builder = WfrmBuilder(sp, theme, fold)
 	for (i, wfrm) in enumerate(eplot.wfrmlist)
 		EasyPlot.addwfrm(builder, wfrm, i)
 	end
@@ -268,7 +261,6 @@ function build(fig::Figure, ecoll::EasyPlot.PlotCollection)
 	ncols = ecoll.ncolumns
 	nsubplots = length(ecoll.plotlist)
 	plt = addsubplots(fig, ncols, nsubplots)
-	displaylegend(fig, ecoll.displaylegend)
 
 	for (i, plot) in enumerate(ecoll.plotlist)
 		sp = getsubplot(fig, i)
