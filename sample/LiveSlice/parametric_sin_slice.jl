@@ -1,14 +1,12 @@
 #"Live-Slice" the results of a parametric sinusoidal "simulation
 #-------------------------------------------------------------------------------
-module CMDimData_SampleDemo
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
 using MDDatasets
 import InspectDR
 CMDimData.@includepkg EasyPlotInspect
-
-pdisp = EasyPlotInspect.PlotDisplay()
 
 
 #==Constants
@@ -23,7 +21,7 @@ dfltglyph = cons(:a, glyph = set(shape=:o, size=1.5))
 
 #==Read in results of parametric "simulation"
 ===============================================================================#
-signal = evalfile("../parametric_sin_data.jl")
+signal = evalfile("../analysis_fmtfiles/parametric_sin_data.jl")
 signal = convert(DataHR, signal) #Need DataHR for Live-Slice
 
 
@@ -87,7 +85,7 @@ println()
 @info("Displaying plot...")
 pcoll = cons(:plotcoll, title="Parametric sin() - Live-Slice Results", ncolumns=2)
 	push!(pcoll, p1, p2)
-gplot = display(pdisp, pcoll)
+gplot = EasyPlot.displaygui(:InspectDR, pcoll)
 
 #Activate Live-Slice GUI:
 println()
@@ -96,8 +94,9 @@ include("tools/liveslice_blink.jl")
 slicelist = sweeps(fallx)[1:end-1] #Use 2 first dimensions for slice
 wfrmlist = append!(append!(EasyPlot.Waveform[], p1.wfrmlist), p2.wfrmlist)
 LiveSlice.autoslice(slicelist, wfrmlist) do
-	EasyPlot.render(gplot.src, pcoll)
+	EasyPlot.build(gplot.src, pcoll)
 	InspectDR.refresh(gplot)
 end
 
 end #module
+:SampleCode_Executed

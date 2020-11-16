@@ -1,4 +1,4 @@
-#Test different backends of EasyPlotMPL/PyPlot
+#Show how to display plots using EasyPlotMPL/PyPlot
 #-------------------------------------------------------------------------------
 module CMDimData_SampleUsage
 
@@ -9,7 +9,6 @@ CMDimData.@includepkg EasyPlotMPL
 
 #==Constants
 ===============================================================================#
-backendtestlist = [:tk, :gtk3, :gtk, :qt, :wx]
 demolist = EasyPlot.demofilelist()
 
 
@@ -19,19 +18,22 @@ printsep(label, sep="-") = println("\n", label, "\n", repeat(sep, 80))
 printheader(label) = printsep(label, "=")
 
 
-#==Display sample EasyPlot plots on different PyPlot backends
+#==Write EasyPlot plots to file
 ===============================================================================#
-printheader("PyPlot backend test")
+printsep("Write EasyPlot.Plot to file...")
 plot = evalfile(demolist[1])
-for backend in backendtestlist
-	printsep("Backend $backend...")
-	plot.title = "Backend: $backend"
-	try
-		disp = EasyPlot.GUIDisplay(:PyPlot, backend=backend)
-		display(disp, plot)
-	catch e
-		@warn e.msg
-	end
+bld_headless = EasyPlot.getbuilder(:image, :PyPlot, guimode=false)
+	EasyPlot._write(:png, "sample_PyPlot.png", bld_headless, plot)
+	EasyPlot._write(:svg, "sample_PyPlot.svg", bld_headless, plot)
+
+
+#==Display sample EasyPlot plots
+===============================================================================#
+for demofile in demolist
+	fileshort = basename(demofile)
+	printsep("Display $fileshort...")
+	plot = evalfile(demofile)
+	EasyPlot.displaygui(:PyPlot, plot)
 end
 
 end #module

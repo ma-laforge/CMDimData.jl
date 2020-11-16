@@ -1,4 +1,4 @@
-# Live-slice
+# CMDimData.jl: Live-slice concept
 
 The Live-slice concept is simply the idea of exploring measured/modelled/simulated data
 data in a *almost-live* fashion by sweeping through the different input parameters

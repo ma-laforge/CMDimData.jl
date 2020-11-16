@@ -1,7 +1,6 @@
-#Run sample code
+#Show how to display plots using EasyPlotPlots/Plots.jl
 #-------------------------------------------------------------------------------
-
-module CMDimData_SampleGenerator
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
@@ -11,39 +10,39 @@ CMDimData.@includepkg EasyPlotPlots
 #==Constants
 ===============================================================================#
 demolist = EasyPlot.demofilelist()
-renderingtool = :gr
+backend = :gr
 	#no display: {:hdf5}
 	#Text-based {:unicodeplots}
 	#GUI: {:gr, :inspectdr, :pgfplotsx}
 	#Python-based {:pyplot}
 	#Browser-based? {:plotly, :plotlyjs}
 	##########deprecated: {:gadfly, :bokeh, :winston}
-#pdisp = EasyPlotPlots.PlotDisplay()
-pdisp = EasyPlotPlots.PlotDisplay(renderingtool)
 
 
 #==Helper functions
 ===============================================================================#
-printsep(title) = println("\n", title, "\n", repeat("-", 80))
+printsep(label, sep="-") = println("\n", label, "\n", repeat(sep, 80))
+printheader(label) = printsep(label, "=")
 
 
-#==Render sample EasyPlot plots
+#==Write EasyPlot plots to file
 ===============================================================================#
+printsep("Write EasyPlot.Plot to file using `backend=:$backend`...")
 plot = evalfile(demolist[1])
-#	display(pdisp, plot)
-	EasyPlot.write_png("image.png", plot, pdisp)
-#	EasyPlot.write_svg("image.svg", plot, pdisp)
+bld_headless = EasyPlot.getbuilder(:image, :PlotsJl, backend=backend)
+	EasyPlot._write(:png, "sample_PlotsJl_$backend.png", bld_headless, plot)
+	EasyPlot._write(:svg, "sample_PlotsJl_$backend.svg", bld_headless, plot)
 
 
 #==Render sample EasyPlot plots
 ===============================================================================#
-for demofile in demolist[1:end]
+disp = EasyPlot.GUIDisplay(:PlotsJl, backend=backend)
+for demofile in demolist
 	fileshort = basename(demofile)
-	printsep("Executing $fileshort...")
+	printsep("Display $fileshort...")
 	plot = evalfile(demofile)
-	display(pdisp, plot)
+	display(disp, plot)
 end
 
-end
+end #module
 :SampleCode_Executed
-#Last line

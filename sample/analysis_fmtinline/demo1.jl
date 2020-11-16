@@ -1,6 +1,6 @@
 #Demo 1: A full calculation/plotting example using EasyPlotInspect
 #-------------------------------------------------------------------------------
-module CMDimData_SampleDemo
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.MDDatasets
@@ -11,6 +11,8 @@ CMDimData.@includepkg EasyData
 
 #==Constants
 ===============================================================================#
+LBLAX_POS = "Position [m]"
+LBLAX_TIME = "Time [s]"
 pvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Position (m)"))
 lstylesweep = cons(:a, line = set(width=3))
 lstyle1 = cons(:a, line = set(color=:red, width=3, style=:solid))
@@ -52,22 +54,24 @@ c_sin = r_sin - midval
 
 #==Generate plot
 ===============================================================================#
-plt1 = push!(cons(:plot, pvst, title="Plot: Building blocks"),
-	cons(:wfrm, unity_ramp, lstyle1, label="Unity Ramp"),
-	cons(:wfrm, sinx, lstyle2, label="sin(x)"),
+plot = cons(:plot, nstrips=4,
+	ystrip1 = set(axislabel=LBLAX_POS, striplabel="Plot: Building blocks"),
+	ystrip2 = set(axislabel=LBLAX_POS, striplabel="Plot: Ramp with swept \"slope\""),
+	ystrip3 = set(axislabel=LBLAX_POS, striplabel="Plot: sin(x) + ramp"),
+	ystrip4 = set(axislabel=LBLAX_POS, striplabel="Plot: sin(x) + ramp - midval"),
+	xaxis = set(label=LBLAX_TIME),
 )
-plt2 = push!(cons(:plot, pvst, title="Plot: Ramp with swept \"slope\""),
-	cons(:wfrm, ramp, lstylesweep, label="swept ramp"),
-)
-plt3 = push!(cons(:plot, pvst, title="Plot: sin(x) + ramp"),
-	cons(:wfrm, r_sin, lstylesweep, label="r_sin"),
-)
-plt4 = push!(cons(:plot, pvst, title="Plot: sin(x) + ramp - midval"),
-	cons(:wfrm, c_sin, lstylesweep, label="r_sin"),
+
+push!(plot,
+	cons(:wfrm, unity_ramp, lstyle1, label="Unity Ramp", strip=1),
+	cons(:wfrm, sinx, lstyle2, label="sin(x)", strip=1),
+	cons(:wfrm, ramp, lstylesweep, label="swept ramp", strip=2),
+	cons(:wfrm, r_sin, lstylesweep, label="r_sin", strip=3),
+	cons(:wfrm, c_sin, lstylesweep, label="r_sin", strip=4),
 )
 
 pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
-	push!(pcoll, plt1, plt2, plt3, plt4)
+	push!(pcoll, plot)
 
 	#Save pcoll for later use:
 	filename = basename(@__FILE__)
@@ -75,6 +79,8 @@ pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
 	EasyData.writeplot(savefile, pcoll)
 
 	#Display pcoll:
-	pdisp = EasyPlotInspect.PlotDisplay()
-	display(pdisp, pcoll)
-end
+	EasyPlot.displaygui(:InspectDR, pcoll)
+	savefile = joinpath("./", splitext(filename)[1] * ".png")
+	EasyPlot._write(:png, savefile, :InspectDR, pcoll)
+end #module
+:SampleCode_Executed

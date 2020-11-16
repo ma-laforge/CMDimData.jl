@@ -1,90 +1,57 @@
-#Test EasyPlot capabilities using sample/ plots
+#Show how to display plots using EasyPlotGrace/Grace
 #-------------------------------------------------------------------------------
-
-module CMDimData_SampleGenerator
-
-#==Configuration
-===============================================================================#
-#List of backends to test:
-#const BACKENDLIST = [:EasyPlotInspect, :EasyPlotGrace, :EasyPlotMPL]
-#const BACKENDLIST = [:EasyPlotGrace] #Grace is faster, if installed.
-const BACKENDLIST = [:EasyPlotInspect]
-
-#List of backends where SVG file is not to be saved:
-const NOSVG = [:EasyPlotGrace]
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
+CMDimData.@includepkg EasyPlotGrace
 
-#Import all backends before defining getdisplay() functions:
-for bk in BACKENDLIST
-	eval(:(CMDimData.@includepkg $bk))
-end
 
-#Used to dispatch functions with the help of symbols:
-struct DS{T}; end
-DS(s::Symbol) = DS{s}()
+#==Constants
+===============================================================================#
+demolist = EasyPlot.demofilelist()
 
 
 #==Helper functions
 ===============================================================================#
-function printsep(title)
-	println("\n", title, "\n", repeat("-", 80))
-end
+printsep(label, sep="-") = println("\n", label, "\n", repeat(sep, 80))
+printheader(label) = printsep(label, "=")
 
-#Get an EasyPlotDisplay object:
-getdisplay(::DS{T}; renderonly=false) where T = eval(:($T.PlotDisplay()))
-
-if @isdefined EasyPlotMPL
-function getdisplay(::DS{:EasyPlotMPL}; renderonly=false)
-	return EasyPlotMPL.PlotDisplay(guimode=!renderonly)
-end
-end
-if @isdefined EasyPlotGrace
-import GracePlot
-function getdisplay(::DS{:EasyPlotGrace}; renderonly=false)
+#Improve display appearance a bit:
+function getgracebuilder(builderid::Symbol)
+	target = (builderid==:Grace_headless) ? :image : :gui
+	GracePlot = EasyPlotGrace.GracePlot
 	template = GracePlot.template("smallplot_mono")
-	plotdefaults = GracePlot.defaults(linewidth=2.5)
+	plotdefaults = GracePlot.defaults(linewidth=2.5) #Improve appearance a bit
 
-	pdisp = EasyPlotGrace.PlotDisplay()
-	#pdisp = EasyPlotGrace.PlotDisplay(template=template)
-	#pdisp = EasyPlotGrace.PlotDisplay(plotdefaults)
-
-	pdisp.guimode = !renderonly
-	return pdisp
+#	return EasyPlot.getbuilder(target, builderid, template=template)
+	return EasyPlot.getbuilder(target, builderid, plotdefaults)
 end
-end
-getdisplay(s::Symbol; kwargs...) = getdisplay(DS(s); kwargs...)
 
 
 #==Main Code
 ===============================================================================#
-function run_samples(filelist, bk::Symbol)
-	pdisp = getdisplay(bk, renderonly=true)
-	nosvg = in(bk, NOSVG)
+function showplotfiles(filelist, builderid::Symbol)
+	printheader("\n\nUsing builder :$builderid...")
+	builder = getgracebuilder(builderid)
 
-	#Write an EasyPlot to file
-	pcoll = evalfile(filelist[1])
-		EasyPlot.write_png("image_$bk.png", pcoll, pdisp)
-		!nosvg && EasyPlot.write_svg("image_$bk.svg", pcoll, pdisp)
+	#Write EasyPlot.Plot to file
+	printsep("Write EasyPlot.Plot to file...")
+	plot = evalfile(filelist[1])
+		filepath = "sample_$builderid.png"
+		EasyPlot._write(:png, filepath, builder, plot)
 
-	pdisp = getdisplay(bk)
-
-	#Render sample EasyPlot plots
-	for demofile in filelist
-		fileshort = basename(demofile)
-		printsep("Rendering $fileshort with $bk...")
-		pcoll = evalfile(demofile)
-		display(pdisp, pcoll)
+	#Display sample EasyPlot plots
+	for plotfile in filelist
+		fileshort = basename(plotfile)
+		printsep("Display $fileshort with $builderid...")
+		plot = evalfile(plotfile)
+		EasyPlot.displaygui(builder, plot)
 	end
 end
 
-
-#==Start point
-===============================================================================#
-for bk in BACKENDLIST
-	run_samples(EasyPlot.demofilelist(), bk)
-end
+showplotfiles(demolist, :Grace)
+showplotfiles(demolist, :Grace_headless)
 
 end
 :SampleCode_Executed

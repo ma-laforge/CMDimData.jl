@@ -1,12 +1,11 @@
 #Parameter extraction of a parametric sinusoidal "simulation"
 #-------------------------------------------------------------------------------
-module CMDimData_SampleDemo
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
 CMDimData.@includepkg EasyPlotInspect
-pdisp = EasyPlotInspect.PlotDisplay()
 
 
 #==Constants
@@ -21,21 +20,16 @@ dfltglyph = cons(:a, glyph = set(shape=:o, size=1.5))
 
 #==Helper functions
 ===============================================================================#
-function savepng(pdisp, pcoll, filepath::String)
-	#render() instead of display(), thus allowing settings to be tweaked
-	rplot = render(pdisp, pcoll)
+function savepng(plotgui, filepath::String)
+	mplot = plotgui.src
 	wlegend = 250
-	wp = rplot.layout[:halloc_plot] #Default plot width
-	w = round(wp + wlegend); h = round(wp*1.5)
-		for sp in rplot.subplots
-			sp.layout[:halloc_legend] = wlegend
-		end
-
-	try
-		EasyPlotInspect.InspectDR.write_png(filepath, rplot, w, h)
-	catch
-		@warn("Need InspectDR 0.3.10+ to write_png()")
+	wnoleg = 600
+	w = wlegend+wnoleg; h = round(Int, wnoleg*1.5)
+	for sp in mplot.subplots
+		sp.layout[:halloc_legend] = wlegend
 	end
+
+	EasyPlot._write(:png, filepath, plotgui, set(w=w, h=h))
 end
 
 
@@ -105,8 +99,8 @@ push!(plot,
 	cons(:wfrm, rate, lstylesweep, label="", strip=3),
 )
 plotset1 = push!(cons(:plotcoll, title="Parametric sin() - Initial Observations"), plot)
-display(pdisp, plotset1)
-	savepng(pdisp, plotset1, "parametric_sin_1.png")
+plotgui1 = EasyPlot.displaygui(:InspectDR, plotset1)
+	savepng(plotgui1, "parametric_sin_1.png")
 
 
 #plotset2: Parametric sin(): Diving into parameter values
@@ -133,7 +127,8 @@ push!(p3, cons(:wfrm, fallx_red2, lstylesweep, dfltglyph, label=""))
 
 plotset2 = cons(:plotcoll, title="Parametric sin() - Diving into parameter values", ncolumns=1)
 	push!(plotset2, p1, p2, p3)
-display(pdisp, plotset2)
-	savepng(pdisp, plotset2, "parametric_sin_2.png")
+plotgui2 = EasyPlot.displaygui(:InspectDR, plotset2)
+	savepng(plotgui2, "parametric_sin_2.png")
 
 end #module
+:SampleCode_Executed

@@ -5,58 +5,40 @@ Look for EasyData._write() & EasyData._read() near end of file.
 =#
 
 
-module CMDimData_SampleGenerator
+module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
 CMDimData.@includepkg EasyData
-
-#Initialize display (must happen before defining specialized "getdemodisplay"):
-EasyPlot.@initbackend()
+CMDimData.@includepkg EasyPlotInspect
 
 
-#==Obtain plot rendering display:
+#==Constants
 ===============================================================================#
-
-#getdemodisplay: Potentially overwrite defaults:
-#-------------------------------------------------------------------------------
-#Default behaviour, just use provided display:
-getdemodisplay(d::EasyPlot.EasyPlotDisplay) = d
-
-
-if @isdefined(EasyPlotGrace)
-#Improve display appearance a bit:
-function getdemodisplay(d::EasyPlotGrace.PlotDisplay)
-	d = EasyPlotGrace.PlotDisplay()
-	plotdefaults = GracePlot.defaults(linewidth=2.5)
-	d.args = tuple(plotdefaults, d.args...) #Improve appearance a bit
-	return d
-end
-end
+demolist = EasyPlot.demofilelist()
 
 
 #==Helper functions
 ===============================================================================#
-printsep(title) = println("\n", title, "\n", repeat("-", 80))
+printsep(label, sep="-") = println("\n", label, "\n", repeat(sep, 80))
+printheader(label) = printsep(label, "=")
 
 
-#==Show results
+#==Main Code
 ===============================================================================#
-pdisp = getdemodisplay(EasyPlot.defaults.maindisplay)
-
-pathlist = EasyPlot.demofilelist()
-for filepath in pathlist
-	filename = basename(filepath)
-	savefile = joinpath("./", splitext(filename)[1] * ".hdf5")
+pdisp = EasyPlot.GUIDisplay(:InspectDR)
+for filepath in demolist
+	corename = splitext(basename(filepath))[1]
+	filename = "sample_$corename.hdf5"
 	printsep("Executing $filepath...")
 	pcoll = evalfile(filepath)
 	display(pdisp, pcoll)
 
 	#EasyData portion:
-	@info("Writing $savefile...")
-	EasyData.writeplot(savefile, pcoll)
-	@info("Reading back $savefile...")
-	plot2 = EasyData.readplot(savefile)
+	@info("Writing $filename...")
+	EasyData.writeplot(filename, pcoll)
+	@info("Reading back $filename...")
+	plot2 = EasyData.readplot(filename)
 	plot2.title = "Compare Results: " * pcoll.title
 	display(pdisp, plot2)
 end

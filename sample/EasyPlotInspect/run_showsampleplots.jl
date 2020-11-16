@@ -1,15 +1,14 @@
-#Test different backends of EasyPlotMPL/PyPlot
+#Show how to display plots using EasyPlotGrace/InspectDR
 #-------------------------------------------------------------------------------
 module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyPlotMPL
+CMDimData.@includepkg EasyPlotInspect
 
 
 #==Constants
 ===============================================================================#
-backendtestlist = [:tk, :gtk3, :gtk, :qt, :wx]
 demolist = EasyPlot.demofilelist()
 
 
@@ -19,19 +18,21 @@ printsep(label, sep="-") = println("\n", label, "\n", repeat(sep, 80))
 printheader(label) = printsep(label, "=")
 
 
-#==Display sample EasyPlot plots on different PyPlot backends
+#==Write EasyPlot plots to file
 ===============================================================================#
-printheader("PyPlot backend test")
+printsep("Write EasyPlot.Plot to file...")
 plot = evalfile(demolist[1])
-for backend in backendtestlist
-	printsep("Backend $backend...")
-	plot.title = "Backend: $backend"
-	try
-		disp = EasyPlot.GUIDisplay(:PyPlot, backend=backend)
-		display(disp, plot)
-	catch e
-		@warn e.msg
-	end
+	EasyPlot._write(:png, "sample_InspectDR.png", :InspectDR, plot, set(w=640, h=480))
+	EasyPlot._write(:svg, "sample_InspectDR.svg", :InspectDR, plot)
+
+
+#==Render sample EasyPlot plots
+===============================================================================#
+for demofile in demolist
+	fileshort = basename(demofile)
+	printsep("Display $fileshort...")
+	plot = evalfile(demofile)
+	EasyPlot.displaygui(:InspectDR, plot)
 end
 
 end #module
