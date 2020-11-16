@@ -4,15 +4,15 @@
 
 #==Constants
 ===============================================================================#
-const DEFAULT_RENDERINGTOOL = :pyplot
+const DEFAULT_BACKEND = :gr
 
 
 #==Defaults
 ===============================================================================#
 mutable struct Defaults
-	renderingtool::Symbol
+	backend::Symbol
 end
-Defaults() = Defaults(DEFAULT_RENDERINGTOOL)
+Defaults() = Defaults(DEFAULT_BACKEND)
 
 
 #==Data
@@ -23,10 +23,10 @@ const global defaults = Defaults()
 #==Initialization
 ===============================================================================#
 function _initialize(dflt::Defaults)
-	dflttool = string(DEFAULT_RENDERINGTOOL)
-	envstr = "EASYPLOTPLOTS_RENDERINGTOOL"
+	dflttool = string(DEFAULT_BACKEND)
+	envstr = "EASYPLOTPLOTS_BACKEND"
 	val = get(ENV, envstr, dflttool)
-	dflt.renderingtool = Symbol(lowercase(val))
+	dflt.backend = Symbol(lowercase(val))
 	return
 end
 

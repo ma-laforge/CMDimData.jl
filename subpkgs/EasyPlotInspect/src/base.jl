@@ -1,5 +1,6 @@
 #EasyPlotInspect base types & core functions
 #-------------------------------------------------------------------------------
+#(Also implements AbstractWfrmBuilder)
 
 
 #==Constants
@@ -126,61 +127,6 @@ function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	inspectattr = WfrmAttributes(id, attr) #Attributes understood by InspectDR
 	_addwfrm(b.ref, d, inspectattr, strip)
-end
-
-
-#==Plot building functions
-===============================================================================#
-
-function generateplot(plot::EasyPlot.Plot, theme::EasyPlot.Theme)
-	iplot = InspectDR.Plot2D()
-	fold = isa(plot.xaxis, EasyPlot.FoldedAxis) ? plot.xaxis : nothing
-
-	#x-axis properties:
-	iplot.xext_full = InspectDR.PExtents1D(plot.xext.min, plot.xext.max)
-	iplot.xscale = InspectDR.AxisScale(scalemap[Symbol(plot.xaxis)])
-
-	#Want more resolution on y-axis than default:
-	#TODO: is there a better way???
-	_yaxisscale(s::Symbol) = InspectDR.AxisScale(s, tgtmajor=8, tgtminor=2)
-
-	#y-strip properties:
-	iplot.strips = [] #Reset
-	for srcstrip in plot.ystriplist
-		strip = InspectDR.GraphStrip()
-		push!(iplot.strips, strip)
-		strip.yscale = _yaxisscale(scalemap[srcstrip.scale])
-		strip.yext_full = InspectDR.PExtents1D(srcstrip.ext.min, srcstrip.ext.max)
-	end
-
-	#Apply x/y labels:
-	a = iplot.annotation
-	a.title = plot.title
-	a.xlabel = plot.xlabel
-	a.ylabels = String[strip.axislabel for strip in plot.ystriplist]
-	a.ystriplabels = String[strip.striplabel for strip in plot.ystriplist]
-
-	#Add data using EasyPlot.AbstractWfrmBuilder interface:
-	wfrmbuilder = WfrmBuilder(iplot, theme, fold)
-	for (i, wfrm) in enumerate(plot.wfrmlist)
-		EasyPlot.addwfrm(wfrmbuilder, wfrm, i)
-	end
-	
-	return iplot
-end
-
-function EasyPlot.render(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollection)
-	mplot.layout[:ncolumns] = ecoll.ncolumns
-	mplot.title = ecoll.title
-
-	mplot.subplots=[] #Start fresh in case being overwritten
-	for p in ecoll.plotlist
-		plot = generateplot(p, ecoll.theme)
-		add(mplot, plot)
-		plot.layout[:enable_legend] = p.legend
-	end
-
-	return mplot
 end
 
 #Last line

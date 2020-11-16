@@ -20,11 +20,11 @@ using CMDimData.MDDatasets
 using CMDimData.Colors
 using Plots
 
-import CMDimData.EasyPlot: Optional
+import CMDimData.EasyPlot: Optional, Target, DS
 
 include("base.jl")
-include("display.jl")
 include("defaults.jl")
+include("builder.jl")
 
 #==Initialization
 ===============================================================================#
@@ -32,10 +32,7 @@ function __init__()
 	global defaults
 	_initialize(defaults)
 
-	EasyPlot.registerdefaults(:EasyPlotPlots,
-		maindisplay = PlotDisplay(defaults.renderingtool, guimode=true),
-		renderdisplay = EasyPlot.NullDisplay() #No support for render-only
-	)
+	EasyPlot.register(:EasyPlotPlots)
 	return
 end
 

@@ -39,6 +39,13 @@ mutable struct WfrmBuilder <: EasyPlot.AbstractWfrmBuilder
 	fold::Optional{EasyPlot.FoldedAxis}
 end
 
+#Keeps key features of Matplotlib/PyPlot state needed for plotting
+mutable struct MPLState
+	interactive::Bool
+	backend::Symbol
+	guimode::Bool
+end
+
 mutable struct WfrmAttributes
 	label
 	color #linecolor
@@ -59,6 +66,25 @@ WfrmAttributes(;label=nothing,
 		marker, markersize, markerfacecolor, markeredgecolor, linewidth,
 		nothing == markerfacecolor ? "none" : "full"
 	)
+
+
+#==GUI state control
+===============================================================================#
+function _getstate()
+	return MPLState(
+		PyPlot.matplotlib.is_interactive(),
+		PyPlot.pygui(),
+		!PyPlot.isjulia_display[1], #TODO: Hack!... not part of PyPlot interface.
+	)
+end
+
+function _applystate(s::MPLState)
+	PyPlot.pygui(s.backend)
+	PyPlot.pygui(s.guimode)
+#@show pygui(), PyPlot.isjulia_display[1]
+	#Must be applied last (in case backend does not support interactive):
+	PyPlot.matplotlib.interactive(s.interactive)
+end
 
 
 #==Helper functions
@@ -150,73 +176,6 @@ function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	mplattr = WfrmAttributes(id, attr) #Attributes understood by MPL
 	_addwfrm(b.ref, d, mplattr)
-end
-
-
-#==Plot building functions
-===============================================================================#
-
-function build(ax, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
-	ax.set_title(eplot.title)
-	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
-
-	builder = WfrmBuilder(ax, theme, fold)
-	for (i, wfrm) in enumerate(eplot.wfrmlist)
-		EasyPlot.addwfrm(builder, wfrm, i)
-	end
-
-	#x-axis properties:
-	xscale = Symbol(eplot.xaxis)
-	xmin = eplot.xext.min; xmax = eplot.xext.max
-
-	#y-axis properties:
-	ylabel = ""
-	yscale = :lin
-	ymin, ymax = (NaN, NaN)
-	if length(eplot.ystriplist) > 0
-		strip = eplot.ystriplist[1]
-		ylabel = strip.axislabel
-		yscale = strip.scale
-		ymin = strip.ext.min; ymax = strip.ext.max
-	end
-
-	#Apply x/y labels:
-	ax.set_xlabel(eplot.xlabel)
-	ax.set_ylabel(ylabel)
-
-	#Apply x/y scales:
-	ax.set_xscale(scalemap[xscale])
-	ax.set_yscale(scalemap[yscale])
-
-	#Apply x/y extents:
-	(c_xmin, c_xmax) = ax.set_xlim() #Read in current limits
-		isnan(xmin) && (xmin = c_xmin); isnan(xmax) && (xmax = c_xmax)
-		ax.set_xlim(xmin, xmax)
-	(c_ymin, c_ymax) = ax.set_ylim() #Read in current limits
-		isnan(ymin) && (ymin = c_ymin); isnan(ymax) && (ymax = c_ymax)
-		ax.set_ylim(ymin, ymax)
-
-	return ax
-end
-
-function build(fig::PyPlot.Figure, ecoll::EasyPlot.PlotCollection)
-	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotMPL") #Emulate multi-strip plots
-	ncols = ecoll.ncolumns
-	fig.suptitle(ecoll.title)
-	nrows = div(length(ecoll.plotlist)-1, ncols)+1
-	iplot = 0
-
-	for plot in ecoll.plotlist
-#		row = div(iplot, ncols) + 1
-#		col = mod(iplot, ncols) + 1
-		ax = fig.add_subplot(nrows, ncols, iplot+1)
-		build(ax, plot, ecoll.theme)
-		if plot.legend; ax.legend(); end
-		iplot += 1
-	end
-
-	fig.canvas.draw()
-	return fig
 end
 
 #Last line

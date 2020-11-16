@@ -10,12 +10,12 @@ using CMDimData.MDDatasets
 using CMDimData.Colors
 using GracePlot
 
-import CMDimData.EasyPlot: Optional
+import CMDimData.EasyPlot: Optional, Target, DS
 import GracePlot: LineAttributes, GlyphAttributes
 
 include("base.jl")
-include("display.jl")
 include("defaults.jl")
+include("builder.jl")
 
 
 #==Initialization
@@ -24,10 +24,7 @@ function __init__()
 	global defaults
 	_initialize(defaults)
 
-	EasyPlot.registerdefaults(:EasyPlotGrace,
-		maindisplay = PlotDisplay(guimode=true),
-		renderdisplay = PlotDisplay(guimode=false, dpi=defaults.renderdpi)
-	)
+	EasyPlot.register(:EasyPlotGrace)
 	return
 end
 

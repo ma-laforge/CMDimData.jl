@@ -79,8 +79,8 @@ mutable struct FigureMulti <: Figure #For backends that support subplots
 end
 FigureMulti() = FigureMulti(Plots.plot(overwrite_figure=false))
 
-Figure(toolid::Symbol) =
-	in(toolid, NOMULTISUPPORT) ? FigureSng() : FigureMulti()
+Figure(backend::Symbol) =
+	in(backend, NOMULTISUPPORT) ? FigureSng() : FigureMulti()
 
 #Immutable? would be on stack...
 mutable struct WfrmAttributes
@@ -213,61 +213,6 @@ function EasyPlot.addwfrm(b::WfrmBuilder, d::DataF1, id::String,
 	attr = EasyPlot.WfrmAttributes(b.theme, la, ga) #Apply theme to attributes
 	plotsattr = WfrmAttributes(id, attr) #Attributes understood by Plots.jl
 	_addwfrm(b.subplot, d, plotsattr)
-end
-
-
-#==Rendering functions
-===============================================================================#
-function rendersubplot(sp::Plots.Subplot, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
-	Plots.title!(sp, eplot.title)
-	Plots.plot!(sp, legend=eplot.legend)
-	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
-
-	builder = WfrmBuilder(sp, theme, fold)
-	for (i, wfrm) in enumerate(eplot.wfrmlist)
-		EasyPlot.addwfrm(builder, wfrm, i)
-	end
-
-	#x-axis properties:
-	xscale = Symbol(eplot.xaxis)
-	xmin = eplot.xext.min; xmax = eplot.xext.max
-
-	#y-axis properties:
-	ylabel = ""
-	yscale = :lin
-	ymin, ymax = (NaN, NaN)
-	if length(eplot.ystriplist) > 0
-		strip = eplot.ystriplist[1]
-		ylabel = strip.axislabel
-		yscale = strip.scale
-		ymin = strip.ext.min; ymax = strip.ext.max
-	end
-
-	#Apply x/y labels:
-	Plots.xlabel!(sp, eplot.xlabel)
-	Plots.ylabel!(sp, ylabel)
-
-	#Apply x/y scales:
-	Plots.plot!(sp, xscale=scalemap[xscale], yscale=scalemap[yscale])
-
-	#Update axis limits:
-	xlims!(sp, (xmin, xmax))
-	ylims!(sp, (ymin, ymax))
-	return sp
-end
-
-function build(fig::Figure, ecoll::EasyPlot.PlotCollection)
-	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotPlots") #Emulate multi-strip plots
-	ncols = ecoll.ncolumns
-	nsubplots = length(ecoll.plotlist)
-	plt = addsubplots(fig, ncols, nsubplots)
-
-	for (i, plot) in enumerate(ecoll.plotlist)
-		sp = getsubplot(fig, i)
-		rendersubplot(sp, plot, ecoll.theme)
-	end
-
-	return fig
 end
 
 #Last line

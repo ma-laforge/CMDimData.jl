@@ -4,7 +4,11 @@
 
 #==Constants
 ===============================================================================#
-const DEFAULT_BACKEND = :tk
+const DEFAULT_BACKEND = :tk #Just use PyPlot.pygui() instead??
+#=Default backend can be obtained by:
+    PyPlot.pygui(false); PyPlot.pygui(true) #Reset to default
+    PyPlot.pygui() #Read in value
+=#
 
 
 #==Types

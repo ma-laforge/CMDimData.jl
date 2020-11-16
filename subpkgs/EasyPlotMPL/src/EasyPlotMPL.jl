@@ -11,11 +11,18 @@ using CMDimData.Colors
 import PyCall #Need to access some types
 using PyPlot
 
-import CMDimData.EasyPlot: Optional
+import CMDimData.EasyPlot: Optional, Target, DS
 
 include("base.jl")
-include("display.jl")
 include("defaults.jl")
+include("builder.jl")
+
+
+#==TODO
+================================================================================
+ - Convoluted/flaky handling of "interactivity", "backends", and "guimode:on/off".
+   See MPLState, _getstate(), _applystate()
+=#
 
 
 #==Initialization
@@ -24,10 +31,7 @@ function __init__()
 	global defaults
 	_initialize(defaults)
 
-	EasyPlot.registerdefaults(:EasyPlotMPL,
-		maindisplay = PlotDisplay(guimode=true),
-		renderdisplay = PlotDisplay(guimode=false)
-	)
+	EasyPlot.register(:EasyPlotMPL)
 	return
 end
 

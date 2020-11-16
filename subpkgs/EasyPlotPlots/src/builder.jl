@@ -1,71 +1,119 @@
-#EasyPlotPlots Display functionnality
+#EasyPlotPlots AbstractBuilder interface implementation
 #-------------------------------------------------------------------------------
 
 
-#==Main Types
+#==Types
 ===============================================================================#
-mutable struct PlotDisplay <: EasyPlot.EasyPlotDisplay #Don't export.  Qualify with Module
-	toolid::Symbol
-	guimode::Bool
+mutable struct Builder <: EasyPlot.AbstractBuilder
+	backend::Symbol
+	postproc::Optional{Function}
 	args::Tuple
 	kwargs::Base.Iterators.Pairs
-	PlotDisplay(toolid::Symbol, args...; guimode::Bool=true, kwargs...) =
-		new(toolid, guimode, args, kwargs)
 end
-PlotDisplay(args...; kwargs...) =
-	PlotDisplay(defaults.renderingtool, args...; kwargs...)
+EasyPlot.AbstractBuilder(::DS{:PlotsJl}) = Builder #Register builder
 
 
-
-#==Top-level rendering functions
+#==Constructor interface
 ===============================================================================#
-EasyPlot._display(fig::FigureMulti) = display(fig.p)
-function EasyPlot._display(fig::FigureSng)
+#Use same builder irrespective of target application:
+function EasyPlot.getbuilder(::Target{T}, ::Type{Builder}, args...;
+		postproc=nothing, backend=nothing, kwargs...) where T
+	if isnothing(backend); backend = defaults.backend; end
+	return Builder(backend, postproc, args, kwargs)
+end
+
+function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, fig::FigureMulti)
+	if EasyPlot.isfixed(opt.dim)
+		@warn("Cannot currently specify plot size. Using defaults.")
+	end
+	show(io, mime, fig.p)
+end
+
+#Currently no support for non-FigureMulti plots... but could generate a single image...:
+EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, fig::Figure) =
+	throw(MethodError(EasyPlot._show, (io, mime, opt, fig)))
+
+#Module does not yet support other inline formats (must figure out how)
+EasyPlot._showable(mime::MIME, b::Builder) = false
+#Assume PNG is supported by all backends:
+EasyPlot._showable(mime::MIME"image/png", b::Builder) = true
+
+
+#==Display interface
+===============================================================================#
+EasyPlot.displaygui(fig::FigureMulti) = display(fig.p)
+function EasyPlot.displaygui(fig::FigureSng)
 	for s in fig.subplots
 		display(s) #Defined in Plots.jl
 	end
 	nothing
 end
 
-function EasyPlot.render(d::PlotDisplay, ecoll::EasyPlot.PlotCollection)
-	local fig
+
+#==Build interface
+===============================================================================#
+function _build(sp::Plots.Subplot, eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
+	Plots.title!(sp, eplot.title)
+	Plots.plot!(sp, legend=eplot.legend)
+	fold = isa(eplot.xaxis, EasyPlot.FoldedAxis) ? eplot.xaxis : nothing
+
+	builder = WfrmBuilder(sp, theme, fold)
+	for (i, wfrm) in enumerate(eplot.wfrmlist)
+		EasyPlot.addwfrm(builder, wfrm, i)
+	end
+
+	#x-axis properties:
+	xscale = Symbol(eplot.xaxis)
+	xmin = eplot.xext.min; xmax = eplot.xext.max
+
+	#y-axis properties:
+	ylabel = ""
+	yscale = :lin
+	ymin, ymax = (NaN, NaN)
+	if length(eplot.ystriplist) > 0
+		strip = eplot.ystriplist[1]
+		ylabel = strip.axislabel
+		yscale = strip.scale
+		ymin = strip.ext.min; ymax = strip.ext.max
+	end
+
+	#Apply x/y labels:
+	Plots.xlabel!(sp, eplot.xlabel)
+	Plots.ylabel!(sp, ylabel)
+
+	#Apply x/y scales:
+	Plots.plot!(sp, xscale=scalemap[xscale], yscale=scalemap[yscale])
+
+	#Update axis limits:
+	xlims!(sp, (xmin, xmax))
+	ylims!(sp, (ymin, ymax))
+	return sp
+end
+
+function _build(fig::Figure, ecoll::EasyPlot.PlotCollection)
+	ecoll = EasyPlot.condxfrm_multistrip(ecoll, "EasyPlotPlots") #Emulate multi-strip plots
+	ncols = ecoll.ncolumns
+	nsubplots = length(ecoll.plotlist)
+	plt = addsubplots(fig, ncols, nsubplots)
+
+	for (i, plot) in enumerate(ecoll.plotlist)
+		sp = getsubplot(fig, i)
+		_build(sp, plot, ecoll.theme)
+	end
+
+	return fig
+end
+
+function EasyPlot.build(b::Builder, ecoll::EasyPlot.PlotCollection)
+	local fig = nothing
 	try
-		bknd = Plots.backend(d.toolid) #Activate backend
-		fig = Figure(d.toolid)
-		build(fig, ecoll)
+		bknd = Plots.backend(b.backend) #Activate backend
+		fig = Figure(b.backend)
+		_build(fig, ecoll)
 	finally
 		#TODO: Restore state
 	end
 	return fig
-end
-
-#Module does not yet support other inline formats (must figure out how)
-Base.showable(mime::MIME, ecoll::EasyPlot.PlotCollection, d::PlotDisplay) = false
-#Assume PNG is supported by all backends:
-Base.showable(mime::MIME"image/png", ecoll::EasyPlot.PlotCollection, d::PlotDisplay) = true
-
-#Maintain text/plain MIME support.
-Base.show(io::IO, ::MIME"text/plain", fig::Figure) = Base.show(io, fig)
-Base.show(io::IO, ::MIME"text/plain", fig::FigureMulti) = Base.show(io, fig)
-
-#Currently no support for non-FigureMulti plots... but could generate a single image...:
-Base.show(io::IO, mime::MIME, fig::Figure) =
-	throw(MethodError(show, (io, mime, fig)))
-Base.show(io::IO, mime::MIME, fig::FigureMulti) =
-	show(io, mime, fig.p)
-
-
-#==Support saving
-===============================================================================#
-#Support for saving FigureSng to multiple files:
-function EasyPlot._write(filepath::String, mime::MIME, fig::FigureSng)
-	fsplit = splitext(filepath)
-	for (i, s) in enumerate(fig.subplots)
-		spath = join(fsplit, "_subplot$i")
-		open(spath, "w") do io
-			Base.show(io, mime, s)
-		end
-	end
 end
 
 #Last line
