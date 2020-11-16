@@ -2,18 +2,18 @@
 
  1. [Description](#Description)
  1. [Main plot objects](#Objects)
-     1. [Attributes & `AttributeChangeSpec`](#AttributeChangeSpec)
-     1. [Axis scale identifiers](#AxisScaleIdentifiers)
-     1. [Supported linestyles](#Linestyles)
-     1. [Supported glyphs](#Glyphs)
+    1. [Attributes & `AttributeChangeSpec`](#AttributeChangeSpec)
+    1. [Axis scale identifiers](#AxisScaleIdentifiers)
+    1. [Supported linestyles](#Linestyles)
+    1. [Supported glyphs](#Glyphs)
  1. [Creating plots](#CreatingPlots)
  1. [Supported backends](EasyPlot_backends.md)
- 1. [Important note on `@includepkg`](#includepkg_Note)
  1. [Julia display stack: Adding a default backend](#DisplayAddBackend)
  1. [Configuration/defaults](EasyPlot_config.md)
-     1. [Inline plots/defaults](EasyPlot_config.md#InlinePlots)
-     1. [Defaults & backend initialization](EasyPlot_config.md#Defaults)
+    1. [Inline plots/defaults](EasyPlot_config.md#InlinePlots)
+    1. [Defaults & backend initialization](EasyPlot_config.md#Defaults)
  1. [Known limitations](#KnownLimitations)
+    1. [Important note on `@includepkg`](#includepkg_Note)
 
 
 ## Description
@@ -59,7 +59,6 @@ Use Julia's help system for more examples on how to create `AttributeChangeSpec`
 
 ```julia-repl
 help?> attributes
-
 ```
 
 <a name="AxisScaleIdentifiers"></a>
@@ -122,13 +121,9 @@ push!(plot,
 display(EasyPlotInspect.PlotDisplay(), plot)
 ```
 
-```julia
-xyaxes = set(xscale=:lin, yscale=:log, xmin=3, xmax=5, ymin=0, ymax=10)
-```
-
 ### Plot creation example: A stacked, multi-*strip* plot
 `EasyPlot.Plot` supports "multi-strip" plots with a common x-axis and multiple stacked y-axes.
-"Multi-strip" plots are ideal for plotting data with wildly differing y-value ranges.
+"Multi-strip" plots are ideal for plotting data with widely differing y-value ranges.
 
 ```julia
 using CMDimData
@@ -190,17 +185,6 @@ display(EasyPlotInspect.PlotDisplay(), pcoll)
 
 ## [Supported backends (link)](EasyPlot_backends.md)
 
-<a name="includepkg_Note"></a>
-## Important note on `@includepkg`
-
-`@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
-
-These modules will therefore only be accessible from within that scope.  Consequently, your Julia environment must ensure it can resolve where the backend module resides.  This can be done by adding the backend module to the active julia "project".  For example, you can add the InspectDR backend to the active Julia project with the package add command:
-
-```julia
-]add InspectDR
-```
-
 <a name="DisplayAddBackend"></a>
 ## Julia display stack: Adding a default backend
 
@@ -221,3 +205,13 @@ With a `<:EasyPlotDisplay` object on Julia's display stack, it is no longer nece
  - `EasyPlot` does not support `DataTime` or `DataFreq`.
  - The `CMDimData.@includepkg [backend]` macro evaluates the interfacing code at run time to circumvent having to add backends as dependencies of `CMDimData`.  They consequenly do not take advantage of Julia's pre-compilation cache.
 
+<a name="includepkg_Note"></a>
+### Important note on `@includepkg`
+
+`@includepkg` includes the module code that implements the `EasyPlot` interface (ex: `EasyPlotInspect`) in whichever module it is called.  It also imports the plotting backend module (ex: `InspectDR`).
+
+These modules will therefore only be accessible from within that scope.  Consequently, your Julia environment must ensure it can resolve where the backend module resides.  This can be done by adding the backend module to the active julia "project".  For example, you can add the InspectDR backend to the active Julia project with the package add command:
+
+```julia
+]add InspectDR
+```
