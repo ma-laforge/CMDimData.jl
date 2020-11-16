@@ -9,16 +9,6 @@
 #==Main types
 ===============================================================================#
 
-#struct OverwritableValue; end
-
-#Alt?: NoChange, KeepValue
-"Type for a value indicating an attribute should not be overwritten"
-struct NoOverwrite; end
-
-"""Singleton instance of type Nothing.
-Identifies an attribute that should not be overwritten."""
-const nooverwrite = NoOverwrite()
-
 "Object that supports attributes changes"
 abstract type AbstractAttributeReceiver; end
 
@@ -37,17 +27,6 @@ AttributeChangeSpec(id::Symbol, data::AttributeChangeData) =
 	AttributeChangeSpec{id}(data)
 AttributeChangeSpec(id::Symbol, data) =
 	AttributeChangeSpec{id}(_AttributeChangeData(data))
-
-
-#==Accessors
-===============================================================================#
-"""
-	NoOverwrite(v)
-
-Test whether a value is of type "NoOverwrite"
-"""
-NoOverwrite(v) = false
-NoOverwrite(v::NoOverwrite) = true
 
 
 #==Validation
@@ -161,13 +140,5 @@ end
 function Base.show(io::IO, s::AttributeChangeSpec{T}) where T
 	print(io, "Δattr{$T}: ", s.data)
 end
-
-
-@static if false
-
-
-
-
-end #@static
 
 #Last line

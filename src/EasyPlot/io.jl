@@ -1,98 +1,81 @@
-#EasyPlot Display functionnality
+#EasyPlot I/O facilities
 #-------------------------------------------------------------------------------
 
 
-#==Constants
+#==getmime(): map extension symbol => MIME
 ===============================================================================#
-const EXT2MIME_MAP = IdDict{Symbol,String}(
-	:png => "image/png",
-	:svg => "image/svg+xml",
-)
+_getmimetype(::DS{EXT}) where EXT =
+	error("Not a recognized extension: $EXT.")
+_getmimetype(::DS{:png}) = MIME"image/png"
+_getmimetype(::DS{:svg}) = MIME"image/svg+xml"
+_getmimetype(::DS{:eps}) = MIME"image/eps"
+_getmimetype(::DS{:ps})  = MIME"application/postscript"
+_getmimetype(::DS{:pdf}) = MIME"application/pdf"
+_getmimetype(ext::Symbol) = _getmimetype(DS(ext))
+_getmime(ext::Symbol) = _getmimetype(ext::Symbol)()
 
-
-#==Display types
+#==Implement show/showable interface for Plot/PlotCollection
 ===============================================================================#
-
-#To be subtyped by supported plot displays:
-abstract type EasyPlotDisplay <: AbstractDisplay end
-struct NullDisplay <: EasyPlotDisplay; end
-struct UninitializedDisplay <: EasyPlotDisplay
-	dtype::Symbol
-end
-
-
-#==Rendering interface (to be implemented externally):
-===============================================================================#
-
-#Placeholder to define _display method:
-#NOTE: Do not overwrite Base.display... would circumvent display system.
-_display(plot) = throw(MethodError(_display, (plot,)))
-
-#Catch-alls function placeholder:
-render(d::EasyPlotDisplay, pcoll::PlotCollection) = throw(MethodError(render, (d, pcoll)))
-
-function Base.display(d::EasyPlotDisplay, pcoll::PlotCollection)
-	nativeplot = render(d, pcoll)
-	return _display(nativeplot)
-end
-
-function Base.display(d::EasyPlotDisplay, plot::Plot)
-	pcoll = push!(cons(:plot_collection, ncolumns = 1), plot)
-	return display(d, pcoll)
-end
-
-
-#==Rendering functions
-===============================================================================#
-Base.showable(mime::MIME, pc::PlotCollection, d::NullDisplay) = false
-Base.showable(mime::MIME, pc::PlotCollection, d::UninitializedDisplay) = false
-
-function render(d::UninitializedDisplay, pcoll::PlotCollection)
-	@warn("Plot display not initialized: $(d.dtype)")
-	throw(MethodError(render, (d, pcoll)))
-end
-
-Base.showable(mime::MIME, pc::PlotCollection) =
-	Base.showable(mime, pc, EasyPlot.defaults.renderdisplay)
+#Basic text/plain output:
 Base.showable(mime::MIME"text/plain", pc::PlotCollection) = true
-Base.showable(mime::MIME"image/svg+xml", pc::PlotCollection) =
-	EasyPlot.defaults.rendersvg && Base.showable(mime, pc, EasyPlot.defaults.renderdisplay)
-
-#Maintain text/plain MIME support.
 Base.show(io::IO, ::MIME"text/plain", pc::PlotCollection) = Base.show(io, pc)
+Base.showable(mime::MIME"text/plain", plot::Plot) = true
+Base.show(io::IO, ::MIME"text/plain", plot::Plot) = Base.show(io, plot)
+
+_showable(mime::MIME, ::Nothing) = false
+Base.showable(mime::MIME, pc::PlotCollection) = _showable(mime, EasyPlot.defaults.mimebuilder)
+Base.showable(mime::MIME"image/svg+xml", pc::PlotCollection) =
+	EasyPlot.defaults.rendersvg && _showable(mime, EasyPlot.defaults.mimebuilder)
+Base.showable(mime::MIME, plot::Plot) = _showable(mime, PlotCollection())
 
 function Base.show(io::IO, mime::MIME, pc::PlotCollection)
-	d = EasyPlot.defaults.renderdisplay
+	b = EasyPlot.defaults.mimebuilder
 	#Try to figure out if possible *before* rendering:
-	if !showable(mime, pc, d)
+	if !_showable(mime, b)
 		throw(MethodError(show, (io, mime, pc)))
 	end
-	nativeplot = render(d, pc)
-	show(io, mime, nativeplot)
+	nativeplot = build(b, pc)
+	_show(io, mime, EasyPlot.defaults.mimeshowopt, nativeplot)
+end
+function Base.show(io::IO, mime::MIME, plot::Plot)
+	pcoll = push!(PlotCollection(ncolumns = 1), plot)
+	show(io, mime, pcoll)
 end
 
 
-#==Exporting to file:
+#==_write/show interface (internal)
 ===============================================================================#
-#TODO: Should this be overloading "show" instead?
-function _write(filepath::String, mime::MIME, nativeplot)
+function _write(filepath::String, mime::MIME, opt::ShowOptions, nativeplot::T) where T
 	open(filepath, "w") do io
-		show(io, mime, nativeplot)
+		_show(io, mime, opt, nativeplot)
 	end
 end
 
-function _write(filepath::String, mime::MIME, pcoll::PlotCollection, d::EasyPlotDisplay)
-	nativeplot = render(d, pcoll)
-	_write(filepath, mime, nativeplot)
+function _write(filepath::String, mime::MIME, opt::ShowOptions, b::AbstractBuilder, pc::PlotCollection)
+	nativeplot = build(b, pc)
+	_write(filepath, mime, opt, nativeplot)
 end
 
-_write(filepath::String, mime::MIME, pcoll::PlotCollection) =_write(filepath, mime, pcoll, EasyPlot.defaults.renderdisplay)
 
-#Create write_png, write_svg, ... convenience functions:
-for (ext, mime) in EXT2MIME_MAP; fn=Symbol(:write_,ext); @eval begin #CODEGEN----------------------------------------
+#==_write interface (user-facing)
+===============================================================================#
+#=Examples
+   _write(:png, "img.png", nativeplot, set(w=480, h=300))
+   _write(:png, "img.png", ::AbstractBuilder, ::PlotCollection, set(w=480, h=300))
+   _write(:png, "img.png", ::PlotCollection, set(w=480, h=300)) #Use default builder
+   _write(:png, "img.png", :InspectDR, ::PlotCollection, set(w=480, h=300))
+=#
 
-$fn(filepath::String, pcoll::PlotCollection, args...) =_write(filepath, MIME($mime), pcoll, args...)
+_write(mime::Symbol, filepath::String, nativeplot, a::AttributeChangeData=set()) =
+	_write(filepath, _getmime(mime), ShowOptions(a), nativeplot)
+_write(mime::Symbol, filepath::String, b::AbstractBuilder, pc::PlotCollection, a::AttributeChangeData=set()) =
+	_write(filepath, _getmime(mime), ShowOptions(a), b, pc)
+#_write(mime::Symbol, filepath::String, pc::PlotCollection, a::AttributeChangeData=set()) =
+#	_write(filepath, _getmime(mime), ShowOptions(a), AbstractBuilder(builderid), pc)
+function _write(mime::Symbol, filepath::String, builderid::Symbol, pc::PlotCollection, a::AttributeChangeData=set())
+	b = getbuilder(:image, builderid)
+	_write(filepath, _getmime(mime), ShowOptions(a), b, pc)
+end
 
-end; end #CODEGEN---------------------------------------------------------------
 
 #Last line

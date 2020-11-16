@@ -14,12 +14,12 @@ not support multi-dimensional datasets directly.
 ===============================================================================#
 
 """
-    abstract type AbstractWfrmBuilder
+`abstract type AbstractWfrmBuilder`
 
-Provides:
+EasyPlot provides:
  - `addwfrm(b::AbstractWfrmBuilder, wfrm::Waveform, wfrmidx::Int)`
 
-Requires:
+Must implement:
  - addwfrm(b::T, d::DataF1, label::String, l::LineAttributes, g::GlyphAttributes, strip::Int) where T<:AbstractWfrmBuilder
  - needsfold(b::T) where T<:AbstractWfrmBuilder -> FoldedAxis() or nothing
 """

@@ -1,4 +1,4 @@
-#EasyPlot base types & core functions
+#EasyPlot base type, constant & function definitions
 #-------------------------------------------------------------------------------
 
 
@@ -44,6 +44,14 @@ mutable struct Theme
 end
 Theme() = Theme(nothing)
 
+#w & h for plot dimensions (pixels):
+abstract type AbstractPlotDimensions; end
+struct PlotAutosize <: AbstractPlotDimensions; end
+const plotautosize = PlotAutosize()
+struct PlotDim <: AbstractPlotDimensions
+	w::Int; h::Int
+end
+
 abstract type AbstractAxis; end
 
 struct Axis{ID} <: AbstractAxis
@@ -51,8 +59,7 @@ struct Axis{ID} <: AbstractAxis
 end
 Axis(id::Symbol) = Axis{id}()
 
-"""
-    struct FoldedAxis
+"""`struct FoldedAxis`
 
 Describe how a folded axis is to be displayed.
 """
@@ -149,6 +156,8 @@ cons(::DS{:fldaxis}, args...; kwargs...) = FoldedAxis(args...; kwargs...)
 ===============================================================================#
 Base.Symbol(a::Axis{T}) where T = Symbol(T)
 Base.Symbol(a::FoldedAxis) = :lin
+isfixed(d::AbstractPlotDimensions) = false
+isfixed(d::PlotDim) = true
 
 
 #==Copy constructors

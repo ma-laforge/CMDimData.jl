@@ -12,43 +12,9 @@ using MDDatasets
 import NumericIO
 
 
-#==Core type declarations/constants
-===============================================================================#
-"`Optional{T} = Union{Nothing, T}`"
-const Optional{T} = Union{Nothing, T}
-
-"""
-`Default`
-
-Type with no fields whose singleton instance `default` represents a default
-value.
-"""
-struct Default; end
-
-"""
-`default`
-
-Singleton instance of type `Default` representing a default value.
-"""
-const default = Default()
-
-#Real values for plot coordinates, etc:
-const PReal = Float64
-const PNaN = PReal(NaN)
-
-#Type used to dispatch on a symbol & minimize namespace pollution:
-#-------------------------------------------------------------------------------
-struct DS{T}; end #Dispatchable symbol
-DS(v::Symbol) = DS{v}()
-
-
-#==Functions
-===============================================================================#
-SI(v; ndigits=3) = NumericIO.formatted(v, :SI, ndigits=ndigits)
-
-
 #==Implementation
 ===============================================================================#
+include("core.jl")
 include("attributes.jl")
 include("colors.jl")
 include("base.jl")
@@ -56,10 +22,11 @@ include("multistrip.jl")
 include("eyediag.jl")
 include("datamd.jl")
 include("themes.jl")
-include("display.jl")
-include("defaults.jl")
 include("show.jl")
-include("init.jl")
+include("builder.jl")
+include("defaults.jl")
+include("io.jl")
+include("display.jl")
 include("doc.jl")
 
 
@@ -83,16 +50,6 @@ export set #Set PlotCollection/Plot/Waveform/... attributes
 export render #render will not display (if possible).  "display()" shows plot.
 
 
-#==Unexported tools available to users:
-================================================================================
-	@initbackend() #Initializes any un-initialized backend specified in defaults.maindisplay
-      (typically through ~/.julia/config/startup.jl)
-		=> Only to be used in interactive mode; conditionally importing a module is bad for precompile.
-
-TODO: Deprecate?
-==#
-
-
 #==Unexported tools available to backend-interfacing modules:
 ================================================================================
 	addwfrm(ax::AbstractWfrmBuilder, ...) #
@@ -101,20 +58,6 @@ TODO: Deprecate?
 
 	#Constants:
 	COLORSCHEME[{:default/}] #List of color schemes
-==#
-
-
-#==Backend-interface modules should implement:
-================================================================================
-An <: EasyPlotDisplay subtype to dispatch calls to display():
-	struct MyBackendDisplay <: EasyPlot.EasyPlotDisplay; ...; end
-
-A render function to build plot on its plotting backend:
-	EasyPlot.render(::MyBackendDisplay, pcoll::EasyPlot.PlotCollection, args...; kwargs...)
-		=> returns MyBackendPlot object
-
-#Used by EasyPlot to display plots (without side-effects of Base.display):
-	EasyPlot._display(plot::MyBackendPlot) #Displays the plot
 ==#
 
 
