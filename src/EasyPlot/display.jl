@@ -33,10 +33,14 @@ GUIDisplay(builderid::Symbol, args...; kwargs...) =
 displaygui(nativeplot::T) where T =
 	throw("displaygui: no support for plots of type $T.")
 
-displaygui(b::AbstractBuilder, pcoll::PlotCollection) =
-	displaygui(build(b, pcoll))
-displaygui(b::AbstractBuilder, plot::Plot) =
-	displaygui(b, push!(PlotCollection(ncolumns = 1), plot))
+function displaygui(b::AbstractBuilder, pcoll::PlotCollection)
+	plotgui = displaygui(build(b, pcoll))
+	postproc(b, plotgui)
+end
+function displaygui(b::AbstractBuilder, plot::Plot)
+	plotgui = displaygui(b, push!(PlotCollection(ncolumns = 1), plot))
+	postproc(b, plotgui)
+end
 
 displaygui(bid::Symbol, plot::PlotOrColl) = 
 	displaygui(GUIDisplay(bid).builder, plot)

@@ -40,7 +40,7 @@ end
 #==I/O interface
 ===============================================================================#
 function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, fig::PyPlot.Figure)
-	if EasyPlot.isfixed(opt.dim)
+	if !EasyPlot.isauto(opt.dim)
 		@warn("Cannot currently specify plot size. Using defaults.")
 	end
 	show(io, mime, fig)

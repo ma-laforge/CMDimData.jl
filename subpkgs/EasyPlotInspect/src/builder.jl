@@ -21,11 +21,19 @@ end
 
 #==I/O interface
 ===============================================================================#
-function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, plot::InspectDR.Multiplot)
-	if EasyPlot.isfixed(opt.dim)
-		InspectDR._show(io, mime, plot, opt.dim.w, opt.dim.h)
-	else
-		InspectDR.show(io, mime, plot) #Uses dimension values in plot
+function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, mplot::InspectDR.Multiplot)
+	if EasyPlot.isauto(opt.dim)
+		InspectDR.show(io, mime, mplot) #Uses dimension values in mplot
+	elseif isa(opt.dim, EasyPlot.CanvasDim)
+		#Access internal show function:
+		InspectDR._show(io, mime, mplot, Float64(opt.dim.w), Float64(opt.dim.h))
+	else #Specified individual plot dimensions.
+		#Use InspectDR's h/v-alloc (allocates space for title, etc)
+		layout = deepcopy(mplot.layout)
+			layout[:halloc_plot] = opt.dim.w
+			layout[:valloc_plot] = opt.dim.h
+		mplot = InspectDR.Multiplot(mplot.title, mplot.subplots, layout)
+		InspectDR.show(io, mime, mplot)
 	end
 	return
 end

@@ -47,7 +47,6 @@ cons(s::Symbol, args...; kwargs...) = cons(DS(s), args...; kwargs...)
 ===============================================================================#
 export cons #Construct objects (minimize namespace pollution)
 export set #Set PlotCollection/Plot/Waveform/... attributes
-export render #render will not display (if possible).  "display()" shows plot.
 
 
 #==Unexported tools available to backend-interfacing modules:

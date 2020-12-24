@@ -43,7 +43,7 @@ end
 #==I/O interface
 ===============================================================================#
 function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, plot::GracePlot.Plot)
-	if EasyPlot.isfixed(opt.dim)
+	if !EasyPlot.isauto(opt.dim)
 		@warn("Cannot currently specify plot size. Using plot defaults.")
 		#NOTE: Grace supports rescaling through DPI only.
 	end

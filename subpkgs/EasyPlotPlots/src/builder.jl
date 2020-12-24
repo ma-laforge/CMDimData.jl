@@ -23,7 +23,7 @@ function EasyPlot.getbuilder(::Target{T}, ::Type{Builder}, args...;
 end
 
 function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, fig::FigureMulti)
-	if EasyPlot.isfixed(opt.dim)
+	if !EasyPlot.isauto(opt.dim)
 		@warn("Cannot currently specify plot size. Using defaults.")
 	end
 	show(io, mime, fig.p)

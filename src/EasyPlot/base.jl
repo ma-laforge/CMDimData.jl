@@ -136,9 +136,10 @@ mutable struct PlotCollection <: AbstractAttributeReceiver
 	ncolumns::Int #TODO: Create a more flexible system
 	plotlist::Vector{Plot}
 	theme::Theme
+	opt::Any #Optional data/instructions to relay to builder
 end
 _PlotCollection(title::String, ncolumns::Int) =
-	PlotCollection(title, ncolumns, Plot[], Theme())
+	PlotCollection(title, ncolumns, Plot[], Theme(), nothing)
 PlotCollection(args...; title::String="", ncolumns::Int=1, kwargs...) =
 	_apply(_PlotCollection(title, ncolumns), args, kwargs)
 
@@ -156,8 +157,8 @@ cons(::DS{:fldaxis}, args...; kwargs...) = FoldedAxis(args...; kwargs...)
 ===============================================================================#
 Base.Symbol(a::Axis{T}) where T = Symbol(T)
 Base.Symbol(a::FoldedAxis) = :lin
-isfixed(d::AbstractPlotDimensions) = false
-isfixed(d::PlotDim) = true
+isauto(d::AbstractPlotDimensions) = false
+isauto(d::PlotAutosize) = true
 
 
 #==Copy constructors

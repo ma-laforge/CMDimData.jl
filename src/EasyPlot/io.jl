@@ -14,6 +14,25 @@ _getmimetype(::DS{:pdf}) = MIME"application/pdf"
 _getmimetype(ext::Symbol) = _getmimetype(DS(ext))
 _getmime(ext::Symbol) = _getmimetype(ext::Symbol)()
 
+
+#==Dimension calculators
+===============================================================================#
+function griddims(pc::PlotCollection)
+	nplots = length(pc.plotlist)
+	ncols = pc.ncolumns
+	nrows = div(nplots-1, ncols) + 1
+	return (nrows, ncols)
+end
+
+#Computes suggested canvas size for a PlotCollection object (row/col-dependant)
+function _CanvasDim(pc::PlotCollection, dim::PlotDim)
+	nrows, ncols = griddims(pc)
+	return CanvasDim(dim.w*ncols, dim.h*nrows)
+end
+_CanvasDim(pc::PlotCollection, dim::CanvasDim) = dim #Already canvas dimensions
+CanvasDim(pc::PlotCollection, opt::ShowOptions) = _CanvasDim(pc, opt.dim)
+
+
 #==Implement show/showable interface for Plot/PlotCollection
 ===============================================================================#
 #Basic text/plain output:
@@ -60,22 +79,29 @@ end
 #==_write interface (user-facing)
 ===============================================================================#
 #=Examples
-   _write(:png, "img.png", nativeplot, set(w=480, h=300))
-   _write(:png, "img.png", ::AbstractBuilder, ::PlotCollection, set(w=480, h=300))
-   _write(:png, "img.png", ::PlotCollection, set(w=480, h=300)) #Use default builder
-   _write(:png, "img.png", :InspectDR, ::PlotCollection, set(w=480, h=300))
+   _write(:png, "img.png", nativeplot, dim=set(w=480, h=300)) #dim: size of canvas
+   _write(:png, "img.png", nativeplot, plotdim=set(w=480, h=300)) #plotdim: size for each subplot
+   _write(:png, "img.png", ::AbstractBuilder, ::PlotCollection, dim=set(w=480, h=300))
+   _write(:png, "img.png", ::PlotCollection, dim=set(w=480, h=300)) #Use default builder
+   _write(:png, "img.png", :InspectDR, ::PlotCollection, dim=set(w=480, h=300))
 =#
 
-_write(mime::Symbol, filepath::String, nativeplot, a::AttributeChangeData=set()) =
-	_write(filepath, _getmime(mime), ShowOptions(a), nativeplot)
-_write(mime::Symbol, filepath::String, b::AbstractBuilder, pc::PlotCollection, a::AttributeChangeData=set()) =
-	_write(filepath, _getmime(mime), ShowOptions(a), b, pc)
-#_write(mime::Symbol, filepath::String, pc::PlotCollection, a::AttributeChangeData=set()) =
-#	_write(filepath, _getmime(mime), ShowOptions(a), AbstractBuilder(builderid), pc)
-function _write(mime::Symbol, filepath::String, builderid::Symbol, pc::PlotCollection, a::AttributeChangeData=set())
+_write(mime::Symbol, filepath::String, opt::ShowOptions, nativeplot) =
+	_write(filepath, _getmime(mime), opt, nativeplot)
+_write(mime::Symbol, filepath::String, opt::ShowOptions, b::AbstractBuilder, pc::PlotCollection) =
+	_write(filepath, _getmime(mime), opt, b, pc)
+#_write(mime::Symbol, filepath::String, opt::ShowOptions, pc::PlotCollection) =
+#	_write(filepath, _getmime(mime), opt, AbstractBuilder(builderid), pc)
+function _write(mime::Symbol, filepath::String, opt::ShowOptions, builderid::Symbol, pc::PlotCollection)
 	b = getbuilder(:image, builderid)
-	_write(filepath, _getmime(mime), ShowOptions(a), b, pc)
+	_write(filepath, _getmime(mime), opt, b, pc)
 end
 
+_write(mime::Symbol, filepath::String, nativeplot; opt_kwargs...) =
+	_write(mime, filepath, ShowOptions(; opt_kwargs...), nativeplot)
+_write(mime::Symbol, filepath::String, b::AbstractBuilder, pc::PlotCollection; opt_kwargs...) =
+	_write(mime, filepath, ShowOptions(; opt_kwargs...), b, pc)
+_write(mime::Symbol, filepath::String, builderid::Symbol, pc::PlotCollection; opt_kwargs...) =
+	_write(mime, filepath, ShowOptions(; opt_kwargs...), builderid, pc)
 
 #Last line
