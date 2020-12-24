@@ -10,27 +10,11 @@ CMDimData.@includepkg EasyPlotInspect
 
 #==Constants
 ===============================================================================#
-LBL_AXIS_TIME = "Time (s)"
-LBL_AXIS_POSITION = "Position (m)"
-LBL_AXIS_NORMPOSITION = "Normalized Pos (m/m)"
-LBL_AXIS_SPEED = "Speed (m/s)"
-lstylesweep = cons(:a, line = set(style=:solid, width=2)) #Default is a bit thin
-dfltglyph = cons(:a, glyph = set(shape=:o, size=1.5))
-
-
-#==Helper functions
-===============================================================================#
-function savepng(plotgui, filepath::String)
-	mplot = plotgui.src
-	wlegend = 250
-	wnoleg = 600
-	w = wlegend+wnoleg; h = round(Int, wnoleg*1.5)
-	for sp in mplot.subplots
-		sp.layout[:halloc_legend] = wlegend
-	end
-
-	EasyPlot._write(:png, filepath, plotgui, set(w=w, h=h))
-end
+WIDTH_LEGEND = 250
+WIDTH_DATA = 600 #Approx
+WIDTH_PLOT = WIDTH_DATA+WIDTH_LEGEND
+HEIGHT_PLOT = round(Int, WIDTH_DATA/3) #Total is roughly square
+HEIGHT_CANVAS = round(Int, 3*HEIGHT_PLOT*1.2) #Add extra for overhead (titles, etc)
 
 
 #==Read in results of parametric "simulation"
@@ -81,54 +65,36 @@ fallx_red2 = value(fallx_red1, x=sdim2)
 @show ndims(fallx_red2), paramlist(fallx_red2)
 @show xred3 = x_paramreduce[3] #x-value for 3rd fallx reduction
 
+data = (
+	signal = signal, signal_norm = signal_norm,
+	rate = rate, fallx = fallx,
+	fallx_red1 = fallx_red1, fallx_red2 = fallx_red2,
+	xred1 = xred1, xred2 = xred2,	xred3 = xred3,
+	sdim1 = sdim1,	sdim2 = sdim2,
+)
 
 #==Generate plots
 ===============================================================================#
-
-#plotset1: Parametric sin(): Initial observations
-#-------------------------------------------------------------------------------
-plot = cons(:plot, nstrips = 3,
-	ystrip1 = set(axislabel=LBL_AXIS_POSITION, striplabel="Sinusoidal response"),
-	ystrip2 = set(axislabel=LBL_AXIS_NORMPOSITION, striplabel="Normalized response (All peaks should be ±1)"),
-	ystrip3 = set(axislabel=LBL_AXIS_SPEED, striplabel="Rate of change (should be larger for higher frequencies)"),
-	xaxis = set(label=LBL_AXIS_TIME)
+PB = EasyPlot.load_plotbuilders(@__DIR__,
+	initial = "bld_parametric_sin_initial.jl",
+	explore = "bld_parametric_sin_explore.jl",
 )
-push!(plot,
-	cons(:wfrm, signal, lstylesweep, label="", strip=1),
-	cons(:wfrm, signal_norm, lstylesweep, label="", strip=2),
-	cons(:wfrm, rate, lstylesweep, label="", strip=3),
-)
-plotset1 = push!(cons(:plotcoll, title="Parametric sin() - Initial Observations"), plot)
-plotgui1 = EasyPlot.displaygui(:InspectDR, plotset1)
-	savepng(plotgui1, "parametric_sin_1.png")
 
+function adjust_legend(gtkplot)
+	mplot = gtkplot.src
+	for sp in mplot.subplots
+		sp.layout[:halloc_legend] = WIDTH_LEGEND
+	end
+end
+plotdisplay = EasyPlot.GUIDisplay(:InspectDR, postproc=adjust_legend)
+	opt = EasyPlot.ShowOptions(dim=set(w=WIDTH_PLOT, h=HEIGHT_CANVAS))
 
-#plotset2: Parametric sin(): Diving into parameter values
-#-------------------------------------------------------------------------------
-yext_firstx = (min=90e-6, max=130e-6) #Common y-axis extents to compare times @ first crossing
-
-p1 = cons(:plot,
-	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st fall-crossing (should decrease with $xred1)"), #; yext_firstx...),
-	xaxis = set(label=xred1),
-)
-push!(p1, cons(:wfrm, fallx, lstylesweep, dfltglyph, label=""))
-
-p2 = cons(:plot,
-	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st fall-crossing @$xred1=$sdim1 (should be indep. of $xred2)"; yext_firstx...),
-	xaxis = set(label=xred2),
-)
-push!(p2, cons(:wfrm, fallx_red1, lstylesweep, dfltglyph, label=""))
-
-p3 = cons(:plot,
-	ystrip1 = set(axislabel=LBL_AXIS_TIME, striplabel="Time to 1st fall-crossing @$xred2=$sdim2 (should decrease with increasing 𝜑ₒ)"; yext_firstx...),
-	xaxis = set(label=xred3),
-)
-push!(p3, cons(:wfrm, fallx_red2, lstylesweep, dfltglyph, label=""))
-
-plotset2 = cons(:plotcoll, title="Parametric sin() - Diving into parameter values", ncolumns=1)
-	push!(plotset2, p1, p2, p3)
-plotgui2 = EasyPlot.displaygui(:InspectDR, plotset2)
-	savepng(plotgui2, "parametric_sin_2.png")
+plotset1 = EasyPlot.build(PB[:initial], data)
+	plotgui1 = display(plotdisplay, plotset1)
+	EasyPlot._write(:png, "parametric_sin_initial.png", opt, plotgui1)
+plotset2 = EasyPlot.build(PB[:explore], data)
+	plotgui2 = display(plotdisplay, plotset2)
+	EasyPlot._write(:png, "parametric_sin_explore.png", opt, plotgui2)
 
 end #module
 :SampleCode_Executed

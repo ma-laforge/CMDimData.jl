@@ -110,7 +110,20 @@ using CMDimData.EasyPlot
 
 Note that `EasyPlot` only exports a minimal set of functions, including `set()`, and the `cons()` constructor.
 
-Plots are constructed using the `cons(:plot, ...` method:
+In this example, plots are defined using separate files to keep code more readable:
+```julia
+PB = EasyPlot.load_plotbuilders(@__DIR__,
+	initial = "bld_parametric_sin_initial.jl",
+	explore = "bld_parametric_sin_explore.jl",
+)
+```
+
+These builders are called upon using the `build` command:
+```julia
+plotset1 = EasyPlot.build(PB[:initial], data)
+```
+
+Plots are constructed using the `cons(:plot, ...)` method:
 ```julia
 plot = cons(:plot, nstrips = 3,
    #Add more properties such as axis labels here
@@ -122,22 +135,25 @@ Note that `EasyPlot` supports the concept of multiple y-strips tied a single x-a
 `Waveforms` (`y` vs `x` data) are then added to this using `push!()`:
 ```julia
 push!(plot,
-    cons(:wfrm, signal, label="signal", strip=1),
-    cons(:wfrm, signal_norm, label="||signal||", strip=2),
-    cons(:wfrm, rate, label="d{signal}/dt", strip=3),
+    cons(:wfrm, data.signal, label="signal", strip=1),
+    cons(:wfrm, data.signal_norm, label="||signal||", strip=2),
+    cons(:wfrm, data.rate, label="d{signal}/dt", strip=3),
 )
 ```
 
 Before displaying `plot`, it is necessary to `push!()` it to a multi-plot collection:
 ```julia
-plotset1 = push!(cons(:plotcoll, title="Parametric sin() - Observations"), plot)
+pcoll = push!(cons(:plotcoll, title="Parametric sin() - Observations"), plot)
 ```
 
-Plots are finally shown on a plotting backend that implements an `EasyPlotDisplay<:Base.AbstractDisplay` interface:
+Plots are finally shown on a plotting backend (`InspectDR` in this case):
 ```julia
 CMDimData.@includepkg EasyPlotInspect
-pdisp = EasyPlotInspect.PlotDisplay() #::EasyPlotDisplay
-display(pdisp, plotset1)
+
+#...
+
+plotdisplay = EasyPlot.GUIDisplay(:InspectDR, postproc=adjust_legend)
+plotgui1 = display(plotdisplay, plotset1)
 ```
 
 Please note that plotting backends like `EasyPlotInspect` are currently "included" in the current module.  This is not ideal.
@@ -147,4 +163,4 @@ Nonetheless, code inclusion allows the backend modules to be bundled with the `C
 As a result, you must *explicitly* add the plotting packages you desire to your *own* project's list of available packages.
 
 ## That's it!
-A more complete version of this example is found in [parametric\_sin.jl](parametric_sin.jl).
+A more complete version of this example is found in [parametric\_sin.jl](parametric_sin.jl), [bld\_parametric\_sin\_initial.jl](bld_parametric_sin_initial.jl), and [bld\_parametric\_sin\_explore.jl](bld_parametric_sin_explore.jl).

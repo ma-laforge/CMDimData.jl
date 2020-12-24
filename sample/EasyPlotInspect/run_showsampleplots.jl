@@ -22,7 +22,7 @@ printheader(label) = printsep(label, "=")
 ===============================================================================#
 printsep("Write EasyPlot.Plot to file...")
 plot = evalfile(demolist[1])
-	EasyPlot._write(:png, "sample_InspectDR.png", :InspectDR, plot, set(w=640, h=480))
+	EasyPlot._write(:png, "sample_InspectDR.png", :InspectDR, plot, dim=set(w=640, h=480))
 	EasyPlot._write(:svg, "sample_InspectDR.svg", :InspectDR, plot)
 
 
