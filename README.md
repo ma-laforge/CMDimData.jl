@@ -16,6 +16,14 @@
 | <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin_live/phi_all-A_all.png" width="850"> |
 | :---: |
 
+## &#x1F389; Now supporting plot builder files
+
+Supports separate `.jl` files to build plots from user-provided data.
+ - Makes for more readable code.
+ - Specify titles, labels, linestyles, etc. for entire `PlotCollection` (multi-plot object) in a separate file.
+
+See `EasyPlot.load_plotbuilders()` function (TODO: add to docs, currently only in `sample/`).
+
 ## Table of contents
 
  1. [Description](#Description)

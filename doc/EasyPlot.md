@@ -10,7 +10,8 @@
  1. [Supported backends](EasyPlot_backends.md)
  1. [Julia display stack: Adding a default backend](#DisplayAddBackend)
  1. [Configuration/defaults](EasyPlot_config.md)
-    1. [Inline plots/defaults](EasyPlot_config.md#InlinePlots)
+    1. [Default builders](EasyPlot_config.md#)
+    1. [Inline plots](EasyPlot_config.md#InlinePlots)
     1. [Defaults & backend initialization](EasyPlot_config.md#Defaults)
  1. [Known limitations](#KnownLimitations)
     1. [Important note on `@includepkg`](#includepkg_Note)
@@ -92,7 +93,7 @@ There are two steps to plotting with EasyPlot:
  1. Create the `Plot`/`PlotCollection` object
  2. Display the `Plot`/`PlotCollection` object
 
-Note that you must choose a particular backend on which the plot is to be displayed.  To achieve this, you must specify a subtype of `EasyPlot.EasyPlotDisplay` that corresponds to a [plotting backend](EasyPlot_backends.md).
+Note that you must choose a particular [plotting backend](EasyPlot_backends.md) on which the plot is to be displayed.
 
 ### Plot creation example: A simple plot
 The following illustrates how to create plots with EasyPlot:
@@ -110,15 +111,15 @@ x = DataF1(-2:.1:2)
 plot = cons(:plot, title="Simple plot", legend=true,
     labels = set(xaxis="x-value", yaxis="y-value")
 )
- 
+
 #Add some data:
 push!(plot,
     cons(:wfrm, x^2, label="x^2"),
-    cons(:wfrm, x^2, label="x^3"),
+    cons(:wfrm, x^3, label="x^3"),
 )
 
 #Display plot on selected backend:
-display(EasyPlotInspect.PlotDisplay(), plot)
+EasyPlot.displaygui(:InspectDR, plot)
 ```
 
 ### Plot creation example: A stacked, multi-*strip* plot
@@ -153,7 +154,7 @@ push!(plot,
 )
 
 #Display plot on selected backend:
-display(EasyPlotInspect.PlotDisplay(), plot)
+EasyPlot.displaygui(:InspectDR, plot)
 ```
 
 ### Plot creation example: Bode plot (Another multi-*strip* plot)
@@ -180,7 +181,7 @@ push!(pcoll,
     cons(:plot, title="2nd plot"),
 )
 
-display(EasyPlotInspect.PlotDisplay(), pcoll)
+EasyPlot.displaygui(:InspectDR, pcoll)
 ```
 
 ## [Supported backends (link)](EasyPlot_backends.md)
@@ -188,15 +189,29 @@ display(EasyPlotInspect.PlotDisplay(), pcoll)
 <a name="DisplayAddBackend"></a>
 ## Julia display stack: Adding a default backend
 
-It is also possible to use the Julia display stack to specify an default backend for rendering plots. Simply push an instance of the desired backend's `EasyPlotDisplay` object to the top of Julia's display stack:
+It is also possible to use the Julia display stack to specify an default backend for rendering plots. Simply push an instance of the desired backend's `<:AbstractPlotDisplay` object to the top of Julia's display stack:
 
-	pushdisplay(EasyPlotInspect.PlotDisplay())
+```julia
+using CMDimData
+using CMDimData.EasyPlot
+CMDimData.@includepkg EasyPlotInspect
 
-With a `<:EasyPlotDisplay` object on Julia's display stack, it is no longer necessary to specify `pdisp` when calling `display`:
+pushdisplay(EasyPlot.GUIDisplay(:InspectDR)); #Semicolon: inhibit object dump to REPL
+```
 
-	#Display plot using the top-most (most recently pushed)
-	#EasyPlotDisplay object:
-	display(plot)
+NOTE: `EasyPlot.GUIDisplay(:InspectDR, args...; kwargs...)` returns a GUI-enabled `<:AbstractPlotDisplay`/plot builder for the `InspectDR` backend.
+
+With an `<:AbstractPlotDisplay` object on Julia's display stack, it is no longer necessary to use `EasyPlot.displaygui()`:
+
+```julia
+#Display plot using the top-most (most recently pushed) `AbstractPlotDisplay` object:
+display(plot)
+```
+
+Actually, the Julia `REPL`, implicitly calls `display()` if you evaluate `plot`:
+```julia
+julia> plot
+```
 
 <a name="KnownLimitations"></a>
 ## Known limitations

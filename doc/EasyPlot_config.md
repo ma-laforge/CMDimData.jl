@@ -1,45 +1,39 @@
 # `CMDimData.EasyPlot` Configuration/defaults
 
+## Default builders
+```julia
+EasyPlot.defaults.guibuilder #Uses a backend to build plot GUIs.
+EasyPlot.defaults.filebuilder #Uses a backend to write directly to file (no GUI, typically an image file).
+EasyPlot.defaults.mimebuilder #Uses a backend to write to a MIME output (no GUI, typically image data).
+```
+
 <a name="InlinePlots"></a>
-### Inline plots/defaults
+## Inline plots
 
 `EasyPlot.Plot` objects can be rendered inline (ex: IJulia notebooks) by configuring `defaults`:
 
-	EasyPlot.defaults.renderdisplay = EasyPlotMPL.PlotDisplay(guimode=false)
+```julia
+EasyPlot.defaults.mimebuilder = ...
+```
 
-If SVG inline plots are undesired (ex: for performance reasons), they can be suppressed as follows:
+TODO: Provide details/examples.
 
-	EasyPlot.defaults.rendersvg = false
+If SVG inline plots are undesired (ex: for performance reasons), `mimebuilder` can inhibit SVG output with the following:
+
+```julia
+EasyPlot.defaults.rendersvg = false
+```
 
 <a name="Defaults"></a>
-### Defaults & backend initialization
+## Defaults & backend initialization
 
 Default settings can be initialized even *before* importing the `CMDimData` module with the help of environment variables.  The following code describes how this can be done from the `~/.julia/config/startup.jl` file.
 
-To select the default `EasyPlot.Plot` display, add the following key before importing `CMDimData`:
+TODO: Figure out how to do backend initialization.  Not sure it is pratical anymore.
 
-	ENV["EASYPLOT_DEFAULTDISPLAY"] = "EasyPlotInspect"
+To dissallow SVG inline plots, set the following `ENV[]` variable before importing `CMDimData`:
 
-To import and initialize said user-selected display module once `EasyPlot` is loaded, simply execute the following:
-
-	CMDimData.EasyPlot.@initbackend()
-
-Currently supported options for `EASYPLOT_DEFAULTDISPLAY` are:
- - `None`: Do not auto-initialize default displays.
- - `Any`: First `import`ed module is used as the default.
- - `EasyPlotInspect`: (InspectDR)
- - `EasyPlotGrace`: (GracePlot)
- - `EasyPlotMPL`: (PyPlot/Matplotlib)
- - `EasyPlotQwt`: (Qwt)
- - `EasyPlotPlots`: (Plots.jl)
-
-To display EasyPlot plots using inline graphics, add the following key before importing `CMDimData`:
-
-	ENV["EASYPLOT_RENDERONLY"] = "true"
-
-**IMPORTANT:** If `ENV["EASYPLOT_RENDERONLY"] != "true"`, `EasyPlot` will automatically push the default display onto Julia's display stack.
-
-To dissallow SVG inline plots, following key before importing `CMDimData`:
-
-	ENV["EASYPLOT_RENDERSVG"] = "false"
+```julia
+ENV["EASYPLOT_RENDERSVG"] = "false"
+```
 

@@ -8,7 +8,7 @@ The following is a list of modules implementing the `EasyPlot` interface, along 
  - `EasyPlotInspect`: (InspectDR.jl)
  - `EasyPlotMPL`: (PyPlot.jl/Matplotlib)
  - `EasyPlotPlots`: (Plots.jl)
- - BROKEN `EasyPlotQwt`: (PyCall.jl/`guiqwt` Python library)
+ - (BROKEN) `EasyPlotQwt`: (PyCall.jl/`guiqwt` Python library)
  - `EasyPlotGrace`: (GracePlot.jl)
 
 ## Choosing a backend
@@ -37,8 +37,6 @@ To import a specific interface module for a given plotting backend, as listed in
 	#Import a specific EasyPlot interface, and its associated backend module:
 	CMDimData.@includepkg EasyPlotInspect #To render plots with InspectDR
 
-	#Now ready to create `EasyPlotInspect.PlotDisplay()` objects to render plots.
-
 ## Configuring backends
 
 ### EasyPlotInspect
@@ -66,7 +64,7 @@ To specify the default Plots.jl plot rendering tool, add the following to your `
 
 See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/backends/) for more information on supported backends.
 
-### EasyPlotQwt
+### EasyPlotQwt (BROKEN)
 
 ### EasyPlotGrace
 
@@ -92,15 +90,7 @@ See [Plots.jl `Backends` documentation page](http://docs.juliaplots.org/latest/b
 
 ### Sample usage
 
-The following returns a `T<:Display` object that can render `EasyPlot.Plot` objects:
-
-	pdisp = EasyPlotPlots.PlotDisplay(:pyplot)
-
-A `plot::EasyPlot.Plot` object is therefore diplayed using:
-
-	display(pdisp, plot)
-
-More sample code can be found [here](../sample/EasyPlotPlots).
+Sample code can be found [here](../sample/EasyPlotPlots).
 
 ## Known limitations
 
