@@ -19,10 +19,10 @@
 ## &#x1F389; Now supporting plot builder files
 
 Supports separate `.jl` files to build plots from user-provided data.
- - Makes for more readable code.
  - Specify titles, labels, linestyles, etc. for entire `PlotCollection` (multi-plot object) in a separate file.
+ - Makes for more readable code.
 
-See `EasyPlot.load_plotbuilders()` function (TODO: add to docs, currently only in `sample/`).
+See `EasyPlot.load_plotbuilders()` function (TODO: add to docs, currently only in [parametric\_sin.md](sample/analysis_fmtfiles/parametric_sin.md) sample).
 
 ## Table of contents
 
@@ -35,7 +35,7 @@ See `EasyPlot.load_plotbuilders()` function (TODO: add to docs, currently only i
  1. [Sample usage](#SampleUsage)
     1. [Sample directory](sample)
     1. [Live-slice examples](sample/LiveSlice)
-    1. [Parametric `sin()` "simulation](sample/parametric_sin.md)
+    1. [Parametric `sin()` "simulation](sample/analysis_fmtfiles/parametric_sin.md)
  1. [Known limitations](#KnownLimitations)
 
 <a name="Description"></a>
@@ -87,10 +87,10 @@ A few examples are organized by function:
  - "Live-Slice" examples: [sample/LiveSlice/](sample/LiveSlice)
 
 Detailed walthroughs:
- - Parametric `sin()` "simulation": [sample/parametric\_sin.md](sample/parametric_sin.md)
+ - Parametric `sin()` "simulation": [sample/analysis\_fmtfiles/parametric\_sin.md](sample/analysis_fmtfiles/parametric_sin.md)
 
 ### Sample plot construction
-More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](../sample/plots/) folder.
+More elaborate examples of constructing `EasyPlot.Plot`/`PlotCollection` objects can be found in the [sample/plots/](sample/plots/) folder.
 
 <a name="KnownLimitations"></a>
 ## Known limitations
