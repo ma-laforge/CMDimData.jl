@@ -30,9 +30,12 @@ plot = evalfile(demolist[1])
 ===============================================================================#
 for demofile in demolist
 	fileshort = basename(demofile)
+	savefile = joinpath(splitext(fileshort)[1] * ".png")
+
 	printsep("Display $fileshort...")
 	plot = evalfile(demofile)
 	EasyPlot.displaygui(:InspectDR, plot)
+#	EasyPlot._write(:png, savefile, :InspectDR, plot, dim=set(w=640, h=480))
 end
 
 end #module
