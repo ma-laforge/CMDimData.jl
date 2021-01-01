@@ -6,7 +6,7 @@
 
 
 # CMDimData.jl: Parametric Analysis +Continuous <var>f(x)</var> +Plotting
-**Galleries:** [:art: TODO: sample output][Gallery] / [:art: SignalProcessing module][GallerySProc] / [:art: InspectDR.jl package][GalleryInspectDR]
+**Galleries:** [:art: sample output][Gallery] / [:art: CMDimCircuits.jl/SignalProcessing][GallerySProc] / [:art: InspectDR.jl package][GalleryInspectDR]
 
 &mdash; ***"Focus on the analysis itself, not on data manipulation"***<br>
 &mdash; ***"The hardest part of data analysis should be annotating the plots!"***
