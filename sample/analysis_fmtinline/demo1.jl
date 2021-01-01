@@ -11,12 +11,24 @@ CMDimData.@includepkg EasyData
 
 #==Constants
 ===============================================================================#
+WIDTH_LEGEND = 200
 LBLAX_POS = "Position [m]"
 LBLAX_TIME = "Time [s]"
 pvst = cons(:a, labels = set(xaxis="Time (s)", yaxis="Position (m)"))
 lstylesweep = cons(:a, line = set(width=3))
 lstyle1 = cons(:a, line = set(color=:red, width=3, style=:solid))
 lstyle2 = cons(:a, line = set(color=:blue, width=3))
+
+
+#==Plot config (make legend more readable)
+===============================================================================#
+function adjust_legend(gtkplot)
+	mplot = gtkplot.src
+	for sp in mplot.subplots
+		sp.layout[:halloc_legend] = WIDTH_LEGEND
+	end
+end
+plotdisplay = EasyPlot.GUIDisplay(:InspectDR, postproc=adjust_legend)
 
 
 #==Input data
@@ -70,8 +82,9 @@ push!(plot,
 	cons(:wfrm, c_sin, lstylesweep, label="r_sin", strip=4),
 )
 
-pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
+pcoll = cons(:plot_collection, title="Simple Parametric Analysis", ncolumns=1)
 	push!(pcoll, plot)
+
 
 	#Save pcoll for later use:
 	filename = basename(@__FILE__)
@@ -79,8 +92,9 @@ pcoll = cons(:plot_collection, title="Demo 1 EasyPlot (InspectDR)", ncolumns=1)
 	EasyData.writeplot(savefile, pcoll)
 
 	#Display pcoll:
-	EasyPlot.displaygui(:InspectDR, pcoll)
+	#EasyPlot.displaygui(:InspectDR, pcoll)
+	plotgui = display(plotdisplay, pcoll) #Tweak plot appearance with `plotdisplay`
 	savefile = joinpath("./", splitext(filename)[1] * ".png")
-	EasyPlot._write(:png, savefile, :InspectDR, pcoll)
+	EasyPlot._write(:png, savefile, plotgui, dim=set(w=640, h=480))
 end #module
 :SampleCode_Executed
