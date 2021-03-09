@@ -10,12 +10,12 @@
 ===============================================================================#
 #(Axis is a bit strange to write out)
 
-function _write_typed(grp::HDF5Group, name::String, v::Axis{T}) where T
+function _write_typed(grp::HDF5.Group, name::String, v::Axis{T}) where T
 	grp[name] = String(T)
 	_write_datatype_attr(grp[name], Axis)
 end
 
-function __read(::Type{Axis}, ds::HDF5Dataset)
+function __read(::Type{Axis}, ds::HDF5.Dataset)
 	scale = Symbol(HDF5.read(ds))
 	return Axis(scale)
 end
@@ -24,7 +24,7 @@ end
 #==Plot read/write functions
 ===============================================================================#
 
-function _writeplot(grp::HDF5Group, plot::Plot)
+function _writeplot(grp::HDF5.Group, plot::Plot)
 	_write_typed(grp, "title", plot.title)
 	_write_typed(grp, "xlabel", plot.xlabel)
 	_write_typed(grp, "legend", plot.legend)
@@ -45,7 +45,7 @@ function _writeplot(grp::HDF5Group, plot::Plot)
 	return
 end
 
-function _readplot(grp::HDF5Group)
+function _readplot(grp::HDF5.Group)
 	plot = Plot(title=_read_typed(grp, "title"))
 	plot.ystriplist = []
 	plot.xlabel = _read_typed(grp, "xlabel")
@@ -73,7 +73,7 @@ end
 
 #==PlotCollection read/write functions
 ===============================================================================#
-function _writepcoll(grp::HDF5Group, pcoll::PlotCollection)
+function _writepcoll(grp::HDF5.Group, pcoll::PlotCollection)
 	_write_typed(grp, "title", pcoll.title)
 	_write_typed(grp, "ncolumns", pcoll.ncolumns)
 
@@ -86,7 +86,7 @@ function _writepcoll(grp::HDF5Group, pcoll::PlotCollection)
 	return
 end
 
-function _readpcoll(grp::HDF5Group)
+function _readpcoll(grp::HDF5.Group)
 	pcoll = PlotCollection(title=_read_typed(grp, "title"))
 	pcoll.ncolumns = _read_typed(grp, "ncolumns")
 

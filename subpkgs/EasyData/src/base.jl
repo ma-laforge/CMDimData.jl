@@ -30,11 +30,11 @@ const _versionstr = _get_CMDimData_versionstr()
 ===============================================================================#
 
 mutable struct EasyDataReader
-	reader::HDF5.HDF5File
+	reader::HDF5.File
 end
 
 mutable struct EasyDataWriter
-	writer::HDF5.HDF5File
+	writer::HDF5.File
 end
 
 
@@ -42,16 +42,16 @@ end
 ===============================================================================#
 
 #Create/open HDF5 groups:
-creategrp(w::EasyDataWriter, path::String) = HDF5.g_create(w.writer, path)
-creategrp(grp::HDF5Group, sub::String) = HDF5.g_create(grp, sub)
-opengrp(w::EasyDataWriter, path::String) = HDF5.g_open(w.writer, path)
-opengrp(r::EasyDataReader, path::String) = HDF5.g_open(r.reader, path)
-opengrp(grp::HDF5Group, sub::String) = HDF5.g_open(grp, sub)
+creategrp(w::EasyDataWriter, path::String) = HDF5.create_group(w.writer, path)
+creategrp(grp::HDF5.Group, sub::String) = HDF5.create_group(grp, sub)
+opengrp(w::EasyDataWriter, path::String) = HDF5.open_group(w.writer, path)
+opengrp(r::EasyDataReader, path::String) = HDF5.open_group(r.reader, path)
+opengrp(grp::HDF5.Group, sub::String) = HDF5.open_group(grp, sub)
 
-function _write_length_attr(grp::HDF5Group, v::Vector)
-	HDF5.attrs(grp)["LENGTH"] = length(v)
+function _write_length_attr(grp::HDF5.Group, v::Vector)
+	HDF5.attributes(grp)["LENGTH"] = length(v)
 end
-_read_length_attr(::Type{Vector}, grp::HDF5Group) = HDF5.read(HDF5.attrs(grp)["LENGTH"])
+_read_length_attr(::Type{Vector}, grp::HDF5.Group) = HDF5.read(HDF5.attributes(grp)["LENGTH"])
 
 
 #==User-level interface:
@@ -60,7 +60,7 @@ function openwriter(path::String)
 	w = EasyDataWriter(HDF5.h5open(path, "w"))
 	creategrp(w, hdf5dataroot)
 	creategrp(w, hdf5plotcollroot)
-	HDF5.d_write(w.writer, "VERSION_INFO", _versionstr)
+	HDF5.write_dataset(w.writer, "VERSION_INFO", _versionstr)
 	return w
 end
 Base.close(w::EasyDataWriter) = close(w.writer)
