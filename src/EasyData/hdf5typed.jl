@@ -105,10 +105,6 @@ end
 
 #Types with built-in HDF5 support:
 __read(::Type{Type_HDF5AutoDetect}, ds::HDF5.Dataset) = HDF5.read(ds)
-
-function __read(::Type{Type_HDF5AutoDetect}, ds::HDF5.Dataset)
-	return HDF5.read(ds)
-end
 function __read(::Type{Nothing}, ds::HDF5.Dataset)
 	v = HDF5.read(ds)
 	nstr = NOTHING_STRING
