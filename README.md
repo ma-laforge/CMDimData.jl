@@ -11,7 +11,7 @@
 &mdash; ***"Focus on the analysis itself, not on data manipulation"***<br>
 &mdash; ***"The hardest part of data analysis should be annotating the plots!"***
 
-[![Build Status](https://travis-ci.org/ma-laforge/CMDimData.jl.svg?branch=master)](https://travis-ci.org/ma-laforge/CMDimData.jl)
+[![Build Status](https://github.com/ma-laforge/CMDimData.jl/workflows/CI/badge.svg)](https://github.com/ma-laforge/CMDimData.jl/actions?query=workflow%3ACI)
 
 | <img src="https://github.com/ma-laforge/FileRepo/blob/master/CMDimData/parametric_sin_live/phi_all-A_all.png" width="850"> |
 | :---: |
