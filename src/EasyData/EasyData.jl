@@ -1,20 +1,12 @@
 #EasyData: A quick/easy way to save datasets/plots to file.
 #-------------------------------------------------------------------------------
-#=Reminder
- - EasyData is "include"d using the `CMDimData.@includepkg EasyData` macro.
- - All using/imported packages below must be "add"ed to the user's project.
-
-Thus:
-Use CMDimData.EasyPlot.Colors to avoid users needing to add it to their own projects.
-=#
-
 module EasyData
 
 
-import CMDimData
+import ..CMDimData
 using CMDimData.EasyPlot
-using CMDimData.MDDatasets
-using CMDimData.EasyPlot.Colors
+using MDDatasets
+using Colors
 import HDF5
 import Pkg
 

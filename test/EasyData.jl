@@ -1,6 +1,6 @@
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyData
+using CMDimData.EasyData
 
 @testset "EasyData tests" begin #Scope for test data
 	show_testset_description()

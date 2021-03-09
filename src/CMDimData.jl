@@ -15,6 +15,7 @@ import Pkg
 const rootpath = realpath(joinpath(@__DIR__, ".."))
 
 include("EasyPlot/EasyPlot.jl")
+include("EasyData/EasyData.jl")
 
 
 #==Subpackage manipulations

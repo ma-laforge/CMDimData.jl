@@ -5,8 +5,8 @@ module CMDimData_SampleUsage
 using CMDimData
 using CMDimData.MDDatasets
 using CMDimData.EasyPlot
+using CMDimData.EasyData
 CMDimData.@includepkg EasyPlotInspect
-CMDimData.@includepkg EasyData
 
 
 #==Constants

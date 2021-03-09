@@ -9,7 +9,7 @@ module CMDimData_SampleUsage
 
 using CMDimData
 using CMDimData.EasyPlot
-CMDimData.@includepkg EasyData
+using CMDimData.EasyData
 CMDimData.@includepkg EasyPlotInspect
 
 
