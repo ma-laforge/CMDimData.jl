@@ -29,13 +29,15 @@ See `EasyPlot.load_plotbuilders()` function (TODO: add to docs, currently only i
  1. [Description](#Description)
     1. [Features/Highlights](#Highlights)
  1. [Installation](#Installation)
- 1. [Plotting interface](doc/EasyPlot.md)
-    1. [Plotting backends](doc/EasyPlot_backends.md)
- 1. [Saving/Loading {data/plot} &hArr; HDF5 file](doc/EasyData.md)
+ 1. [Julia tips](doc/juliatips.md)
+ 1. [Programming interface](doc/api.md)
+    1. [Plotting interface](doc/EasyPlot.md)
+       1. [Plotting backends](doc/EasyPlot_backends.md)
+    1. [Saving/Loading {data/plot} &hArr; HDF5 file](doc/EasyData.md)
  1. [Sample usage](#SampleUsage)
     1. [Sample directory](sample)
     1. [Live-slice examples](sample/LiveSlice)
-    1. [Parametric `sin()` "simulation](sample/analysis_fmtfiles/parametric_sin.md)
+    1. [Parametric `sin()` "simulation"](sample/analysis_fmtfiles/parametric_sin.md)
  1. [Known limitations](#KnownLimitations)
 
 <a name="Description"></a>
@@ -63,7 +65,7 @@ The goal is to provide analysis tools that lead to minimal code, written in a *n
 `CMDimData.jl` is registered with Julia's **General** registry.
 It can be installed using Julia's built-in package manager:
 
-```julia
+```julia-repl
 julia> ]
 pkg> add CMDimData
 pkg> add MDDatasets
@@ -73,7 +75,7 @@ Note that `MDDatasets.jl` will automatically be installed alongside `CMDimData.j
 
 Moreover, it is highly suggested to install `InspectDR.jl`. It is the most tested integration for plotting at the moment:
 
-```julia
+```julia-repl
 julia> ]
 pkg> add InspectDR
 ```
