@@ -6,7 +6,6 @@
 
 # Remove/rename components
  - EasyPlot\*, EasyData, 
- - :HACK_SHOWTOUNFREEZE
 
 # Package up contents of subpkgs/
 Subpackages should be imported with `import EasyPlotInspect` instead of `@includepkg :EasyPlotInspect`.
@@ -65,3 +64,15 @@ Grab info from EasyPlot.jl, etc.
 # Questionable Naming
 Rename `buildeye()`/`eye*`. Should be `fold*`.
 Rename eye -> foldedaxis
+
+# Layout control
+Let user control `plotbb` location from `PlotCollection` instead of `Plot`.
+That way, a plot can show up in multiple collections, yet be located in different
+positions. The same plot could also be re-rendered twice, if desired.
+
+# Sync up EasyPlot <-> EasyData features
+Some EasyPlot features are not written to HDF5 (EasyData):
+ - Plot.plotbb
+ - Plot.annot (atext, h/vmarker)
+
+Also: Some backends do not support all the features.
