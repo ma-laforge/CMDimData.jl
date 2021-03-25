@@ -73,6 +73,7 @@ function _build(eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
 		push!(iplot.strips, strip)
 		strip.yscale = _yaxisscale(scalemap[srcstrip.scale])
 		strip.yext_full = InspectDR.PExtents1D(srcstrip.ext.min, srcstrip.ext.max)
+		strip.grid = mapgrid(srcstrip.grid)
 	end
 
 	#Apply x/y labels:
@@ -87,6 +88,11 @@ function _build(eplot::EasyPlot.Plot, theme::EasyPlot.Theme)
 	for (i, wfrm) in enumerate(eplot.wfrmlist)
 		EasyPlot.addwfrm(wfrmbuilder, wfrm, i)
 	end
+
+	#Add extra annotation objects:
+	for a in eplot.annot
+		addannot(theme, iplot, a)
+	end
 	
 	return iplot
 end
@@ -96,6 +102,7 @@ function EasyPlot.build(mplot::InspectDR.Multiplot, ecoll::EasyPlot.PlotCollecti
 	layout = mplot.layout #Reference
 		layout[:ncolumns] = ecoll.ncolumns
 	mplot.title = ecoll.title
+	mplot.bblist = deepcopy(ecoll.bblist)
 
 	mplot.subplots=[] #Start fresh in case being overwritten
 	for eplot in ecoll.plotlist

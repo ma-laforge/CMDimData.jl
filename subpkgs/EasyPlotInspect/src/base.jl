@@ -107,6 +107,55 @@ function WfrmAttributes(id::String, attr::EasyPlot.WfrmAttributes)
 	)
 end
 
+function mapmarkerline(t::EasyPlot.Theme, la::EasyPlot.LineAttributes)
+	la = EasyPlot.resolve_markerline(t, la)
+	return line(
+		color=mapcolor(la.color),
+		width=maplinewidth(la.width),
+		style=maplinestyle(la.style)
+	)
+end
+
+function mapgrid(g::EasyPlot.AbstractGrid)
+	@warn("Grid not supported: $g")
+	return InspectDR.GridRect()
+end
+function mapgrid(g::EasyPlot.GridCartesian)
+	return InspectDR.GridRect(
+		vmajor=g.vmajor, vminor=g.vminor, hmajor=g.hmajor, hminor=g.hminor
+	)
+end
+
+
+#==Annotation
+===============================================================================#
+
+addannot(::EasyPlot.Theme, ::InspectDR.Plot2D, args...) = nothing
+
+function addannot(t::EasyPlot.Theme, iplot::InspectDR.Plot2D, m::EasyPlot.HVMarker)
+	la = mapmarkerline(t, m.line)
+ 
+	if m.isvert
+		_m = vmarker(m.pos, la, strip=m.strip)
+	else
+		_m = hmarker(m.pos, la, strip=m.strip)
+	end
+	add(iplot, _m)
+	return nothing
+end
+
+function addannot(t::EasyPlot.Theme, iplot::InspectDR.Plot2D, a::EasyPlot.TextAnnotation)
+	#TODO: support custom fonts/colors.
+	afont = iplot.layout[:font_annotation] #Grab default annotation font
+	_a = atext(a.text, x=a.pos.v.x, y=a.pos.v.y,
+		xoffset=a.pos.offset.x, yoffset=a.pos.offset.y,
+		xoffset_rel=a.pos.reloffset.x, yoffset_rel=a.pos.reloffset.y,
+		font=afont, angle=a.angle, align=a.align, strip=a.strip
+	)
+	add(iplot, _a)
+	return nothing
+end
+
 
 #==AbstractWfrmBuilder implementation
 ===============================================================================#

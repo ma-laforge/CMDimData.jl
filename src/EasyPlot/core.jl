@@ -4,10 +4,6 @@
 
 #==Types & constants
 ===============================================================================#
-#Real values for plot coordinates, etc:
-const PReal = Float64
-const PNaN = PReal(NaN)
-
 #Dispatchable symbol (minimize namespace pollution):
 struct DS{T}; end
 DS(v::Symbol) = DS{v}()

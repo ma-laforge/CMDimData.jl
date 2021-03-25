@@ -10,9 +10,10 @@ using Colors
 import HDF5
 import Pkg
 
-import CMDimData.EasyPlot: PlotCollection, Plot, YStrip
+import CMDimData.EasyPlot: PlotCollection, Plot, YStrip, GridCartesian
 import CMDimData.EasyPlot: Waveform, LineAttributes, GlyphAttributes
 import CMDimData.EasyPlot: Extents1D, Axis, FoldedAxis
+import CMDimData.EasyPlot: TextAnnotation, HVMarker
 
 include("base.jl")
 include("hdf5typed.jl")

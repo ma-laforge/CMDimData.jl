@@ -2,20 +2,29 @@ using CMDimData.EasyPlot
 using CMDimData.MDDatasets
 using Colors
 
+#WARN: d1==d2 creates new DataF1 with 0s when y-values mismatch.
+issame(d1::DataF1, d2::DataF1) = (d1===d2)
+
+function fieldsmatch(a::T, b::T) where T
+	for _field in fieldnames(T)
+		match=(getproperty(a, _field)===getproperty(b, _field))
+		if !match; return false; end
+	end
+	return true
+end
+
 @testset "EasyPlot tests" begin #Scope for test data
+	#Data
+	x = DataF1(1:10)
+	d1 = x^2
 
 
 #==Basic Tests
 ===============================================================================#
 @testset "Creating basic Plot object" begin
 	show_testset_description()
-	#WARN: d1==d2 creates new DataF1 with 0s when y-values mismatch.
-	issame(d1::DataF1, d2::DataF1) = (d1===d2)
 
-	#Data
-	x = collect(1:10)
-	d1 = DataF1(x, x.^2)
-
+	#Create attributes for tests (actually: AttributeChangeData objects)
 	dfltline = cons(:a, line=set(style=:dash, color=:red))
 	dfltglyph = cons(:a, glyph=set(shape=:square, size=3))
 	axes_loglin = cons(:a, xyaxes=set(xscale=:log, yscale=:lin))
@@ -90,6 +99,31 @@ using Colors
 		@test pcoll.plotlist[2] == plt2
 end
 
+@testset "Setting grid parameters" begin
+	show_testset_description()
+	cgrid = EasyPlot.GridCartesian #Constructor alias
+
+	plot = cons(:plot, nstrips=2,
+		grid=set(vmajor=false, vminor=true, hmajor=false, hminor=true)
+	)
+	@test !fieldsmatch(plot.ystriplist[1].grid, plot.ystriplist[2].grid)
+	@test fieldsmatch(plot.ystriplist[2].grid, cgrid())
+	@test fieldsmatch(plot.ystriplist[1].grid,
+		cgrid(vmajor=false, vminor=true, hmajor=false, hminor=true)
+	)
+	before = plot.ystriplist[2].grid
+	set(plot, grid=set(2, vminor=true))
+		@test fieldsmatch(plot.ystriplist[2].grid,
+			cgrid(vmajor=true, vminor=true, hmajor=true, hminor=false)
+		)
+		@test before === plot.ystriplist[2].grid #Should have mutated data
+	set(plot, grid=set(2, fmt=:cartesian, vminor=true))
+		@test fieldsmatch(plot.ystriplist[2].grid,
+			cgrid(vmajor=true, vminor=true, hmajor=true, hminor=false)
+		)
+		@test before !== plot.ystriplist[2].grid #Should have created new object
+end
+
 @testset "Creating demo Plot object" begin
 	show_testset_description()
 	filelist = EasyPlot.demofilelist()
@@ -100,6 +134,7 @@ end
 		@show pcoll=evalfile(f);
 	end
 end
+
 end
 
 #Last line

@@ -23,11 +23,6 @@ const VALID_GLYPHS = Set([:none,
 
 #==Main types
 ===============================================================================#
-#ColorRef that can also reference another
-#Int: Pick specific color from theme/ColorScheme
-#Nothing: Pick appropriate color from theme/ColorScheme (Varies with sweep value)
-const ColorRef = Union{Nothing, Colorant, Int}
-
 #A plot theme.
 mutable struct Theme
 	colorscheme::Optional{ColorScheme}
@@ -72,31 +67,6 @@ end
 FoldedAxis(foldinterval; xstart=0, xmin=0, xmax=foldinterval) =
 	FoldedAxis(foldinterval, xstart, xmin, xmax)
 
-struct Extents1D
-	min::PReal
-	max::PReal
-end
-_Extents1D() = Extents1D(PNaN, PNaN)
-
-struct LineAttributes
-	style #::Symbol #will be none if set to nothing while a glyph.shape exists
-	width::PReal #[0, 10]
-	color::ColorRef
-end
-LineAttributes(;style=nothing, width=1, color=nothing) = LineAttributes(style, width, color)
-
-struct GlyphAttributes
-#==IMPORTANT:
-Edge width & color taken from LineAttributes
-==#
-	shape::Symbol #because "type" is reserved
-	size::PReal #of glyph. Edge width taken from LineAttributes
-	color::ColorRef #glyph linecolor. = nothing to match line.color
-	fillcolor::ColorRef
-end
-GlyphAttributes(;shape=:none, size=1, color=nothing, fillcolor=nothing) =
-	GlyphAttributes(shape, size, color, fillcolor)
-
 mutable struct Waveform <: AbstractAttributeReceiver
 	data::DataMD
 	label::String
@@ -114,8 +84,9 @@ mutable struct YStrip
 	striplabel::String
 	axislabel::String
 	ext::Extents1D
+	grid::AbstractGrid
 end
-_YStrip() = YStrip(:lin, "", "", _Extents1D())
+_YStrip() = YStrip(:lin, "", "", _Extents1D(), GridCartesian())
 
 mutable struct Plot <: AbstractAttributeReceiver
 	title::String
@@ -125,9 +96,10 @@ mutable struct Plot <: AbstractAttributeReceiver
 	xext::Extents1D
 	ystriplist::Vector{YStrip}
 	wfrmlist::Vector{Waveform}
+	annot::Vector{AbstractPlotAnnotation}
 end
 _Plot(title::String, legend::Bool) =
-	Plot(title, "", legend, Axis(:lin), _Extents1D(), YStrip[_YStrip()], Waveform[])
+	Plot(title, "", legend, Axis(:lin), _Extents1D(), YStrip[_YStrip()], Waveform[], AbstractPlotAnnotation[])
 Plot(args...; title::String="", legend=true, kwargs...) =
 	_apply(_Plot(title, legend), args, kwargs)
 
@@ -135,11 +107,12 @@ mutable struct PlotCollection <: AbstractAttributeReceiver
 	title::String
 	ncolumns::Int #TODO: Create a more flexible system
 	plotlist::Vector{Plot}
+	bblist::NullOr{Vector{BoundingBox}} #User can specify where to draw plots
 	theme::Theme
 	opt::Any #Optional data/instructions to relay to builder
 end
 _PlotCollection(title::String, ncolumns::Int) =
-	PlotCollection(title, ncolumns, Plot[], Theme(), nothing)
+	PlotCollection(title, ncolumns, Plot[], nothing, Theme(), nothing)
 PlotCollection(args...; title::String="", ncolumns::Int=1, kwargs...) =
 	_apply(_PlotCollection(title, ncolumns), args, kwargs)
 
@@ -175,6 +148,23 @@ function _new_overwrite(srcext::Extents1D, _min, _max)
 	NoOverwrite(_min) || (newmin = _min)
 	NoOverwrite(_max) || (newmax = _max)
 	return Extents1D(newmin, newmax)
+end
+
+function _get_strip(p::Plot, istrip::Int)
+	nstrips = length(p.ystriplist)
+	if istrip < 1 || istrip > nstrips
+		throw(ArgumentError("set(`::Plot`, ystrip=...): strip index=$istrip, but strip count=$nstrips"))
+	end
+	return p.ystriplist[istrip]
+end
+
+_setgrid(::DS, p::Plot, istrip::Int; kwargs...) =
+	throw(ArgumentError("set(`::Plot`, grid=set(fmt=...), ...): fmt must be one of: {:cartesian}"))
+
+function _setgrid(::DS{:cartesian}, p::Plot, istrip::Int; kwargs...)
+	strip = _get_strip(p, istrip)
+	strip.grid = GridCartesian(; kwargs...)
+	return p
 end
 
 
@@ -240,6 +230,7 @@ function _apply(p::Plot, ::DS{:labels}; title=nooverwrite,
 	NoOverwrite(title) || (p.title = title)
 	NoOverwrite(xaxis) || (p.xlabel = xaxis)
 	NoOverwrite(yaxis) || (p.ystriplist[1].axislabel = yaxis)
+	return p
 end
 
 #Change x-axis parameters of a plot:
@@ -248,6 +239,7 @@ function _apply(p::Plot, ::DS{:xaxis}; scale=nooverwrite,
 	NoOverwrite(scale) || (p.xaxis = _resolve_xaxis(scale))
 	NoOverwrite(label) || (p.xlabel = label)
 	p.xext = _new_overwrite(p.xext, min, max)
+	return p
 end
 
 #Change number of y-strips in a plot:
@@ -260,6 +252,7 @@ function _apply(p::Plot, ::DS{:nstrips}, nstrips::Int)
 			push!(p.ystriplist, _YStrip())
 		end
 	end
+	return p
 end
 
 #Change misc. strip properties:
@@ -267,15 +260,12 @@ function _apply(p::Plot, ::DS{:ystrip}, istrip::Int;
 	min=nooverwrite, max=nooverwrite, scale=nooverwrite,
 	axislabel=nooverwrite, striplabel=nooverwrite
 )
-	nstrips = length(p.ystriplist)
-	if istrip < 1 || istrip > nstrips
-		throw(ArgumentError("set(`::Plot`, ystrip=...): strip index=$istrip, but strip count=$nstrips"))
-	end
-	strip = p.ystriplist[istrip]
+	strip = _get_strip(p, istrip)
 	strip.ext = _new_overwrite(strip.ext, min, max)
 	NoOverwrite(scale) || (strip.scale = scale)
 	NoOverwrite(axislabel) || (strip.axislabel = axislabel)
 	NoOverwrite(striplabel) || (strip.striplabel = striplabel)
+	return p
 end
 #Strip aliases to avoid parameter name collisions (can only set ystrip=set(...) once):
 _apply(p::Plot, ::DS{:ystrip1}; kwargs...) = _apply(p, DS(:ystrip), 1; kwargs...)
@@ -292,7 +282,42 @@ function _apply(p::Plot, ::DS{:xfolded}, foldinterval::PReal;
 	xstart=0.0, xmin=0.0, xmax=foldinterval
 )
 	p.xaxis = FoldedAxis(foldinterval, xstart=xstart, xmin=xmin, xmax=xmax)
+	return p
 end
+
+function _apply(g::GridCartesian; vmajor=nooverwrite, vminor=nooverwrite,
+	hmajor=nooverwrite, hminor=nooverwrite
+)
+	NoOverwrite(vmajor) || (g.vmajor = vmajor)
+	NoOverwrite(vminor) || (g.vminor = vminor)
+	NoOverwrite(hmajor) || (g.hmajor = hmajor)
+	NoOverwrite(hminor) || (g.hminor = hminor)
+	return g
+end
+
+function _apply(p::Plot, ::DS{:grid}, istrip::Int=1; fmt=nooverwrite, kwargs...)
+	if NoOverwrite(fmt)
+		strip = _get_strip(p, istrip)
+		_apply(strip.grid; kwargs...)
+	elseif typeof(fmt) != Symbol
+		_setgrid(DS(:throwerror), p, istrip)
+	else
+		_setgrid(DS(:cartesian), p, istrip; kwargs...)
+	end
+	return p
+end
+
+#Grid aliases to avoid parameter name collisions (can only set ystrip=set(...) once):
+_apply(p::Plot, ::DS{:grid1}; kwargs...) = _apply(p, DS(:grid), 1; kwargs...)
+_apply(p::Plot, ::DS{:grid2}; kwargs...) = _apply(p, DS(:grid), 2; kwargs...)
+_apply(p::Plot, ::DS{:grid3}; kwargs...) = _apply(p, DS(:grid), 3; kwargs...)
+_apply(p::Plot, ::DS{:grid4}; kwargs...) = _apply(p, DS(:grid), 4; kwargs...)
+_apply(p::Plot, ::DS{:grid5}; kwargs...) = _apply(p, DS(:grid), 5; kwargs...)
+_apply(p::Plot, ::DS{:grid6}; kwargs...) = _apply(p, DS(:grid), 6; kwargs...)
+_apply(p::Plot, ::DS{:grid7}; kwargs...) = _apply(p, DS(:grid), 7; kwargs...)
+_apply(p::Plot, ::DS{:grid8}; kwargs...) = _apply(p, DS(:grid), 8; kwargs...)
+_apply(p::Plot, ::DS{:grid9}; kwargs...) = _apply(p, DS(:grid), 9; kwargs...)
+
 
 
 #==push! interface
@@ -304,6 +329,11 @@ function Base.push!(c::PlotCollection, p::Plot, args...)
 end
 function Base.push!(p::Plot, w::Waveform, args...)
 	push!(p.wfrmlist, w)
+	if length(args)>0; push!(p, args...); end
+	return p
+end
+function Base.push!(p::Plot, a::AbstractPlotAnnotation, args...)
+	push!(p.annot, a)
 	if length(args)>0; push!(p, args...); end
 	return p
 end

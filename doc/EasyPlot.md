@@ -59,7 +59,11 @@ lin_log = EasyPlot.attributes( xyaxes = set(xscale=:lin, yscale=:log) )
 Use Julia's help system for more examples on how to create `AttributeChangeSpec`s:
 
 ```julia-repl
-help?> attributes
+help?> cons
+help?> EasyPlot.attributes
+help?> EasyPlot.Plot
+help?> EasyPlot.PlotCollection
+help?> EasyPlot.Waveform
 ```
 
 <a name="AxisScaleIdentifiers"></a>

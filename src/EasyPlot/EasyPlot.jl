@@ -10,6 +10,9 @@ demofilelist() =
 using Colors
 using MDDatasets
 import NumericIO
+using Graphics: BoundingBox
+
+import ..NullOr
 
 
 #==Implementation
@@ -17,6 +20,10 @@ import NumericIO
 include("core.jl")
 include("attributes.jl")
 include("colors.jl")
+include("text.jl")
+include("cartesian.jl")
+include("grids.jl")
+include("annotation.jl")
 include("base.jl")
 include("multistrip.jl")
 include("eyediag.jl")

@@ -13,6 +13,7 @@ using MDDatasets
 import Pkg
 
 const rootpath = realpath(joinpath(@__DIR__, ".."))
+NullOr{T} = Union{Nothing, T}
 
 include("EasyPlot/EasyPlot.jl")
 include("EasyData/EasyData.jl")

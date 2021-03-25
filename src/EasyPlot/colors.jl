@@ -7,6 +7,11 @@ getcolor(v::Symbol) = parse(Colorant, v)
 
 #==Types
 ===============================================================================#
+#ColorRef that can also reference another
+#Int: Pick specific color from theme/ColorScheme
+#Nothing: Pick appropriate color from theme/ColorScheme (Varies with sweep value)
+const ColorRef = Union{Nothing, Colorant, Int}
+
 #TODO: Possible to use structure from Colors module?
 mutable struct ColorScheme
 	colors::Vector{Colorant} #Colorant: might support alpha in the future

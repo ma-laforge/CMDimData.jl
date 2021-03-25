@@ -82,5 +82,13 @@ function WfrmAttributes(t::Theme, la::LineAttributes, ga::GlyphAttributes;
 	)
 end
 
+#Compute final, concrete values for marker lines:
+function resolve_markerline(t::Theme, la::LineAttributes)
+	linestyle = (nothing == la.style) ? (:solid) : la.style
+	linewidth = (nothing == la.width) ? (1) : la.width
+	linecolor = (nothing == la.color) ? (:default) : la.color
+	linecolor = getcolor(t.colorscheme, linecolor)
+	return LineAttributes(style=linestyle, width=linewidth, color=linecolor)
+end
 
 #Last line
