@@ -76,6 +76,6 @@ function Base.show(io::IO, mime::SupportedMIME, fig::Figure)
 end
 
 Base.showable(mime::MIME, eplot::EasyPlot.Plot, d::PlotDisplay) =
-	method_exists(show, (IO, typeof(mime), Figure))
+	hasmethod(show, (IO, typeof(mime), Figure))
 
 #Last line

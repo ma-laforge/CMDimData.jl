@@ -47,7 +47,7 @@ function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, fig::PyPl
 end
 
 EasyPlot._showable(mime::MIME{T}, b::Builder) where T = in(string(T), SUPPORTED_MIMES)
-	#method_exists(show, (IO, typeof(mime), PyPlot.Figure)) #Apparently not enough
+	#hasmethod(show, (IO, typeof(mime), PyPlot.Figure)) #Apparently not enough
 
 
 #==Display interface

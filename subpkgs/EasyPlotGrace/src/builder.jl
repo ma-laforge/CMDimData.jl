@@ -51,7 +51,7 @@ function EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, plot::Gra
 end
 
 EasyPlot._showable(mime::MIME, b::Builder) =
-	method_exists(show, (IO, typeof(mime), GracePlot.Plot))
+	hasmethod(show, (IO, typeof(mime), GracePlot.Plot))
 
 
 #==Display interface

@@ -41,7 +41,7 @@ EasyPlot._show(io::IO, mime::MIME, opt::EasyPlot.ShowOptions, plot::InspectDR.Gt
 	EasyPlot._show(io, mime, opt, plot.src)
 
 EasyPlot._showable(mime::MIME, b::Builder) =
-	method_exists(show, (IO, typeof(mime), InspectDR.Multiplot))
+	hasmethod(show, (IO, typeof(mime), InspectDR.Multiplot))
 
 
 #==Display interface
