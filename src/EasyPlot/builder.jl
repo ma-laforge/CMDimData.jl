@@ -111,6 +111,17 @@ AbstractBuilder(bid::Symbol) = AbstractBuilder(DS(bid))
 
 getbuilder(::Target{TS}, ::Type{T}, args...; kwargs...) where {TS, T} =
 	throw(MethodError(getbuilder, (TS, T)))
+
+"""`getbuilder(target::Symbol, builderid::Symbol, args...; kwargs...)`
+
+Return a <: AbstractBuilder object specific to a `builderid` backend , yet
+appropriate for use in a `target` application.
+
+#Arugments
+ - `target`: should be one of: `{:gui, :image}`.
+ - `builderid`: should be one of: {:InspectDR, :Grace, :Grace_headless,
+   :PyPlot, :PlotsJl}
+"""
 getbuilder(target::Symbol, builderid::Symbol, args...; kwargs...) where T =
 	getbuilder(Target(target), AbstractBuilder(builderid), args...; kwargs...)
 
