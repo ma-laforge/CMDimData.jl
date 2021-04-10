@@ -10,15 +10,22 @@ EasyPlot.defaults.mimebuilder #Uses a backend to write to a MIME output (no GUI,
 <a name="InlinePlots"></a>
 ## Inline plots
 
-`EasyPlot.Plot` objects can be rendered inline (ex: IJulia notebooks) by configuring `defaults`:
+`EasyPlot.PlotCollection` objects can be rendered inline (ex: IJulia notebooks)
+by configuring `defaults`. For example, rendering inline plots with the
+InspectDR backend can be achived with the following:
 
 ```julia
-EasyPlot.defaults.mimebuilder = ...
+CMDimData.@includepkg EasyPlotInspect
+EasyPlot.defaults.mimebuilder = EasyPlot.getbuilder(:image, :InspectDR)
+
+#Can only display PlotCollection objects at the moment:
+pcoll = push!(cons(:plot_collection), plot)
+display(pcoll) #Jupyter should now render plot using InspectDR.
 ```
 
-TODO: Provide details/examples.
-
-If SVG inline plots are undesired (ex: for performance reasons), `mimebuilder` can inhibit SVG output with the following:
+If SVG inline plots are undesired (ex: for performance reasons), it is possible
+to inhibit `defaults.mimebuilder` from generating SVG outputs by changing the
+`defaults.rendersvg` setting:
 
 ```julia
 EasyPlot.defaults.rendersvg = false
