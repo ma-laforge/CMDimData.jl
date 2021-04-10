@@ -1,0 +1,8 @@
+#Environment for CMDimData sample Jupyter notebooks
+name = "notebook"
+
+[deps]
+CMDimData = "70385e83-f223-47f4-874b-539892411e49"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+InspectDR = "d0351b0e-4b05-5898-87b3-e2a8edfddd1d"
+MDDatasets = "176e4ad4-9107-502a-977c-53a5728fe704"
