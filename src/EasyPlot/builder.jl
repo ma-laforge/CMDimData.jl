@@ -122,7 +122,7 @@ appropriate for use in a `target` application.
  - `builderid`: should be one of: {:InspectDR, :Grace, :Grace_headless,
    :PyPlot, :PlotsJl}
 """
-getbuilder(target::Symbol, builderid::Symbol, args...; kwargs...) where T =
+getbuilder(target::Symbol, builderid::Symbol, args...; kwargs...) =
 	getbuilder(Target(target), AbstractBuilder(builderid), args...; kwargs...)
 
 build(b::AbstractBuilder, pcoll::PlotCollection) = throw(MethodError(build, (b, plot)))
